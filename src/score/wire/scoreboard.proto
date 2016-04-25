@@ -1,0 +1,25 @@
+package wire;
+
+message Message {
+	oneof MessageType {
+		Event event = 1;
+		ContestSetup setup = 2;
+	}
+}
+
+message Event {
+	required int64 Team = 6;
+	required int64 Problem = 1;
+	required int64 SubmitCount = 2;
+	required int64 Penalty = 3;
+	required SState State = 4;
+}
+
+message ContestSetup {
+}
+
+enum SState {
+	CORRECT = 1;
+	WRONG = 2;
+	PENDING = 3;
+}
