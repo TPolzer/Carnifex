@@ -239,7 +239,7 @@ func (state *ContestState) Summarize(submissions Submissions) (event *wire.Event
 			*event.State = wire.SState_PENDING
 			return
 		}
-		if(float64(state.contest.Freeze) >= s.Time) { //TODO how to handle resolving
+		if(float64(state.contest.Freeze) <= s.Time) { //TODO how to handle resolving
 			*event.State = wire.SState_PENDING
 		} else {
 			if(judging.Outcome == "correct") {
