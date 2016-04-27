@@ -1,13 +1,14 @@
 package main
 
 import (
+	"encoding/binary"
 	"encoding/json"
 	"fmt"
-	"github.com/davecgh/go-spew/spew"
 	"io/ioutil"
 	"math"
     "net/http"
     "net/url"
+	"github.com/golang/protobuf/proto"
 	"reflect"
 	"sort"
 	"score/wire"
@@ -133,14 +134,19 @@ func main() {
 	ContestState := NewContestState(<-contest, <-teams, observers)
 	ContestState.BroadcastNewContest()
 
-	go func() {
+	go http.HandleFunc("/scoreboard", func (writer http.ResponseWriter, request *http.Request) {
 		messages := make(chan wire.Message)
 		subscribe <- messages
+		writer.Header().Add("Content-Type","application/octet-stream")
 		for {
 			message := <-messages
-			spew.Printf("message: %#v\n", message)
+			buf, _ := proto.Marshal(&message)
+			binary.Write(writer, binary.BigEndian, int64(len(buf)))
+			writer.Write(buf)
+			writer.(http.Flusher).Flush()
 		}
-	}()
+	})
+	go http.ListenAndServe(":8080", nil)
 
 	fmt.Println("succesfully connected to judge and listening for clients")
 
@@ -166,6 +172,7 @@ func main() {
 			ContestState = NewContestState(c, ContestState.teams, observers)
 			ContestState.BroadcastNewContest()
 		case s:= <-subscribe:
+			fmt.Println("new observer!")
 			*observers = append(*observers, s)
 			ContestState.Tell(s)
 		}
@@ -260,7 +267,6 @@ func (*ContestState) BroadcastNewContest() {
 }
 
 func (state *ContestState) ApplySubmission(submission Submission) {
-    fmt.Println("received Submission", submission)
 	state.submissions[submission.Id] = submission
 	team := submission.Team
 	problem := submission.Problem
@@ -274,7 +280,6 @@ func (state *ContestState) ApplySubmission(submission Submission) {
 }
 
 func (state *ContestState) ApplyJudging(judging Judging) {
-    fmt.Println("received Judging", judging)
 	oldJudging, ok := state.judgings[judging.Submission]
 	if(ok && oldJudging.Id > judging.Id) {
 		return
@@ -282,7 +287,6 @@ func (state *ContestState) ApplyJudging(judging Judging) {
 	state.judgings[judging.Submission] = judging
 	submission, ok := state.submissions[judging.Submission]
 	if(!ok) {
-		fmt.Printf("no submission at %v\n", judging.Submission)
 		return
 	}
 	problem := submission.Problem
