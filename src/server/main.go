@@ -5,7 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"math"
+	"net"
     "net/http"
     "net/url"
 	"github.com/golang/protobuf/proto"
@@ -52,14 +54,12 @@ func main() {
 
 	go func() {
 		min := SubmissionId(0)
-		recv := make(chan []Submission)
-		errc := make(chan error)
 		for {
-			go judge.GetJson(SUBMISSIONS, int64(min), recv, errc)
-			select {
-			case err := <-errc:
+			var s Submissions
+			err := judge.GetJson(SUBMISSIONS, int64(min), &s)
+			if(err != nil) {
 				fmt.Println(err)
-			case s := <-recv:
+			} else {
 				for _, v := range s {
 					min = v.Id + 1
                     time.Sleep(10*time.Millisecond)
@@ -71,14 +71,12 @@ func main() {
 	}()
 	go func() {
 		min := JudgingId(0)
-		recv := make(chan []Judging)
-		errc := make(chan error)
 		for {
-			go judge.GetJson(JUDGINGS, int64(min), recv, errc)
-			select {
-			case err := <-errc:
+			var s []Judging
+			err := judge.GetJson(JUDGINGS, int64(min), &s)
+			if(err != nil) {
 				fmt.Println(err)
-			case s := <-recv:
+			} else {
 				for _, v := range s {
 					min = v.Id + 1
                     time.Sleep(10*time.Millisecond)
@@ -89,18 +87,16 @@ func main() {
 		}
 	}()
 	go func() {
-		recv := make(chan []Team)
-		errc := make(chan error)
 		first := true
 		for {
-			go judge.GetJson(TEAMS, 0, recv, errc)
-			select {
-			case err := <-errc:
+			var s []Team
+			err := judge.GetJson(TEAMS, 0, &s)
+			if(err != nil) {
 				if(first) {
 					panic(err)
 				}
 				fmt.Println(err)
-			case s := <-recv:
+			} else {
 				teams <- s
 			}
 			first = false
@@ -108,18 +104,16 @@ func main() {
 		}
 	}()
 	go func() {
-		recv := make(chan *Contest)
-		errc := make(chan error)
 		first := true
 		for {
-			go judge.GetJson(CONTEST, 0, recv, errc)
-			select {
-			case err := <-errc:
+			var s *Contest
+			err := judge.GetJson(CONTEST, 0, &s)
+			if(err != nil) {
 				if(first) {
 					panic(err)
 				}
 				fmt.Println(err)
-			case s := <-recv:
+			} else {
 				contest <- s
 			}
 			first = false
@@ -131,22 +125,36 @@ func main() {
 	var storedJudgings []Judging
 	observers := new([]chan wire.Message)
 	subscribe := make(chan (chan wire.Message))
+	unsubscribe := make(chan (chan wire.Message))
 	ContestState := NewContestState(<-contest, <-teams, observers)
 	ContestState.BroadcastNewContest()
 
-	go http.HandleFunc("/scoreboard", func (writer http.ResponseWriter, request *http.Request) {
-		messages := make(chan wire.Message)
-		subscribe <- messages
-		writer.Header().Add("Content-Type","application/octet-stream")
+	listener, err := net.Listen("tcp", ":8080")
+	if(err != nil) {
+		log.Fatal(err)
+	}
+	go func() {
 		for {
-			message := <-messages
-			buf, _ := proto.Marshal(&message)
-			binary.Write(writer, binary.BigEndian, int64(len(buf)))
-			writer.Write(buf)
-			writer.(http.Flusher).Flush()
+			conn, err := listener.Accept()
+			if(err != nil) {
+				log.Fatal(err)
+			}
+			go func() {
+				messages := make(chan wire.Message)
+				subscribe <- messages
+				for {
+					message := <-messages
+					buf, _ := proto.Marshal(&message)
+					binary.Write(conn, binary.BigEndian, int64(len(buf)))
+					_, err := conn.Write(buf)
+					if(err != nil) {
+						unsubscribe <- messages
+						return
+					}
+				}
+			}()
 		}
-	})
-	go http.ListenAndServe(":8080", nil)
+	}()
 
 	fmt.Println("succesfully connected to judge and listening for clients")
 
@@ -172,9 +180,15 @@ func main() {
 			ContestState = NewContestState(c, ContestState.teams, observers)
 			ContestState.BroadcastNewContest()
 		case s:= <-subscribe:
-			fmt.Println("new observer!")
 			*observers = append(*observers, s)
 			ContestState.Tell(s)
+		case u:= <-unsubscribe:
+			for i, o := range *observers {
+				if(o == u) {
+					*observers = append((*observers)[:i], (*observers)[i+1:]...)
+				}
+			}
+			close(u)
 		}
 		if(oldState != ContestState) {
 			for _, s := range storedSubmissions {
@@ -338,7 +352,7 @@ func NewJudgeClient(judge *url.URL, username string, password string) *JudgeClie
 	return client
 }
 
-func (client *JudgeClient) GetJson(method APIMethod, min int64, sink interface{}, errc chan<- error) {
+func (client *JudgeClient) GetJson(method APIMethod, min int64, p interface{}) (err error){
 	url := client.urls[method]
 	if(min != 0) {
 		tmp := *url
@@ -347,26 +361,19 @@ func (client *JudgeClient) GetJson(method APIMethod, min int64, sink interface{}
 		q.Set("fromid", strconv.FormatInt(min,10))
 		url.RawQuery = q.Encode()
 	}
-	elemType := reflect.TypeOf(sink).Elem()
 	request, _ := http.NewRequest("", url.String(), nil)
 	request.SetBasicAuth(client.username, client.password)
 	resp, err := client.client.Do(request)
 	defer resp.Body.Close()
 	if(err != nil) {
-		errc <- err
 		return
 	}
 	if(resp.StatusCode != 200) {
-		errc <- fmt.Errorf("Got http response \"%s\"", resp.Status)
-		return
+		return fmt.Errorf("Got http response \"%s\"", resp.Status)
 	}
 	jsonDecoder := json.NewDecoder(resp.Body)
-	res := reflect.New(elemType)
-	err = jsonDecoder.Decode(res.Interface())
-	if(err != nil) {
-		panic(err)
-	}
-	reflect.ValueOf(sink).Send(res.Elem())
+	err = jsonDecoder.Decode(p)
+	return
 }
 
 type JudgingId int64
