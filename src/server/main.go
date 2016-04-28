@@ -123,10 +123,9 @@ func main() {
 
 	var storedSubmissions []Submission
 	var storedJudgings []Judging
-	observers := new([]chan wire.Message)
 	subscribe := make(chan (chan wire.Message))
 	unsubscribe := make(chan (chan wire.Message))
-	ContestState := NewContestState(<-contest, <-teams, observers)
+	ContestState := NewContestState(<-contest, <-teams, nil)
 	ContestState.BroadcastNewContest()
 
 	listener, err := net.Listen("tcp", ":8080")
@@ -171,21 +170,24 @@ func main() {
 			if(reflect.DeepEqual(ContestState.teams, t)) {
 				continue
 			}
-			ContestState = NewContestState(ContestState.contest, t, observers)
+			ContestState = NewContestState(ContestState.contest, t, ContestState.observers)
 			ContestState.BroadcastNewContest()
 		case c := <-contest:
 			if(reflect.DeepEqual(ContestState.contest, c)) {
 				continue
 			}
-			ContestState = NewContestState(c, ContestState.teams, observers)
+			ContestState = NewContestState(c, ContestState.teams, ContestState.observers)
 			ContestState.BroadcastNewContest()
 		case s:= <-subscribe:
-			*observers = append(*observers, s)
+			log.Printf("subscribing %v", s)
+			ContestState.observers = append(ContestState.observers, s)
 			ContestState.Tell(s)
 		case u:= <-unsubscribe:
-			for i, o := range *observers {
+			log.Printf("unsubscribing %v", u)
+			for i, o := range ContestState.observers {
 				if(o == u) {
-					*observers = append((*observers)[:i], (*observers)[i+1:]...)
+					ContestState.observers = append(ContestState.observers[:i], ContestState.observers[i+1:]...)
+					break
 				}
 			}
 			close(u)
@@ -205,13 +207,13 @@ func main() {
 type ContestState struct {
 	contest *Contest
 	teams []Team
-	observers *[]chan wire.Message
+	observers []chan wire.Message
 	scoreboard map[TeamId]map[ProblemId]Submissions
 	submissions map[SubmissionId]Submission
     judgings map[SubmissionId]Judging
 }
 
-func NewContestState(contest *Contest, teams []Team, observers *[]chan wire.Message) (*ContestState) {
+func NewContestState(contest *Contest, teams []Team, observers []chan wire.Message) (*ContestState) {
 	state := ContestState{
 		contest: contest,
 		teams: teams,
@@ -227,7 +229,8 @@ func NewContestState(contest *Contest, teams []Team, observers *[]chan wire.Mess
 }
 
 func (state *ContestState) Broadcast(message *wire.Message) {
-	for _, o := range *state.observers {
+	fmt.Printf("broadcasting %v\n", *message)
+	for _, o := range state.observers {
 		o <- *message
 	}
 }
