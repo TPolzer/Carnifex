@@ -35,26 +35,22 @@ func main() {
 
 	bytes, err := ioutil.ReadFile("credentials.json")
 	if(err != nil) {
-		fmt.Println("please supply credentials in credentials.json")
-		panic(err)
+		log.Fatal("please supply credentials in credentials.json")
 	}
 	credentials := make(map[string]string)
 	err = json.Unmarshal(bytes, &credentials)
 	if(err != nil) {
-		fmt.Println("credentials.json is invalid")
-		panic(err)
+		log.Fatal("credentials.json is invalid")
 	}
 
 	bytes, err = ioutil.ReadFile("config.json")
 	if(err != nil) {
-		fmt.Println("please supply configuration in config.json")
-		panic(err)
+		log.Fatal("please supply configuration in config.json")
 	}
 	var config Config
 	err = json.Unmarshal(bytes, &config)
 	if(err != nil) {
-		fmt.Println("config.json is invalid")
-		panic(err)
+		log.Fatal("config.json is invalid")
 	}
 
 	judgeUrl, err := url.Parse(config.BaseUrl)
@@ -64,8 +60,6 @@ func main() {
 
 
 	judge := NewJudgeClient(judgeUrl, credentials["user"], credentials["password"])
-	_ = judge
-	_ = fmt.Println
 
 	submissions := make(chan Submission)
 	judgings := make(chan Judging)
@@ -134,7 +128,7 @@ func main() {
 		}
 	}()
 
-	fmt.Println("succesfully connected to judge and listening for clients")
+	log.Print("succesfully connected to judge and listening for clients")
 
 	for {
 		oldState := ContestState
@@ -198,7 +192,7 @@ func simulate(src interface{}, start, multiplier float64) interface{} {
 			if(t < 0) {
 				continue
 			}
-			fmt.Printf("Delaying event for %v\n", time.Duration(t) * time.Second)
+//			fmt.Printf("Delaying event for %v\n", time.Duration(t) * time.Second)
 			time.AfterFunc(time.Duration(t) * time.Second, func () {
 				sink.Send(x)
 			})
@@ -376,9 +370,9 @@ func (client *JudgeClient) ChannelJson(sink interface{}, method APIMethod, sleep
 		err := client.GetJson(method, int64(min), s)
 		if(err != nil) {
 			if(first) {
-				panic(err)
+				log.Fatal(err)
 			}
-			fmt.Println(err)
+			log.Print(err)
 		} else {
 			if(!unpack) {
 				reflect.ValueOf(sink).Send(sv.Elem())
