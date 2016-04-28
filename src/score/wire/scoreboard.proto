@@ -18,11 +18,18 @@ message Event {
 message ContestSetup {
 	required string Name = 1;
 	repeated Team Teams = 2;
+	repeated Problem Problems = 3;
+}
+
+message Problem {
+	required int64 Id = 1;
+	required string Label = 2;
+	optional string Color = 3;
 }
 
 message Team {
-	required string Name = 1;
-	required int64 Id = 2;
+	required int64 Id = 1;
+	required string Name = 2;
 }
 
 enum SState {

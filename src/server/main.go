@@ -65,21 +65,33 @@ func main() {
 	judgings := make(chan Judging)
 	teams := make(chan []Team)
 	contest := make(chan *Contest)
+	problems := make(chan []*wire.Problem)
 
 	sleep := time.Millisecond*config.Poll_ms
 	sanitySleep := time.Second*config.Check_s
 
 	go judge.ChannelJson(teams, TEAMS, sanitySleep, false, false)
 	go judge.ChannelJson(contest, CONTEST, sanitySleep, false, false)
-	go judge.ChannelJson(submissions, SUBMISSIONS, sleep, true, true)
-	go judge.ChannelJson(judgings, JUDGINGS, sleep, true, true)
 
 	var storedSubmissions []Submission
 	var storedJudgings []Judging
-	subscribe := make(chan (chan wire.Message))
-	unsubscribe := make(chan (chan wire.Message))
+	subscribe := make(chan (chan *wire.Message))
+	unsubscribe := make(chan (chan *wire.Message))
 	ContestState := NewContestState(<-contest, <-teams, nil)
-	ContestState.BroadcastNewContest()
+
+	//inject cid into URLs
+	for _, m := range []APIMethod{SUBMISSIONS, JUDGINGS, PROBLEMS} {
+		u := judge.urls[m]
+		q := u.Query()
+		q.Set("cid", strconv.FormatInt(ContestState.contest.Id, 10))
+		u.RawQuery = q.Encode()
+	}
+
+	go judge.ChannelJson(problems, PROBLEMS, sanitySleep, false, false)
+	go judge.ChannelJson(submissions, SUBMISSIONS, sleep, true, true)
+	go judge.ChannelJson(judgings, JUDGINGS, sleep, true, true)
+
+	ContestState.problems = <-problems
 
 	if(config.Simulate) {
 		submissions = simulate(submissions, float64(ContestState.contest.Start), 60).(chan Submission)
@@ -97,7 +109,7 @@ func main() {
 				log.Fatal(err)
 			}
 			go func() {
-				messages := make(chan wire.Message)
+				messages := make(chan *wire.Message)
 				subscribe <- messages
 				cc := make(chan error)
 				go func() {
@@ -110,7 +122,7 @@ func main() {
 					select {
 					case message := <-messages:
 //						fmt.Printf("received message %v\n", message)
-						buf, _ := proto.Marshal(&message)
+						buf, _ := proto.Marshal(message)
 						err := binary.Write(conn, binary.BigEndian, int64(len(buf)))
 						if(err != nil) {
 							break MessageLoop
@@ -150,6 +162,13 @@ func main() {
 				continue
 			}
 			ContestState = NewContestState(c, ContestState.teams, ContestState.observers)
+			ContestState.BroadcastNewContest()
+		case p := <-problems:
+			if(reflect.DeepEqual(ContestState.problems, p)) {
+				continue
+			}
+			ContestState = NewContestState(ContestState.contest, ContestState.teams, ContestState.observers)
+			ContestState.problems = p
 			ContestState.BroadcastNewContest()
 		case s:= <-subscribe:
 			log.Printf("subscribing %v", s)
@@ -204,13 +223,14 @@ func simulate(src interface{}, start, multiplier float64) interface{} {
 type ContestState struct {
 	contest *Contest
 	teams []Team
-	observers []chan wire.Message
+	problems []*wire.Problem
+	observers []chan *wire.Message
 	scoreboard map[TeamId]map[ProblemId]Submissions
 	submissions map[SubmissionId]Submission
     judgings map[SubmissionId]Judging
 }
 
-func NewContestState(contest *Contest, teams []Team, observers []chan wire.Message) (*ContestState) {
+func NewContestState(contest *Contest, teams []Team, observers []chan *wire.Message) (*ContestState) {
 	state := ContestState{
 		contest: contest,
 		teams: teams,
@@ -228,7 +248,7 @@ func NewContestState(contest *Contest, teams []Team, observers []chan wire.Messa
 func (state *ContestState) Broadcast(message *wire.Message) {
 //	fmt.Printf("broadcasting %v\n", *message)
 	for _, o := range state.observers {
-		o <- *message
+		o <- message
 	}
 }
 
@@ -281,11 +301,13 @@ func (state *ContestState) Summarize(submissions Submissions) (event *wire.Event
 	return
 }
 
-func (state *ContestState) BroadcastNewContest() {
+func (state *ContestState) ContestSetup() (*wire.Message) {
 	setup := new(wire.ContestSetup)
 	setup.Name = &state.contest.Name
+	setup.Problems = state.problems
 	var teams []*wire.Team
-	for _, t := range state.teams {
+	for i, _ := range state.teams {
+		t := &state.teams[i] // force reference semantic
 		id := int64(t.Id)
 		team := &wire.Team{
 			Name: &t.Name,
@@ -294,11 +316,15 @@ func (state *ContestState) BroadcastNewContest() {
 		teams = append(teams, team)
 	}
 	setup.Teams = teams
-	state.Broadcast(&wire.Message{
+	return &wire.Message{
 		MessageType: &wire.Message_Setup{
 			Setup: setup,
 		},
-	})
+	}
+}
+
+func (state *ContestState) BroadcastNewContest() {
+	state.Broadcast(state.ContestSetup())
 }
 
 func (state *ContestState) ApplySubmission(submission Submission) {
@@ -335,14 +361,15 @@ func (state *ContestState) ApplyJudging(judging Judging) {
 	state.Broadcast(ToMessage(event))
 }
 
-func (state *ContestState) Tell(observer chan wire.Message) {
+func (state *ContestState) Tell(observer chan *wire.Message) {
+	observer <- state.ContestSetup()
 	for _, problems := range state.scoreboard {
 		for _, submissions := range problems {
 			event := state.Summarize(submissions)
 			if(event == nil) {
 				continue
 			}
-			observer <- *ToMessage(event)
+			observer <- ToMessage(event)
 		}
 	}
 }
@@ -367,6 +394,7 @@ func NewJudgeClient(judge *url.URL, username string, password string) *JudgeClie
 	client.urls[SUBMISSIONS], _ = judge.Parse("./api/submissions")
 	client.urls[CONTEST], _ = judge.Parse("./api/contest")
 	client.urls[TEAMS], _ = judge.Parse("./api/teams?public=true")
+	client.urls[PROBLEMS], _ = judge.Parse("./api/problems")
 	for k, val := range client.urls {
 		client.urls[k] = judge.ResolveReference(val)
 	}
@@ -466,6 +494,7 @@ func (s Submissions) Swap(i, j int) {
 /******************/
 
 type Contest struct {
+	Id int64
 	Name string
 	Freeze int64
 	Start int64
@@ -485,4 +514,5 @@ const (
 	SUBMISSIONS
 	CONTEST
 	TEAMS
+	PROBLEMS
 )
