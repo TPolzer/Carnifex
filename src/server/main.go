@@ -281,7 +281,24 @@ func (state *ContestState) Summarize(submissions Submissions) (event *wire.Event
 	return
 }
 
-func (*ContestState) BroadcastNewContest() {
+func (state *ContestState) BroadcastNewContest() {
+	setup := new(wire.ContestSetup)
+	setup.Name = &state.contest.Name
+	var teams []*wire.Team
+	for _, t := range state.teams {
+		id := int64(t.Id)
+		team := &wire.Team{
+			Name: &t.Name,
+			Id: &id,
+		}
+		teams = append(teams, team)
+	}
+	setup.Teams = teams
+	state.Broadcast(&wire.Message{
+		MessageType: &wire.Message_Setup{
+			Setup: setup,
+		},
+	})
 }
 
 func (state *ContestState) ApplySubmission(submission Submission) {
