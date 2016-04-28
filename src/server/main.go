@@ -141,16 +141,34 @@ func main() {
 			go func() {
 				messages := make(chan wire.Message)
 				subscribe <- messages
+				fmt.Println("subscribed")
+				cc := make(chan error)
+				go func() {
+					//look for clients closing the connection
+					_, err := conn.Read(make([]byte,1))
+					fmt.Printf("Read returned %v\n", err)
+					cc <- err
+				}()
+				MessageLoop:
 				for {
-					message := <-messages
-					buf, _ := proto.Marshal(&message)
-					binary.Write(conn, binary.BigEndian, int64(len(buf)))
-					_, err := conn.Write(buf)
-					if(err != nil) {
-						unsubscribe <- messages
-						return
+					select {
+					case message := <-messages:
+						fmt.Printf("received message %v\n", message)
+						buf, _ := proto.Marshal(&message)
+						err := binary.Write(conn, binary.BigEndian, int64(len(buf)))
+						if(err != nil) {
+							break MessageLoop
+						}
+						_, err = conn.Write(buf)
+						if(err != nil) {
+							break MessageLoop
+						}
+					case _ = <-cc:
+						break MessageLoop
 					}
 				}
+				fmt.Println("unsubscribing")
+				unsubscribe <- messages
 			}()
 		}
 	}()
