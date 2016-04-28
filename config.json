@@ -1,0 +1,6 @@
+{
+	"baseurl": "http://domjudge.cs.fau.de",
+	"simulate": true,
+	"poll_ms": 100,
+	"check_s": 10
+}

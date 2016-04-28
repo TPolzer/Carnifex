@@ -18,6 +18,13 @@ import (
 	"time"
 )
 
+type Config struct {
+	BaseUrl string
+	Simulate bool
+	Poll_ms time.Duration
+	Check_s time.Duration
+}
+
 func main() {
 
 	secure := false
@@ -26,9 +33,6 @@ func main() {
 		scheme += "s"
 	}
 
-    domain := "domjudge.cs.fau.de"
-
-    judgeUrl, _ := url.Parse (scheme + "://" + domain)
 	bytes, err := ioutil.ReadFile("credentials.json")
 	if(err != nil) {
 		fmt.Println("please supply credentials in credentials.json")
@@ -40,6 +44,25 @@ func main() {
 		fmt.Println("credentials.json is invalid")
 		panic(err)
 	}
+
+	bytes, err = ioutil.ReadFile("config.json")
+	if(err != nil) {
+		fmt.Println("please supply configuration in config.json")
+		panic(err)
+	}
+	var config Config
+	err = json.Unmarshal(bytes, &config)
+	if(err != nil) {
+		fmt.Println("config.json is invalid")
+		panic(err)
+	}
+
+	judgeUrl, err := url.Parse(config.BaseUrl)
+	if(err != nil) {
+		log.Fatal("invalid baseURL")
+	}
+
+
 	judge := NewJudgeClient(judgeUrl, credentials["user"], credentials["password"])
 	_ = judge
 	_ = fmt.Println
@@ -49,13 +72,13 @@ func main() {
 	teams := make(chan []Team)
 	contest := make(chan *Contest)
 
-	sleep := time.Millisecond*100
-	sanitySleep := time.Second*10
+	sleep := time.Millisecond*config.Poll_ms
+	sanitySleep := time.Second*config.Check_s
 
-	go judge.ChannelJson(submissions, SUBMISSIONS, sleep, true, true)
-	go judge.ChannelJson(judgings, JUDGINGS, sleep, true, true)
 	go judge.ChannelJson(teams, TEAMS, sanitySleep, false, false)
 	go judge.ChannelJson(contest, CONTEST, sanitySleep, false, false)
+	go judge.ChannelJson(submissions, SUBMISSIONS, sleep, true, true)
+	go judge.ChannelJson(judgings, JUDGINGS, sleep, true, true)
 
 	var storedSubmissions []Submission
 	var storedJudgings []Judging
@@ -63,6 +86,11 @@ func main() {
 	unsubscribe := make(chan (chan wire.Message))
 	ContestState := NewContestState(<-contest, <-teams, nil)
 	ContestState.BroadcastNewContest()
+
+	if(config.Simulate) {
+		submissions = simulate(submissions, float64(ContestState.contest.Start), 60).(chan Submission)
+		judgings = simulate(judgings, float64(ContestState.contest.Start), 60).(chan Judging)
+	}
 
 	listener, err := net.Listen("tcp", ":8080")
 	if(err != nil) {
@@ -155,6 +183,30 @@ func main() {
 
 }
 
+func simulate(src interface{}, start, multiplier float64) interface{} {
+	sink := reflect.MakeChan(reflect.TypeOf(src), 0)
+	go func() {
+		src := reflect.ValueOf(src)
+		for {
+			x, ok := src.Recv()
+			if(!ok) {
+				return
+			}
+			t := x.FieldByName("Time").Float()
+			t -= start
+			t /= multiplier
+			if(t < 0) {
+				continue
+			}
+			fmt.Printf("Delaying event for %v\n", time.Duration(t) * time.Second)
+			time.AfterFunc(time.Duration(t) * time.Second, func () {
+				sink.Send(x)
+			})
+		}
+	}()
+	return sink.Interface()
+}
+
 type ContestState struct {
 	contest *Contest
 	teams []Team
@@ -208,6 +260,10 @@ func (state *ContestState) Summarize(submissions Submissions) (event *wire.Event
 		}
 	}
 	for _, s := range submissions {
+		if(float64(state.contest.End) >= s.Time) {
+			//TOO-LATE
+			break;
+		}
 		*event.SubmitCount++
 		judging, ok := state.judgings[s.Id]
 		if(!ok) {
