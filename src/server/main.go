@@ -52,74 +52,10 @@ func main() {
 	sleep := time.Millisecond*100
 	sanitySleep := time.Second*10
 
-	go func() {
-		min := SubmissionId(0)
-		for {
-			var s Submissions
-			err := judge.GetJson(SUBMISSIONS, int64(min), &s)
-			if(err != nil) {
-				fmt.Println(err)
-			} else {
-				for _, v := range s {
-					min = v.Id + 1
-                    time.Sleep(10*time.Millisecond)
-					submissions <- v
-				}
-			}
-			time.Sleep(sleep)
-		}
-	}()
-	go func() {
-		min := JudgingId(0)
-		for {
-			var s []Judging
-			err := judge.GetJson(JUDGINGS, int64(min), &s)
-			if(err != nil) {
-				fmt.Println(err)
-			} else {
-				for _, v := range s {
-					min = v.Id + 1
-                    time.Sleep(10*time.Millisecond)
-					judgings <- v
-				}
-			}
-			time.Sleep(sleep)
-		}
-	}()
-	go func() {
-		first := true
-		for {
-			var s []Team
-			err := judge.GetJson(TEAMS, 0, &s)
-			if(err != nil) {
-				if(first) {
-					panic(err)
-				}
-				fmt.Println(err)
-			} else {
-				teams <- s
-			}
-			first = false
-			time.Sleep(sanitySleep)
-		}
-	}()
-	go func() {
-		first := true
-		for {
-			var s *Contest
-			err := judge.GetJson(CONTEST, 0, &s)
-			if(err != nil) {
-				if(first) {
-					panic(err)
-				}
-				fmt.Println(err)
-			} else {
-				contest <- s
-			}
-			first = false
-			time.Sleep(sanitySleep)
-		}
-	}()
+	go judge.ChannelJson(submissions, SUBMISSIONS, sleep, true, true)
+	go judge.ChannelJson(judgings, JUDGINGS, sleep, true, true)
+	go judge.ChannelJson(teams, TEAMS, sanitySleep, false, false)
+	go judge.ChannelJson(contest, CONTEST, sanitySleep, false, false)
 
 	var storedSubmissions []Submission
 	var storedJudgings []Judging
@@ -141,19 +77,17 @@ func main() {
 			go func() {
 				messages := make(chan wire.Message)
 				subscribe <- messages
-				fmt.Println("subscribed")
 				cc := make(chan error)
 				go func() {
 					//look for clients closing the connection
 					_, err := conn.Read(make([]byte,1))
-					fmt.Printf("Read returned %v\n", err)
 					cc <- err
 				}()
 				MessageLoop:
 				for {
 					select {
 					case message := <-messages:
-						fmt.Printf("received message %v\n", message)
+//						fmt.Printf("received message %v\n", message)
 						buf, _ := proto.Marshal(&message)
 						err := binary.Write(conn, binary.BigEndian, int64(len(buf)))
 						if(err != nil) {
@@ -167,7 +101,6 @@ func main() {
 						break MessageLoop
 					}
 				}
-				fmt.Println("unsubscribing")
 				unsubscribe <- messages
 			}()
 		}
@@ -247,7 +180,7 @@ func NewContestState(contest *Contest, teams []Team, observers []chan wire.Messa
 }
 
 func (state *ContestState) Broadcast(message *wire.Message) {
-	fmt.Printf("broadcasting %v\n", *message)
+//	fmt.Printf("broadcasting %v\n", *message)
 	for _, o := range state.observers {
 		o <- *message
 	}
@@ -281,7 +214,7 @@ func (state *ContestState) Summarize(submissions Submissions) (event *wire.Event
 			*event.State = wire.SState_PENDING
 			return
 		}
-		if(float64(state.contest.Freeze) <= s.Time) { //TODO how to handle resolving
+		if(float64(state.contest.Freeze) <= s.Time) { //TODO handle resolving, jury scoreboard
 			*event.State = wire.SState_PENDING
 		} else {
 			if(judging.Outcome == "correct") {
@@ -371,6 +304,42 @@ func NewJudgeClient(judge *url.URL, username string, password string) *JudgeClie
 		client.urls[k] = judge.ResolveReference(val)
 	}
 	return client
+}
+
+func (client *JudgeClient) ChannelJson(sink interface{}, method APIMethod, sleep time.Duration, unpack, count bool) {
+	min := int64(0)
+	sendType := reflect.TypeOf(sink).Elem()
+	recvType := sendType
+	if(unpack) {
+		recvType = reflect.SliceOf(sendType)
+	}
+	first := true
+	for {
+		sv := reflect.New(recvType)
+		s := sv.Interface()
+		err := client.GetJson(method, int64(min), s)
+		if(err != nil) {
+			if(first) {
+				panic(err)
+			}
+			fmt.Println(err)
+		} else {
+			if(!unpack) {
+				reflect.ValueOf(sink).Send(sv.Elem())
+			} else {
+				slice := sv.Elem()
+				for i := 0; i<slice.Len(); i++ {
+					v := slice.Index(i)
+					if(count) {
+						min = v.FieldByName("Id").Int() + 1
+					}
+					reflect.ValueOf(sink).Send(v)
+				}
+			}
+		}
+		first = false
+		time.Sleep(sleep)
+	}
 }
 
 func (client *JudgeClient) GetJson(method APIMethod, min int64, p interface{}) (err error){
