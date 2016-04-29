@@ -274,8 +274,7 @@ func (state *ContestState) Summarize(submissions Submissions) (event *wire.Event
 		}
 	}
 	for _, s := range submissions {
-		if(float64(state.contest.End) >= s.Time) {
-			//TOO-LATE
+		if(float64(state.contest.End) <= s.Time) {
 			break;
 		}
 		*event.SubmitCount++
