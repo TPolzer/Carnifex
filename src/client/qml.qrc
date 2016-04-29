@@ -2,5 +2,7 @@
     <qresource prefix="/">
         <file>main.qml</file>
         <file>Row_t.qml</file>
+        <file>helper.js</file>
+        <file>ScoreText.qml</file>
     </qresource>
 </RCC>
