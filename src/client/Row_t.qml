@@ -6,6 +6,8 @@ Item {
 	property var name
     property var correct
     property var penalty
+    property var pending
+    property var submits
 	Row {
         ScoreText {
             anchors.verticalCenter: parent.verticalCenter
@@ -27,7 +29,7 @@ Item {
                 Rectangle {
                     anchors.verticalCenter: parent.verticalCenter
                     anchors.horizontalCenter: parent.horizontalCenter
-                    color: 'pink'
+                    color: correct[index] ? 'green' : pending[index] ? 'blue' : submits[index] ? 'red' : Qt.rgba(0,0,0,0)
                     radius: contest.em/4
                     height: contest.em
                     width: parent.width*0.9
@@ -35,7 +37,7 @@ Item {
                         anchors.horizontalCenter: parent.horizontalCenter
                         anchors.verticalCenter: parent.verticalCenter
                         horizontalAlignment: tableHead.columnAlignment[index+2]
-                        text: modelData
+                        text: submits[index]?submits[index]:''
                     }
                 }
             }

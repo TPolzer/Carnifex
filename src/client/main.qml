@@ -11,9 +11,28 @@ Window {
 	property var rs: em*1.2
     property var problems: ["A", "B", "C"]
 	property var n: problems.length
-	property var headings: ["Rank", "Team"].concat(problems).concat(["Solved", "Time"])
+	property var headings: ["Rank" , "Team"].concat(problems).concat(["Solved", "Time"])
 	property var problemIds: [42, 12, 3]
-    property var teams: H.dummyTeams()
+    property var teams: [t1,t2]
+
+    Team {
+        id: t1
+        name: 'dummer Teamname'
+        penalty: 42
+        rank: 1
+        submits: [0, 1, 42]
+        pending: [0, 0, 1]
+        correct: [0, 1, 0]
+    }
+    Team {
+        id: t2
+        name: 'dümmerer Teamname'
+        penalty: 43
+        rank: 2
+        submits: [1, 1, 43]
+        pending: [0, 0, 1]
+        correct: [0, 1, 0]
+    }
 
     Rectangle {
 		id: scoreboard
@@ -62,7 +81,10 @@ Window {
                         rank: modelData.rank
                         name: modelData.name
                         correct: modelData.correct
+                        pending: modelData.pending
+                        submits: modelData.submits
                         penalty: modelData.penalty
+                        Behavior on x { SmoothedAnimation {} }
                     }
                 }
 			}
