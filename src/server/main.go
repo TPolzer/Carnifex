@@ -449,10 +449,10 @@ func (client *JudgeClient) GetJson(method APIMethod, min int64, p interface{}) (
 	request, _ := http.NewRequest("", url.String(), nil)
 	request.SetBasicAuth(client.username, client.password)
 	resp, err := client.client.Do(request)
-	defer resp.Body.Close()
 	if(err != nil) {
 		return
 	}
+	defer resp.Body.Close()
 	if(resp.StatusCode != 200) {
 		return fmt.Errorf("Got http response \"%s\"", resp.Status)
 	}
