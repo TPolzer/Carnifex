@@ -1,2 +1,9 @@
-/server
 /credentials.json
+**/CMakeCache.txt
+**/CMakeFiles/
+/src/client/Makefile
+/src/client/client
+/server
+*.swp
+*automoc.cpp
+*.cmake
