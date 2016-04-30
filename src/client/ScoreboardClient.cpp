@@ -81,7 +81,7 @@ void ScoreboardClient::readyRead() {
 					if(pd < 0) return true;
                     return false;
                 };
-                sort(begin(ranking),end(ranking),comp);
+                sort(std::begin(ranking),std::end(ranking),comp);
                 int rank = 1;
                 int pos = 0;
                 for(auto it = begin(ranking); it != end(ranking); ++it) {
@@ -103,6 +103,9 @@ void ScoreboardClient::readyRead() {
 				QVariantList problemList;
 				this->teams.clear();
 				this->problems.clear();
+				std::sort(problems.begin(), problems.end(), [](const auto& a, const auto& b){
+					return a.label() < b.label();
+				});
 				for(const auto& team : teams) {
 					QObject *qmlTeam = teamComponent.create();
 					auto name = QString::fromStdString(team.name());

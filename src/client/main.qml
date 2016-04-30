@@ -35,14 +35,13 @@ Window {
 		radius: em/2
 		color: 'steelblue'
 		Item {
+			id: scoreboardContents
 			anchors.fill: parent
 			anchors.leftMargin: em/2
 			anchors.rightMargin: em/2
 			anchors.topMargin: em/3
 			anchors.bottomMargin: em/3
 			Rectangle {
-				property var columnSize: [3*em, width-11*em-n*1.5*em].concat(H.repeat(n, 1.5*em)).concat([3*em, 5*em])
-				property var columnAlignment: [Text.AlignLeft, Text.AlignLeft].concat(H.repeat(n+1, Text.AlignHCenter)).concat([Text.AlignRight])
 				id: tableHead
 				color: Qt.rgba(0,0,0,0)
 				height: rs
@@ -61,8 +60,8 @@ Window {
 					ScoreText {
 						text: modelData.columnTitle ? modelData.columnTitle : ""
 						width: modelData.width
-						x: modelData.x
-						horizontalAlignment: tableHead.columnAlignment[index]
+						x: modelData.parent.x, columnPrototype.mapFromItem(modelData.parent, modelData.x, modelData.y).x // ew... hack to get triggers one level up
+						horizontalAlignment: modelData.horizontalAlignment
 					}
 				}
 			}
