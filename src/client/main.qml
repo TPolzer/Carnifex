@@ -62,17 +62,11 @@ Window {
                 Repeater {
                     model: teams
                     Row_t {
+						team: modelData
                         y: modelData.pos*rs
                         height: rs
                         anchors.left: parent.left
                         anchors.right: parent.right
-                        rank: modelData.rank
-                        name: modelData.name
-                        correct: modelData.correct
-                        pending: modelData.pending
-                        submits: modelData.submits
-                        penalty: modelData.penalty
-                        solved: modelData.solved
                         Behavior on y { SmoothedAnimation { duration: 1500; velocity: -1 } }
                     }
                 }

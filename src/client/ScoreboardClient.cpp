@@ -59,13 +59,15 @@ void ScoreboardClient::readyRead() {
                 auto Tsubmits = team->property("submits").toList();
                 auto Tpending = team->property("pending").toList();
                 auto Tcorrect = team->property("correct").toList();
+                auto Tpenalties = team->property("penalties").toList();
                 Tsubmits[problem] = QVariant(qint64(submitCount));
                 Tpending[problem] = QVariant(state == wire::PENDING);
-                Tcorrect[problem] = QVariant(state == wire::CORRECT);
+				Tcorrect[problem] = QVariant(state == wire::CORRECT);
+                Tpenalties[problem] = QVariant(qint64(penalty)/60);//TODO: correct rounding?
                 team->setProperty("submits", Tsubmits);
                 team->setProperty("pending", Tpending);
                 team->setProperty("correct", Tcorrect);
-                team->setProperty("penalty", qint64(penalty));
+                team->setProperty("penalties", Tpenalties);
                 std::vector<QObject*> ranking;
                 ranking.reserve(teams.size());
                 for(const auto& t : teams) {
@@ -73,18 +75,19 @@ void ScoreboardClient::readyRead() {
                 }
                 auto comp = [&](QObject *a, QObject *b){
                     auto sd = a->property("solved").toInt() - b->property("solved").toInt();
+					if(sd < 0) return false;
+					if(sd > 0) return true;
                     auto pd = a->property("penalty").toInt() - b->property("penalty").toInt();
-                    if(sd > 0) return true;
-                    else if(sd == 0) return pd < sd;
+					if(pd < 0) return true;
                     return false;
                 };
                 sort(begin(ranking),end(ranking),comp);
                 int rank = 1;
                 int pos = 0;
                 for(auto it = begin(ranking); it != end(ranking); ++it) {
-                    if(it == begin(ranking) || comp(*std::prev(it), *it))
+                    if(it == begin(ranking) || comp(*std::prev(it), *it)) {
                         (*it)->setProperty("rank", rank++);
-					else {
+					} else {
                         (*it)->setProperty("rank", "");
 					}
                     (*it)->setProperty("pos", pos++);
@@ -95,7 +98,7 @@ void ScoreboardClient::readyRead() {
 				auto teams = setup.teams();
 				auto problems = setup.problems();
 				QQmlComponent teamComponent(&engine,
-					QUrl::fromLocalFile("Team.qml"));
+					QUrl(QStringLiteral("qrc:/Team.qml")));
 				QVariantList teamList;
 				QVariantList problemList;
 				this->teams.clear();
@@ -106,13 +109,12 @@ void ScoreboardClient::readyRead() {
 					auto id = team.id();
 					this->teams[id] = qmlTeam;
 					qmlTeam->setProperty("name", name);
-					qmlTeam->setProperty("penalty", QVariant(0));
-					qmlTeam->setProperty("rank", 1);
 					qmlTeam->setProperty("pos", teamList.size());
 					QVariantList correct;
 					QVariantList submits;
 					QVariantList pending;
-					for(auto l : {&correct, &submits, &pending}) {
+					QVariantList penalties;
+					for(auto l : {&correct, &submits, &pending, &penalties}) {
 						for(const auto& problem : problems) {
 							l->append(0);
 						}
@@ -120,6 +122,7 @@ void ScoreboardClient::readyRead() {
 					qmlTeam->setProperty("correct", correct);
 					qmlTeam->setProperty("submits", submits);
 					qmlTeam->setProperty("pending", pending);
+					qmlTeam->setProperty("penalties", penalties);
 					teamList.push_back(QVariant::fromValue(qmlTeam));
 				}
 				for(const auto& problem : problems) {
