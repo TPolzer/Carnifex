@@ -247,7 +247,7 @@ func NewContestState(contest *Contest, teams []Team, observers []chan *wire.Mess
 }
 
 func (state *ContestState) Broadcast(message *wire.Message) {
-	//spew.Printf("broadcasting %v\n", *message)
+//	spew.Printf("broadcasting %v\n", *message)
 	for _, o := range state.observers {
 		o <- message
 	}
@@ -298,7 +298,11 @@ func (state *ContestState) Summarize(submissions Submissions) (event *wire.Event
 			}
 		}
 	}
-	return
+	if(*event.SubmitCount == 0) {
+		return nil //only invalid submissions, don't count
+	} else {
+		return event
+	}
 }
 
 func (state *ContestState) ContestSetup() (*wire.Message) {
