@@ -11,7 +11,6 @@ import (
     "net/http"
     "net/url"
 	"github.com/golang/protobuf/proto"
-//	"github.com/davecgh/go-spew/spew"
 	"reflect"
 	"sort"
 	"score/wire"
@@ -95,8 +94,8 @@ func main() {
 	ContestState.problems = <-problems
 
 	if(config.Simulate) {
-		submissions = simulate(submissions, float64(ContestState.contest.Start), 120).(chan Submission)
-		judgings = simulate(judgings, float64(ContestState.contest.Start), 120).(chan Judging)
+		submissions = simulate(submissions, float64(ContestState.contest.Start), 80).(chan Submission)
+		judgings = simulate(judgings, float64(ContestState.contest.Start), 80).(chan Judging)
 	}
 
 	listener, err := net.Listen("tcp", ":8080")
@@ -124,7 +123,7 @@ func main() {
 					case message := <-messages:
 						buf, _ := proto.Marshal(message)
 						err := binary.Write(conn, binary.BigEndian, int64(len(buf)))
-						//log.Printf("sending %v bytes\n", len(buf))
+						log.Printf("sending %v bytes\n", len(buf))
 						if(err != nil) {
 							break MessageLoop
 						}
@@ -247,7 +246,6 @@ func NewContestState(contest *Contest, teams []Team, observers []chan *wire.Mess
 }
 
 func (state *ContestState) Broadcast(message *wire.Message) {
-//	spew.Printf("broadcasting %v\n", *message)
 	for _, o := range state.observers {
 		o <- message
 	}

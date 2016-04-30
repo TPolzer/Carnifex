@@ -6,12 +6,12 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 
-find_package(Qt5 REQUIRED COMPONENTS Qml Quick Core)
+find_package(Qt5 REQUIRED COMPONENTS Qml Quick Core Network)
 find_package(Protobuf REQUIRED)
 find_package(Qt5Widgets)
 
 # Tell CMake to create the helloworld executable
-add_executable(client main.cpp qml.qrc)
+add_executable(client main.cpp ScoreboardClient.cpp qml.qrc scoreboard.pb.cc)
 target_link_libraries(client Qt5::Widgets Qt5::Quick)
 target_link_libraries(client ${PROTOBUF_LIBRARIES})
 target_compile_features(client PRIVATE cxx_generic_lambdas)

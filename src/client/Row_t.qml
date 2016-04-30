@@ -8,7 +8,9 @@ Item {
     property var penalty
     property var pending
     property var submits
+    property var solved
 	Row {
+		height: parent.height
         ScoreText {
             anchors.verticalCenter: parent.verticalCenter
             text: rank
@@ -20,6 +22,7 @@ Item {
             text: name
             width: tableHead.columnSize[1]
             horizontalAlignment: tableHead.columnAlignment[1]
+			clip: true
         }
         Repeater {
             model: contest.problems
@@ -44,13 +47,13 @@ Item {
         }
         ScoreText {
             anchors.verticalCenter: parent.verticalCenter
-            text: correct.reduce(H.add, 0)
+            text: solved
             width: tableHead.columnSize[tableHead.columnSize.length-2]
             horizontalAlignment: tableHead.columnAlignment[tableHead.columnSize.length-2]
         }
         ScoreText {
             anchors.verticalCenter: parent.verticalCenter
-            text: penalty
+            text: Math.round(penalty/60) //TODO: correct rounding??
             width: tableHead.columnSize[tableHead.columnSize.length-1]
             horizontalAlignment: tableHead.columnAlignment[tableHead.columnSize.length-1]
         }

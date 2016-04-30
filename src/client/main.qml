@@ -12,27 +12,15 @@ Window {
     property var problems: ["A", "B", "C"]
 	property var n: problems.length
 	property var headings: ["Rank" , "Team"].concat(problems).concat(["Solved", "Time"])
-	property var problemIds: [42, 12, 3]
-    property var teams: [t1,t2]
+    property var teams: []
 
-    Team {
-        id: t1
-        name: 'dummer Teamname'
-        penalty: 42
-        rank: 1
-        submits: [0, 1, 42]
-        pending: [0, 0, 1]
-        correct: [0, 1, 0]
+    function contestSetup(problems, teams) {
+        contest.problems = problems
+        contest.teams = teams
     }
-    Team {
-        id: t2
-        name: 'dümmerer Teamname'
-        penalty: 43
-        rank: 2
-        submits: [1, 1, 43]
-        pending: [0, 0, 1]
-        correct: [0, 1, 0]
-    }
+	function event(event) {
+		console.print(event)
+	}
 
     Rectangle {
 		id: scoreboard
@@ -47,7 +35,7 @@ Window {
 			anchors.topMargin: em/3
 			anchors.bottomMargin: em/3
 			Rectangle {
-				property var columnSize: [4*em, width-14*em-n*2*em].concat(H.repeat(n, 2*em)).concat([4*em, 6*em])
+				property var columnSize: [3*em, width-11*em-n*1.5*em].concat(H.repeat(n, 1.5*em)).concat([3*em, 5*em])
 				property var columnAlignment: [Text.AlignLeft, Text.AlignLeft].concat(H.repeat(n+1, Text.AlignHCenter)).concat([Text.AlignRight])
 				id: tableHead
 				color: Qt.rgba(0,0,0,0)
@@ -74,7 +62,7 @@ Window {
                 Repeater {
                     model: teams
                     Row_t {
-                        y: (rank-1)*rs
+                        y: modelData.pos*rs
                         height: rs
                         anchors.left: parent.left
                         anchors.right: parent.right
@@ -84,7 +72,8 @@ Window {
                         pending: modelData.pending
                         submits: modelData.submits
                         penalty: modelData.penalty
-                        Behavior on x { SmoothedAnimation {} }
+                        solved: modelData.solved
+                        Behavior on y { SmoothedAnimation { duration: 1500; velocity: -1 } }
                     }
                 }
 			}
