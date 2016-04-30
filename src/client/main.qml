@@ -9,10 +9,16 @@ Window {
 
 	property var em: height/30
 	property var rs: em*1.2
-    property var problems: ["A", "B", "C"]
+    property var problems: []
 	property var n: problems.length
-	property var headings: ["Rank" , "Team"].concat(problems).concat(["Solved", "Time"])
     property var teams: []
+	Team {
+		id: dummyTeam
+		submits: H.repeat(n, 0)
+		pending: submits
+		correct: submits
+		penalties: submits
+	}
 
     function contestSetup(problems, teams) {
         contest.problems = problems
@@ -42,14 +48,21 @@ Window {
 				height: rs
 				anchors.left: parent.left
 				anchors.right: parent.right
-				Row {
-					Repeater {
-						model: headings
-						ScoreText {
-							text: modelData
-							width: tableHead.columnSize[index]
-							horizontalAlignment: tableHead.columnAlignment[index]
-						}
+				Row_t {
+					visible: false
+					id: columnPrototype
+					height: rs
+					anchors.left: parent.left
+					anchors.right: parent.right
+					team: dummyTeam
+				}
+				Repeater {
+					model: columnPrototype.cols
+					ScoreText {
+						text: modelData.columnTitle ? modelData.columnTitle : ""
+						width: modelData.width
+						x: modelData.x
+						horizontalAlignment: tableHead.columnAlignment[index]
 					}
 				}
 			}

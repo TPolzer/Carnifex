@@ -3,15 +3,19 @@ import "helper.js" as H
 
 Item {
 	property var team
+	property var cols: row.children
 	Row {
+		id: row
 		height: parent.height
         ScoreText {
+			property var columnTitle: "Rank"
             anchors.verticalCenter: parent.verticalCenter
             text: team.rank
             width: tableHead.columnSize[0]
             horizontalAlignment: tableHead.columnAlignment[0]
         }
         ScoreText {
+			property var columnTitle: "Team"
             anchors.verticalCenter: parent.verticalCenter
             text: team.name
             width: tableHead.columnSize[1]
@@ -21,6 +25,7 @@ Item {
         Repeater {
             model: contest.problems
             Item {
+				property var columnTitle: contest.problems[index]
                 width: tableHead.columnSize[index+2]
                 height: parent.height
                 Rectangle {
@@ -40,12 +45,14 @@ Item {
             }
         }
         ScoreText {
+			property var columnTitle: "Solved"
             anchors.verticalCenter: parent.verticalCenter
             text: team.solved
             width: tableHead.columnSize[tableHead.columnSize.length-2]
             horizontalAlignment: tableHead.columnAlignment[tableHead.columnSize.length-2]
         }
         ScoreText {
+			property var columnTitle: "Time"
             anchors.verticalCenter: parent.verticalCenter
             text: team.penalty
             width: tableHead.columnSize[tableHead.columnSize.length-1]
