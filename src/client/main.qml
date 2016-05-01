@@ -16,8 +16,8 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-import QtQuick 2.5
-import QtQuick.Window 2.2
+import QtQuick 2.0
+import QtQuick.Window 2.0
 import "helper.js" as H
 
 Window {
@@ -30,7 +30,7 @@ Window {
     property var problems: []
 	property var n: problems.length
     property var teams: []
-	property var name
+	property var name: ""
 	Team {
 		id: dummyTeam
 		submits: H.repeat(n, 0)
