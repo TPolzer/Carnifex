@@ -21,6 +21,7 @@ import (
 type Config struct {
 	BaseUrl string
 	Simulate bool
+	SimulationSpeed float64
 	Poll_ms time.Duration
 	Check_s time.Duration
 }
@@ -94,8 +95,8 @@ func main() {
 	ContestState.problems = <-problems
 
 	if(config.Simulate) {
-		submissions = simulate(submissions, float64(ContestState.contest.Start), 80).(chan Submission)
-		judgings = simulate(judgings, float64(ContestState.contest.Start), 80).(chan Judging)
+		submissions = simulate(submissions, float64(ContestState.contest.Start), config.SimulationSpeed).(chan Submission)
+		judgings = simulate(judgings, float64(ContestState.contest.Start), config.SimulationSpeed).(chan Judging)
 	}
 
 	listener, err := net.Listen("tcp", ":8080")
@@ -123,7 +124,6 @@ func main() {
 					case message := <-messages:
 						buf, _ := proto.Marshal(message)
 						err := binary.Write(conn, binary.BigEndian, int64(len(buf)))
-						log.Printf("sending %v bytes\n", len(buf))
 						if(err != nil) {
 							break MessageLoop
 						}
