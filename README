@@ -1,0 +1,22 @@
+This software is unfinished, use at your own peril!
+
+You probably need:
+- protobuf headers
+- a golang toolchain
+- a C++ toolchain
+- Qt5 development files
+- cmake
+
+The setup currently involves:
+- in the top level directory:
+  $ export GOPATH="`pwd`"
+  $ go build server
+- in the src/client subdirectory
+  $ cmake .
+  $ make -j4
+
+To use it:
+- put your credentials into credentials.json
+- adjust the server url in config.json
+- start the server
+- start the client
