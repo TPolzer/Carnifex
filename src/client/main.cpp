@@ -20,8 +20,8 @@ int main(int argc, char *argv[])
 	ScoreboardClient client(engine);
 	client.run();
 
-	QObject::connect(&client, SIGNAL(contestSetup(QVariant,QVariant)),
-			obj, SLOT(contestSetup(QVariant,QVariant)));
+	QObject::connect(&client, SIGNAL(contestSetup(QVariant,QVariant,QVariant)),
+			obj, SLOT(contestSetup(QVariant,QVariant,QVariant)));
 
 
     return app.exec();

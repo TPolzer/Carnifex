@@ -12,6 +12,7 @@ Window {
     property var problems: []
 	property var n: problems.length
     property var teams: []
+	property var name
 	Team {
 		id: dummyTeam
 		submits: H.repeat(n, 0)
@@ -20,18 +21,23 @@ Window {
 		penalties: submits
 	}
 
-    function contestSetup(problems, teams) {
+    function contestSetup(contestDesc, problems, teams) {
         contest.problems = problems
         contest.teams = teams
+		contest.name = contestDesc.name
     }
-	function event(event) {
-		console.print(event)
+
+	ScoreText {
+		id: title
+		text: name
+		anchors.left: parent.left
+		anchors.margins: em
 	}
 
     Rectangle {
 		id: scoreboard
 		anchors.fill: parent
-		anchors.margins: em
+		anchors.margins: title.height
 		radius: em/2
 		color: 'steelblue'
 		Item {

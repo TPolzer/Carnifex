@@ -39,7 +39,7 @@ Item {
 				Rectangle {
 					anchors.verticalCenter: parent.verticalCenter
 					anchors.horizontalCenter: parent.horizontalCenter
-					color: team.correct[index] ? 'green' : team.pending[index] ? 'blue' : team.submits[index] ? 'red' : Qt.rgba(0,0,0,0)
+					color: team.first[index] ? 'darkgreen' : team.correct[index] ? 'green' : team.pending[index] ? 'blue' : team.submits[index] ? 'red' : Qt.rgba(0,0,0,0)
 					radius: contest.em/4
 					height: contest.em
 					width: parent.width*0.9

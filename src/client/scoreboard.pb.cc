@@ -196,8 +196,8 @@ void protobuf_AddDesc_scoreboard_2eproto() {
     "m\022\037\n\010Problems\030\003 \003(\0132\r.wire.Problem\"3\n\007Pr"
     "oblem\022\n\n\002Id\030\001 \002(\003\022\r\n\005Label\030\002 \002(\t\022\r\n\005Colo"
     "r\030\003 \001(\t\" \n\004Team\022\n\n\002Id\030\001 \002(\003\022\014\n\004Name\030\002 \002("
-    "\t*-\n\006SState\022\013\n\007CORRECT\020\001\022\t\n\005WRONG\020\002\022\013\n\007P"
-    "ENDING\020\003", 448);
+    "\t*8\n\006SState\022\013\n\007CORRECT\020\001\022\t\n\005WRONG\020\002\022\013\n\007P"
+    "ENDING\020\003\022\t\n\005FIRST\020\004", 459);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "scoreboard.proto", &protobuf_RegisterTypes);
   Message::default_instance_ = new Message();
@@ -229,6 +229,7 @@ bool SState_IsValid(int value) {
     case 1:
     case 2:
     case 3:
+    case 4:
       return true;
     default:
       return false;

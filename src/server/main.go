@@ -226,6 +226,7 @@ type ContestState struct {
 	problems []*wire.Problem
 	observers []chan *wire.Message
 	scoreboard map[TeamId]map[ProblemId]Submissions
+	firsts map[ProblemId][]Submission
 	submissions map[SubmissionId]Submission
     judgings map[SubmissionId]Judging
 }
@@ -238,6 +239,7 @@ func NewContestState(contest *Contest, teams []Team, observers []chan *wire.Mess
         scoreboard: make(map[TeamId]map[ProblemId]Submissions),
 		submissions: make(map[SubmissionId]Submission),
 		judgings: make(map[SubmissionId]Judging),
+		firsts: make(map[ProblemId][]Submission),
 	}
 	for _, t := range teams {
 		state.scoreboard[t.Id] = make(map[ProblemId]Submissions)
@@ -287,7 +289,12 @@ func (state *ContestState) Summarize(submissions Submissions) (event *wire.Event
 		} else {
 			if(judging.Outcome == "correct") {
 				*event.State = wire.SState_CORRECT
-				//TODO is penalty float or int (or something else)?
+				for _, sf := range state.firsts[s.Problem] {
+					if(sf.Id == s.Id) {
+						*event.State = wire.SState_FIRST
+					}
+				}
+				//TODO how/when to round?
 				*event.Penalty += int64(math.Ceil(s.Time)) - state.contest.Start
 				return
 			} else { //TODO special-case compile error penalty
@@ -335,8 +342,10 @@ func (state *ContestState) ApplySubmission(submission Submission) {
 	problem := submission.Problem
 	teamScore, ok := state.scoreboard[team]
 	if(!ok) {
+		// Team not public, mute
 		return
 	}
+	state.checkFirsts(submission)
 	teamScore[problem] = append(teamScore[problem], submission)
 	event := state.Summarize(teamScore[problem])
 	state.Broadcast(ToMessage(event))
@@ -359,8 +368,30 @@ func (state *ContestState) ApplyJudging(judging Judging) {
 		// Team not public, mute
 		return
 	}
+	state.checkFirsts(submission)
 	event := state.Summarize(teamScore[problem])
 	state.Broadcast(ToMessage(event))
+}
+
+func (state *ContestState) checkFirsts(submission Submission) {
+	judging, ok := state.judgings[submission.Id]
+	if(!ok || judging.Outcome != "correct") {
+		return
+	}
+	oldFirst, ok := state.firsts[submission.Problem]
+	if(ok) {
+		oldTime, newTime := math.Floor(oldFirst[0].Time/60), math.Floor(submission.Time/60) // TODO is this correct??
+		if(oldTime < newTime) {
+			return
+		} else if (oldTime > newTime) {
+			state.firsts[submission.Problem] = []Submission{}
+			for _, s := range oldFirst {
+				event := state.Summarize(state.scoreboard[s.Team][submission.Problem])
+				state.Broadcast(ToMessage(event))
+			}
+		}
+	}
+	state.firsts[submission.Problem] = append(state.firsts[submission.Problem], submission)
 }
 
 func (state *ContestState) Tell(observer chan *wire.Message) {

@@ -43,11 +43,12 @@ class Team;
 enum SState {
   CORRECT = 1,
   WRONG = 2,
-  PENDING = 3
+  PENDING = 3,
+  FIRST = 4
 };
 bool SState_IsValid(int value);
 const SState SState_MIN = CORRECT;
-const SState SState_MAX = PENDING;
+const SState SState_MAX = FIRST;
 const int SState_ARRAYSIZE = SState_MAX + 1;
 
 const ::google::protobuf::EnumDescriptor* SState_descriptor();

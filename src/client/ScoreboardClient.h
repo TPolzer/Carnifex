@@ -24,7 +24,7 @@ private:
 public:
 	ScoreboardClient(QQmlEngine& engine);
 signals:
-	void contestSetup(QVariant problems, QVariant teams);
+	void contestSetup(QVariant contest, QVariant problems, QVariant teams);
 	void event(QVariant event);
 	void error();
 public slots:

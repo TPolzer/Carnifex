@@ -60,14 +60,17 @@ void ScoreboardClient::readyRead() {
                 auto Tpending = team->property("pending").toList();
                 auto Tcorrect = team->property("correct").toList();
                 auto Tpenalties = team->property("penalties").toList();
+                auto Tfirst = team->property("first").toList();
                 Tsubmits[problem] = QVariant(qint64(submitCount));
                 Tpending[problem] = QVariant(state == wire::PENDING);
-				Tcorrect[problem] = QVariant(state == wire::CORRECT);
+				Tcorrect[problem] = QVariant(state == wire::CORRECT || state == wire::FIRST);
+				Tfirst[problem] = QVariant(state == wire::FIRST);
                 Tpenalties[problem] = QVariant(qint64(penalty)/60);//TODO: correct rounding?
                 team->setProperty("submits", Tsubmits);
                 team->setProperty("pending", Tpending);
                 team->setProperty("correct", Tcorrect);
                 team->setProperty("penalties", Tpenalties);
+                team->setProperty("first", Tfirst);
                 std::vector<QObject*> ranking;
                 ranking.reserve(teams.size());
                 for(const auto& t : teams) {
@@ -79,6 +82,8 @@ void ScoreboardClient::readyRead() {
 					if(sd > 0) return true;
                     auto pd = a->property("penalty").toInt() - b->property("penalty").toInt();
 					if(pd < 0) return true;
+					auto fd = a->property("firsts").toInt() - b->property("firsts").toInt();
+					if(fd > 0) return true;
                     return false;
                 };
                 sort(std::begin(ranking),std::end(ranking),comp);
@@ -113,26 +118,24 @@ void ScoreboardClient::readyRead() {
 					this->teams[id] = qmlTeam;
 					qmlTeam->setProperty("name", name);
 					qmlTeam->setProperty("pos", teamList.size());
-					QVariantList correct;
-					QVariantList submits;
-					QVariantList pending;
-					QVariantList penalties;
-					for(auto l : {&correct, &submits, &pending, &penalties}) {
-						for(const auto& problem : problems) {
-							l->append(0);
-						}
+					QVariantList empty;
+					for(const auto& problem : problems) {
+						empty.append(0);
 					}
-					qmlTeam->setProperty("correct", correct);
-					qmlTeam->setProperty("submits", submits);
-					qmlTeam->setProperty("pending", pending);
-					qmlTeam->setProperty("penalties", penalties);
+					qmlTeam->setProperty("correct", empty);
+					qmlTeam->setProperty("submits", empty);
+					qmlTeam->setProperty("pending", empty);
+					qmlTeam->setProperty("penalties", empty);
+					qmlTeam->setProperty("first", empty);
 					teamList.push_back(QVariant::fromValue(qmlTeam));
 				}
 				for(const auto& problem : problems) {
 					this->problems[problem.id()] = problemList.size();
 					problemList.push_back(QString::fromStdString(problem.label()));
 				}
-				emit contestSetup(QVariant(problemList), teamList);
+				QVariantMap contest;
+				contest["name"] = name;
+				emit contestSetup(contest, QVariant(problemList), teamList);
 				QQmlEngine::setObjectOwnership(qvariant_cast<QObject *>(teamList), QQmlEngine::JavaScriptOwnership);
 				QQmlEngine::setObjectOwnership(qvariant_cast<QObject *>(problemList), QQmlEngine::JavaScriptOwnership);
 				std::cerr << "Received setup for Contest \"" << setup.name() << "\"" <<std::endl;
