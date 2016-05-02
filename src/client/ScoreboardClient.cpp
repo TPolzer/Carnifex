@@ -171,36 +171,3 @@ void ScoreboardClient::fatal(QAbstractSocket::SocketError error) {
 	std::cerr << "fatal: " << QMetaEnum::fromType<decltype(error)>().valueToKey(error) << std::endl;
 	emit this->error();
 }
-
-/*       
-QString serverName = "localhost";
-         quint16 serverPort = 8080;
-         QTcpSocket socket;
-         std::this_thread::sleep_for(1s);
-         socket.connectToHost(serverName, serverPort);
-         if(socket.waitForConnected()) {
-            exit(1);
-         }
-         while (true) {
-            while (socket.bytesAvailable() < (int)sizeof(int64_t)) {
-                if (!socket.waitForReadyRead()) {
-                    exit(1);
-                }
-            }
-            qint64 packetSize;
-            socket.read(reinterpret_cast<char*>(&packetSize), sizeof(packetSize));
-            packetSize = qFromBigEndian(packetSize);
-            std::cerr << "read " << packetSize << std::endl;
-            wire::Message m;
-            while (socket.bytesAvailable() < packetSize) {
-                if (!socket.waitForReadyRead()) {
-                    exit(1);
-                }
-            }
-            std::vector<char> bytes(packetSize);
-            socket.read(&bytes[0], packetSize);
-            m.ParseFromArray(&bytes[0], packetSize);
-        }
-         //QMetaObject::invokeMethod(obj, "contestSetup", Q_ARG(QVariant, QJsonArray()), Q_ARG(QVariant, QJsonArray()));
-    });
-*/
