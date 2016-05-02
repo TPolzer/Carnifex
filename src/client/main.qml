@@ -90,22 +90,40 @@ Window {
 				}
 			}
 			Item {
+				id: table
 				anchors.left: parent.left
 				anchors.right: parent.right
 				anchors.bottom: parent.bottom
 				anchors.top: tableHead.bottom
                 clip: true
-                Repeater {
-                    model: teams
-                    Row_t {
-						team: modelData
-                        y: modelData.pos*rs
-                        height: rs
-                        anchors.left: parent.left
-                        anchors.right: parent.right
-                        Behavior on y { SmoothedAnimation { duration: 1500; velocity: -1 } }
-                    }
-                }
+				Item {
+					width: parent.width
+					height: rs*teams.length
+					id: tableContents
+					property int pages: Math.ceil(teams.length/Math.floor(table.height/rs))
+					property int page: 0
+					y: rs ? -page*rs*Math.floor(table.height/rs) : 0
+					Behavior on y { SmoothedAnimation {duration: 800; velocity: -1} }
+					Repeater {
+						model: teams
+						Row_t {
+							team: modelData
+							y: modelData.pos*rs
+							height: rs
+							anchors.left: parent.left
+							anchors.right: parent.right
+							Behavior on y { SmoothedAnimation { duration: 1500; velocity: -1 } }
+						}
+					}
+					Timer {
+						id: pageTimer
+						interval: 10000; running: true; repeat: true
+						onTriggered: {
+							tableContents.page = (tableContents.page-1+tableContents.pages)
+							tableContents.page %= tableContents.pages
+						}
+					}
+				}
 			}
 		}
 	}
