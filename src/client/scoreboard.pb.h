@@ -257,6 +257,15 @@ class Event : public ::google::protobuf::Message {
   inline ::wire::SState state() const;
   inline void set_state(::wire::SState value);
 
+  // optional .wire.Event Unfrozen = 5;
+  inline bool has_unfrozen() const;
+  inline void clear_unfrozen();
+  static const int kUnfrozenFieldNumber = 5;
+  inline const ::wire::Event& unfrozen() const;
+  inline ::wire::Event* mutable_unfrozen();
+  inline ::wire::Event* release_unfrozen();
+  inline void set_allocated_unfrozen(::wire::Event* unfrozen);
+
   // @@protoc_insertion_point(class_scope:wire.Event)
  private:
   inline void set_has_team();
@@ -269,6 +278,8 @@ class Event : public ::google::protobuf::Message {
   inline void clear_has_penalty();
   inline void set_has_state();
   inline void clear_has_state();
+  inline void set_has_unfrozen();
+  inline void clear_has_unfrozen();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
@@ -278,6 +289,7 @@ class Event : public ::google::protobuf::Message {
   ::google::protobuf::int64 problem_;
   ::google::protobuf::int64 submitcount_;
   ::google::protobuf::int64 penalty_;
+  ::wire::Event* unfrozen_;
   int state_;
   friend void  protobuf_AddDesc_scoreboard_2eproto();
   friend void protobuf_AssignDesc_scoreboard_2eproto();
@@ -824,6 +836,47 @@ inline void Event::set_state(::wire::SState value) {
   set_has_state();
   state_ = value;
   // @@protoc_insertion_point(field_set:wire.Event.State)
+}
+
+// optional .wire.Event Unfrozen = 5;
+inline bool Event::has_unfrozen() const {
+  return (_has_bits_[0] & 0x00000020u) != 0;
+}
+inline void Event::set_has_unfrozen() {
+  _has_bits_[0] |= 0x00000020u;
+}
+inline void Event::clear_has_unfrozen() {
+  _has_bits_[0] &= ~0x00000020u;
+}
+inline void Event::clear_unfrozen() {
+  if (unfrozen_ != NULL) unfrozen_->::wire::Event::Clear();
+  clear_has_unfrozen();
+}
+inline const ::wire::Event& Event::unfrozen() const {
+  // @@protoc_insertion_point(field_get:wire.Event.Unfrozen)
+  return unfrozen_ != NULL ? *unfrozen_ : *default_instance_->unfrozen_;
+}
+inline ::wire::Event* Event::mutable_unfrozen() {
+  set_has_unfrozen();
+  if (unfrozen_ == NULL) unfrozen_ = new ::wire::Event;
+  // @@protoc_insertion_point(field_mutable:wire.Event.Unfrozen)
+  return unfrozen_;
+}
+inline ::wire::Event* Event::release_unfrozen() {
+  clear_has_unfrozen();
+  ::wire::Event* temp = unfrozen_;
+  unfrozen_ = NULL;
+  return temp;
+}
+inline void Event::set_allocated_unfrozen(::wire::Event* unfrozen) {
+  delete unfrozen_;
+  unfrozen_ = unfrozen;
+  if (unfrozen) {
+    set_has_unfrozen();
+  } else {
+    clear_has_unfrozen();
+  }
+  // @@protoc_insertion_point(field_set_allocated:wire.Event.Unfrozen)
 }
 
 // -------------------------------------------------------------------

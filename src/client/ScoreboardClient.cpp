@@ -68,53 +68,7 @@ void ScoreboardClient::readyRead() {
 				return;
 			}
 			if(m.has_event()) {
-                auto event = m.event();
-                auto team = teams[event.team()];
-                auto problem = problems[event.problem()];
-                auto submitCount = event.submitcount();
-                auto penalty = event.penalty();
-                auto state = event.state();
-                auto Tsubmits = team->property("submits").toList();
-                auto Tpending = team->property("pending").toList();
-                auto Tcorrect = team->property("correct").toList();
-                auto Tpenalties = team->property("penalties").toList();
-                auto Tfirst = team->property("first").toList();
-                Tsubmits[problem] = QVariant(qint64(submitCount));
-                Tpending[problem] = QVariant(state == wire::PENDING);
-				Tcorrect[problem] = QVariant(state == wire::CORRECT || state == wire::FIRST);
-				Tfirst[problem] = QVariant(state == wire::FIRST);
-                Tpenalties[problem] = QVariant(qint64(penalty)/60);//TODO: correct rounding?
-                team->setProperty("submits", Tsubmits);
-                team->setProperty("pending", Tpending);
-                team->setProperty("correct", Tcorrect);
-                team->setProperty("penalties", Tpenalties);
-                team->setProperty("first", Tfirst);
-                std::vector<QObject*> ranking;
-                ranking.reserve(teams.size());
-                for(const auto& t : teams) {
-                    ranking.push_back(t.second);
-                }
-                auto comp = [&](QObject *a, QObject *b){
-                    auto sd = a->property("solved").toInt() - b->property("solved").toInt();
-					if(sd < 0) return false;
-					if(sd > 0) return true;
-                    auto pd = a->property("penalty").toInt() - b->property("penalty").toInt();
-					if(pd < 0) return true;
-					auto fd = a->property("firsts").toInt() - b->property("firsts").toInt();
-					if(fd > 0) return true;
-                    return false;
-                };
-                sort(std::begin(ranking),std::end(ranking),comp);
-                int rank = 1;
-                int pos = 0;
-                for(auto it = begin(ranking); it != end(ranking); ++it) {
-                    if(it == begin(ranking) || comp(*std::prev(it), *it)) {
-                        (*it)->setProperty("rank", rank++);
-					} else {
-                        (*it)->setProperty("rank", "");
-					}
-                    (*it)->setProperty("pos", pos++);
-                }
+				applyEvent(m.event());
 			} else if(m.has_setup()) {
 				auto setup = m.setup();
 				auto name = QString::fromStdString(setup.name());
@@ -147,6 +101,9 @@ void ScoreboardClient::readyRead() {
 					qmlTeam->setProperty("first", empty);
 					teamList.push_back(QVariant::fromValue(qmlTeam));
 				}
+				for(const auto& t : this->teams) {
+					ranking.push_back(t.second);
+				}
 				for(const auto& problem : problems) {
 					this->problems[problem.id()] = problemList.size();
 					problemList.push_back(QString::fromStdString(problem.label()));
@@ -154,6 +111,8 @@ void ScoreboardClient::readyRead() {
 				QVariantMap contest;
 				contest["name"] = name;
 				emit contestSetup(contest, QVariant(problemList), teamList);
+
+				//TODO is this correct / sufficient / necessary?
 				QQmlEngine::setObjectOwnership(qvariant_cast<QObject *>(teamList), QQmlEngine::JavaScriptOwnership);
 				QQmlEngine::setObjectOwnership(qvariant_cast<QObject *>(problemList), QQmlEngine::JavaScriptOwnership);
 				std::cerr << "Received setup for Contest \"" << setup.name() << "\"" <<std::endl;
@@ -165,6 +124,54 @@ void ScoreboardClient::readyRead() {
 	}
 	if(socket.bytesAvailable())
 		readyRead();
+}
+
+bool ScoreboardClient::compareScore(QObject *a, QObject *b) {
+	auto sd = a->property("solved").toInt() - b->property("solved").toInt();
+	if(sd < 0) return false;
+	if(sd > 0) return true;
+	auto pd = a->property("penalty").toInt() - b->property("penalty").toInt();
+	if(pd < 0) return true;
+	auto fd = a->property("firsts").toInt() - b->property("firsts").toInt();
+	if(fd > 0) return true;
+	return false;
+}
+
+void ScoreboardClient::applyEvent(const wire::Event& event) {
+	auto team = teams[event.team()];
+	auto problem = problems[event.problem()];
+	auto submitCount = event.submitcount();
+	auto penalty = event.penalty();
+	auto state = event.state();
+	if(event.has_unfrozen()) {
+		pendingFreeze[team][problem] = event.unfrozen();
+	}
+	auto Tsubmits = team->property("submits").toList();
+	auto Tpending = team->property("pending").toList();
+	auto Tcorrect = team->property("correct").toList();
+	auto Tpenalties = team->property("penalties").toList();
+	auto Tfirst = team->property("first").toList();
+	Tsubmits[problem] = QVariant(qint64(submitCount));
+	Tpending[problem] = QVariant(state == wire::PENDING);
+	Tcorrect[problem] = QVariant(state == wire::CORRECT || state == wire::FIRST);
+	Tfirst[problem] = QVariant(state == wire::FIRST);
+	Tpenalties[problem] = QVariant(qint64(penalty)/60);//TODO: correct rounding?
+	team->setProperty("submits", Tsubmits);
+	team->setProperty("pending", Tpending);
+	team->setProperty("correct", Tcorrect);
+	team->setProperty("penalties", Tpenalties);
+	team->setProperty("first", Tfirst);
+	sort(std::begin(ranking),std::end(ranking),&compareScore);
+	int rank = 1;
+	int pos = 0;
+	for(auto it = begin(ranking); it != end(ranking); ++it) {
+		if(it == begin(ranking) || compareScore(*std::prev(it), *it)) {
+			(*it)->setProperty("rank", rank++);
+		} else {
+			(*it)->setProperty("rank", "");
+		}
+		(*it)->setProperty("pos", pos++);
+	}
 }
 
 void ScoreboardClient::fatal(QAbstractSocket::SocketError error) {

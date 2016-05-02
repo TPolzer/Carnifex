@@ -25,12 +25,13 @@ Window {
     id: contest
 	color: 'black'
 
-	property var em: height/30
-	property var rs: em*1.2
+	property double em: height/30
+	property double rs: em*1.2
     property var problems: []
-	property var n: problems.length
+	property int n: problems.length
     property var teams: []
-	property var name: ""
+	property string name: ""
+	property point focused: "-1,-1"
 	Team {
 		id: dummyTeam
 		submits: H.repeat(n, 0)
@@ -101,13 +102,15 @@ Window {
 					height: rs*teams.length
 					id: tableContents
 					property int pages: Math.ceil(teams.length/Math.floor(table.height/rs))
-					property int page: 0
+					property int page: (contest.focused.y == -1) ? autopage : teams[contest.focused.y].pos/Math.floor(table.height/rs)
+					property int autopage: 0
 					y: rs ? -page*rs*Math.floor(table.height/rs) : 0
 					Behavior on y { SmoothedAnimation {duration: 800; velocity: -1} }
 					Repeater {
 						model: teams
 						Row_t {
 							team: modelData
+							focused: (contest.focused.y == index) ? contest.focused.x : 0
 							y: modelData.pos*rs
 							height: rs
 							anchors.left: parent.left
@@ -119,8 +122,8 @@ Window {
 						id: pageTimer
 						interval: 10000; running: true; repeat: true
 						onTriggered: {
-							tableContents.page = (tableContents.page-1+tableContents.pages)
-							tableContents.page %= tableContents.pages
+							tableContents.autopage = (tableContents.autopage-1+tableContents.pages)
+							tableContents.autopage %= tableContents.pages
 						}
 					}
 				}

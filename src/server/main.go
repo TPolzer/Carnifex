@@ -280,6 +280,18 @@ func ToMessage(event *wire.Event) *wire.Message {
 }
 
 func (state *ContestState) Summarize(submissions Submissions) (event *wire.Event) {
+	event = state.summarize(submissions, true)
+	if(event == nil) {
+		return
+	}
+	unfrozen := state.summarize(submissions, false)
+	if(!reflect.DeepEqual(event, unfrozen)) {
+		event.Unfrozen = unfrozen
+	}
+	return
+}
+
+func (state *ContestState) summarize(submissions Submissions, respectFreeze bool) (event *wire.Event) {
 	sort.Sort(submissions)
 	if(len(submissions) > 0) {
 		Team := int64(submissions[0].Team)
@@ -302,7 +314,7 @@ func (state *ContestState) Summarize(submissions Submissions) (event *wire.Event
 			*event.State = wire.SState_PENDING
 			return
 		}
-		if(float64(state.contest.Freeze) <= s.Time) { //TODO handle resolving, jury scoreboard
+		if(respectFreeze && float64(state.contest.Freeze) <= s.Time) {
 			*event.State = wire.SState_PENDING
 		} else {
 			if(judging.Outcome == "correct") {
@@ -552,6 +564,10 @@ type Contest struct {
 	End int64
 	Unfreeze int64
 	Penalty int64
+}
+
+type ContestConfig struct {
+	Compile_penalty int64
 }
 
 type Team struct {

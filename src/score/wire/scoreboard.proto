@@ -13,6 +13,7 @@ message Event {
 	required int64 SubmitCount = 2;
 	required int64 Penalty = 3;
 	required SState State = 4;
+	optional Event Unfrozen = 5;
 }
 
 message ContestSetup {

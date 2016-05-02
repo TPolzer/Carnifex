@@ -38,7 +38,11 @@ private:
 	wire::Message m;
 	QQmlEngine& engine;
 	std::map<qint64, QObject*> teams;
+	std::vector<QObject*> ranking;
+	std::map<QObject*, std::map<qint64, wire::Event>> pendingFreeze; // team->problem->unfreeze
 	std::map<qint64, qint64> problems; // id -> idx
+	static bool compareScore(QObject*, QObject*);
+	void applyEvent(const wire::Event&);
 public:
 	ScoreboardClient(QQmlEngine& engine);
 signals:

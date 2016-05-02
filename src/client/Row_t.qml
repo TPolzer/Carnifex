@@ -22,6 +22,15 @@ import "helper.js" as H
 Item {
 	property var team
 	property var cols: H.asArray(children).concat(H.asArray(row.children))
+	property int focused: 0
+	Rectangle {
+		anchors.fill: parent
+		border.color: 'gold'
+		border.width: em/8
+		radius: em/4
+		visible: focused
+		color: Qt.rgba(0,0,0,0)
+	}
 	ScoreText {
 		property var columnTitle: "Rank"
 		anchors.verticalCenter: parent.verticalCenter
@@ -59,6 +68,8 @@ Item {
 					anchors.horizontalCenter: parent.horizontalCenter
 					color: team.first[index] ? 'darkgreen' : team.correct[index] ? 'green' : team.pending[index] ? 'blue' : team.submits[index] ? 'red' : Qt.rgba(0,0,0,0)
 					radius: contest.em/4
+					border.color: 'gold'
+					border.width: (focused == index+1) ? em/8 : 0
 					height: contest.em
 					width: parent.width*0.9
 					ScoreText {
