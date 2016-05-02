@@ -333,6 +333,9 @@ func (state *ContestState) summarize(submissions Submissions, respectFreeze bool
 			}
 		}
 	}
+	if(*event.State != wire.SState_CORRECT && *event.State != wire.SState_FIRST) {
+		*event.Penalty = 0
+	}
 	if(*event.SubmitCount == 0) {
 		return nil //only invalid submissions, don't count
 	} else {
