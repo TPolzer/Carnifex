@@ -39,3 +39,12 @@ function repArray(rep) {
 function add(a, b) {
         return a + b;
 }
+
+function walkUpX(p, c) {
+	var x = 0;
+	while(p !== c) {
+		x += c.x;
+		c = c.parent;
+	}
+	return x;
+}

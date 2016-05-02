@@ -85,7 +85,7 @@ Window {
 					ScoreText {
 						text: modelData.columnTitle ? modelData.columnTitle : ""
 						width: modelData.width
-						x: modelData.parent.x, columnPrototype.mapFromItem(modelData.parent, modelData.x, modelData.y).x // ew... hack to get triggers one level up
+						x: H.walkUpX(columnPrototype, modelData)
 						horizontalAlignment: modelData.horizontalAlignment
 					}
 				}
