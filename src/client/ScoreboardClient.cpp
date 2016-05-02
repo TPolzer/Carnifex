@@ -73,6 +73,9 @@ void ScoreboardClient::readyRead() {
 				auto setup = m.setup();
 				auto name = QString::fromStdString(setup.name());
 				auto teams = setup.teams();
+				sort(teams.begin(), teams.end(), [](const auto& a, const auto& b){
+					return a.name() < b.name();
+				});
 				auto problems = setup.problems();
 				QQmlComponent teamComponent(&engine,
 					QUrl(QStringLiteral("qrc:/Team.qml")));
@@ -163,7 +166,7 @@ void ScoreboardClient::applyEvent(const wire::Event& event) {
 	team->setProperty("correct", Tcorrect);
 	team->setProperty("penalties", Tpenalties);
 	team->setProperty("first", Tfirst);
-	sort(std::begin(ranking),std::end(ranking),&compareScore);
+	std::stable_sort(std::begin(ranking),std::end(ranking),&compareScore);
 	int rank = 1;
 	int pos = 0;
 	for(auto it = begin(ranking); it != end(ranking); ++it) {
