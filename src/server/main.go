@@ -304,6 +304,7 @@ func (state *ContestState) summarize(submissions Submissions, respectFreeze bool
 			State: new(wire.SState),
 		}
 	}
+	var penalty int64
 	for _, s := range submissions {
 		if(float64(state.contest.End) <= s.Time) {
 			break;
@@ -319,6 +320,7 @@ func (state *ContestState) summarize(submissions Submissions, respectFreeze bool
 		} else {
 			if(judging.Outcome == "correct") {
 				*event.State = wire.SState_CORRECT
+				*event.Penalty = penalty
 				for _, sf := range state.firsts[s.Problem] {
 					if(sf.Id == s.Id) {
 						*event.State = wire.SState_FIRST
@@ -328,13 +330,10 @@ func (state *ContestState) summarize(submissions Submissions, respectFreeze bool
 				*event.Penalty += int64(math.Ceil(s.Time)) - state.contest.Start
 				return
 			} else { //TODO special-case compile error penalty
-				*event.Penalty += state.contest.Penalty
+				penalty += state.contest.Penalty
 				*event.State = wire.SState_WRONG
 			}
 		}
-	}
-	if(*event.State != wire.SState_CORRECT && *event.State != wire.SState_FIRST) {
-		*event.Penalty = 0
 	}
 	if(*event.SubmitCount == 0) {
 		return nil //only invalid submissions, don't count
