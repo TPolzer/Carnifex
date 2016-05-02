@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.2)
+cmake_minimum_required(VERSION 3.0)
 
 project(client)
 
@@ -14,4 +14,4 @@ find_package(Qt5Widgets)
 add_executable(client main.cpp ScoreboardClient.cpp qml.qrc scoreboard.pb.cc)
 target_link_libraries(client Qt5::Widgets Qt5::Quick)
 target_link_libraries(client ${PROTOBUF_LIBRARIES})
-target_compile_features(client PRIVATE cxx_generic_lambdas)
+set_property(TARGET client PROPERTY CXX_STANDARD 11)

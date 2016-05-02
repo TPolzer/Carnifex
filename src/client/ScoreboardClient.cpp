@@ -73,7 +73,7 @@ void ScoreboardClient::readyRead() {
 				auto setup = m.setup();
 				auto name = QString::fromStdString(setup.name());
 				auto teams = setup.teams();
-				sort(teams.begin(), teams.end(), [](const auto& a, const auto& b){
+				sort(teams.begin(), teams.end(), [](const wire::Team& a, const wire::Team& b){
 					return a.name() < b.name();
 				});
 				auto problems = setup.problems();
@@ -83,7 +83,7 @@ void ScoreboardClient::readyRead() {
 				QVariantList problemList;
 				this->teams.clear();
 				this->problems.clear();
-				std::sort(problems.begin(), problems.end(), [](const auto& a, const auto& b){
+				std::sort(problems.begin(), problems.end(), [](const wire::Problem& a, const wire::Problem& b){
 					return a.label() < b.label();
 				});
 				for(const auto& team : teams) {
