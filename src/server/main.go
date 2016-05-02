@@ -117,13 +117,13 @@ func main() {
 		judgings = simulate(judgings, float64(ContestState.contest.Start), config.SimulationSpeed).(chan Judging)
 	}
 
-	listener, err := net.Listen("tcp", ":8080")
+	listener, err := net.ListenTCP("tcp", &net.TCPAddr{Port:8080})
 	if(err != nil) {
 		log.Fatal(err)
 	}
 	go func() {
 		for {
-			conn, err := listener.Accept()
+			conn, err := listener.AcceptTCP()
 			if(err != nil) {
 				log.Fatal(err)
 			}
@@ -230,7 +230,7 @@ func simulate(src interface{}, start, multiplier float64) interface{} {
 				continue
 			}
 //			fmt.Printf("Delaying event for %v\n", time.Duration(t) * time.Second)
-			time.AfterFunc(time.Duration(t) * time.Second, func () {
+			time.AfterFunc(time.Duration(t*1000) * time.Millisecond, func () {
 				sink.Send(x)
 			})
 		}
