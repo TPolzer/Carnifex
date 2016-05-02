@@ -93,6 +93,9 @@ void ScoreboardClient::readyRead() {
 					this->teams[id] = qmlTeam;
 					qmlTeam->setProperty("name", name);
 					qmlTeam->setProperty("pos", teamList.size());
+					if(teamList.size() == 0) {
+						qmlTeam->setProperty("rank", 1);
+					}
 					QVariantList empty;
 					for(const auto& problem : problems) {
 						empty.append(0);
