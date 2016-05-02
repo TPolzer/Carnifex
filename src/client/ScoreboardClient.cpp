@@ -183,6 +183,6 @@ void ScoreboardClient::applyEvent(const wire::Event& event) {
 }
 
 void ScoreboardClient::fatal(QAbstractSocket::SocketError error) {
-	std::cerr << "fatal: " << QMetaEnum::fromType<decltype(error)>().valueToKey(error) << std::endl;
+	//std::cerr << "fatal: " << QMetaEnum::fromType<decltype(error)>().valueToKey(error) << std::endl;
 	emit this->error();
 }
