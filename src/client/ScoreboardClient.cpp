@@ -132,8 +132,10 @@ bool ScoreboardClient::compareScore(QObject *a, QObject *b) {
 	if(sd > 0) return true;
 	auto pd = a->property("penalty").toInt() - b->property("penalty").toInt();
 	if(pd < 0) return true;
+	if(pd > 0) return false;
 	auto fd = a->property("firsts").toInt() - b->property("firsts").toInt();
 	if(fd > 0) return true;
+	if(fd < 0) return false;
 	return false;
 }
 
