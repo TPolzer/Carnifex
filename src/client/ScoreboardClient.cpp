@@ -107,8 +107,8 @@ void ScoreboardClient::readyRead() {
 					qmlTeam->setProperty("first", empty);
 					teamList.push_back(QVariant::fromValue(qmlTeam));
 				}
-				for(const auto& t : this->teams) {
-					ranking.push_back(t.second);
+				for(const auto& t : teams) {
+					ranking.push_back(this->teams[t.id()]);
 				}
 				for(const auto& problem : problems) {
 					this->problems[problem.id()] = problemList.size();
