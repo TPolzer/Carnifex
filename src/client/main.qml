@@ -73,7 +73,7 @@ Window {
 		anchors.fill: parent
 		anchors.margins: title.height
 		radius: em/2
-		color: 'steelblue'
+		color: '#28B2FF'
 		Item {
 			id: scoreboardContents
 			anchors.fill: parent
@@ -121,6 +121,16 @@ Window {
 					property int autopage: 0
 					y: rs ? -page*rs*Math.floor(table.height/rs) : 0
 					Behavior on y { SmoothedAnimation {duration: 800; velocity: -1} }
+					Repeater {
+						model: teams
+                        Rectangle {
+                            color: (index%2) ? '#28B2FF' : '#874AE8'
+							height: rs
+							anchors.left: parent.left
+							anchors.right: parent.right
+							y: index*rs
+                        }
+                    }
 					Repeater {
 						model: teams
 						Row_t {

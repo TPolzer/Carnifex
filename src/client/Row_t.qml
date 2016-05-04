@@ -66,7 +66,7 @@ Item {
 				Rectangle {
 					anchors.verticalCenter: parent.verticalCenter
 					anchors.horizontalCenter: parent.horizontalCenter
-					color: team.first[index] ? 'darkgreen' : team.correct[index] ? 'green' : team.pending[index] ? 'blue' : team.submits[index] ? 'red' : Qt.rgba(0,0,0,0)
+					color: team.first[index] ? 'darkgreen' : team.correct[index] ? '#20E85C' : team.pending[index] ? 'blue' : team.submits[index] ? '#FF3860' : Qt.rgba(0,0,0,0)
 					radius: contest.em/4
 					border.color: 'gold'
 					border.width: (focused == index+1) ? em/8 : 0
