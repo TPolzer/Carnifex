@@ -519,7 +519,7 @@ func (client *JudgeClient) GetJson(method APIMethod, min int64, p interface{}) (
 	}
 	defer resp.Body.Close()
 	if(resp.StatusCode != 200) {
-		return fmt.Errorf("Got http response \"%s\"", resp.Status)
+		return fmt.Errorf("Got http response \"%s\" while fetching \"%s\"", resp.Status, url)
 	}
 	jsonDecoder := json.NewDecoder(resp.Body)
 	err = jsonDecoder.Decode(p)
