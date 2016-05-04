@@ -133,12 +133,18 @@ void ScoreboardClient::readyRead() {
 }
 
 bool ScoreboardClient::compareScore(QObject *a, QObject *b) {
+	/* TODO: DOMjudge ordering:
+	 * a) More submissions
+	 * b) Less penalty time
+	 * c) Fastest submission time for latest correct problem
+	 * d) Teamname, alphabetically
+	 * e) Undecided, never happens(tm)
+	 */
 	auto sd = a->property("solved").toInt() - b->property("solved").toInt();
-	if(sd < 0) return false;
-	if(sd > 0) return true;
+	if(sd != 0) return sd > 0;
 	auto pd = a->property("penalty").toInt() - b->property("penalty").toInt();
-	if(pd < 0) return true;
-	if(pd > 0) return false;
+	if(pd != 0) return pd < 0;
+	// TODO
 	auto fd = a->property("firsts").toInt() - b->property("firsts").toInt();
 	if(fd > 0) return true;
 	if(fd < 0) return false;
@@ -163,7 +169,7 @@ void ScoreboardClient::applyEvent(const wire::Event& event) {
 	Tpending[problem] = QVariant(state == wire::PENDING);
 	Tcorrect[problem] = QVariant(state == wire::CORRECT || state == wire::FIRST);
 	Tfirst[problem] = QVariant(state == wire::FIRST);
-	Tpenalties[problem] = QVariant(qint64(penalty)/60);//TODO: correct rounding?
+	Tpenalties[problem] = QVariant(qint64(penalty));
 	team->setProperty("submits", Tsubmits);
 	team->setProperty("pending", Tpending);
 	team->setProperty("correct", Tcorrect);

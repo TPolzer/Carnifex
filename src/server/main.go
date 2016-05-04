@@ -307,7 +307,7 @@ func (state *ContestState) summarize(submissions Submissions, respectFreeze bool
 	var penalty int64
 	for _, s := range submissions {
 		if(float64(state.contest.End) <= s.Time) {
-			break;
+			break
 		}
 		*event.SubmitCount++
 		judging, ok := state.judgings[s.Id]
@@ -327,7 +327,7 @@ func (state *ContestState) summarize(submissions Submissions, respectFreeze bool
 					}
 				}
 				//TODO how/when to round?
-				*event.Penalty += int64(math.Ceil(s.Time)) - state.contest.Start
+				*event.Penalty += int64(math.Floor(s.Time / 60)) - state.contest.Start
 				return
 			} else { //TODO special-case compile error penalty
 				penalty += state.contest.Penalty
@@ -551,7 +551,7 @@ func (s Submissions) Len() int {
 	return len(s)
 }
 func (s Submissions) Less(i, j int) bool {
-	return s[i].Id < s[j].Id
+	return s[i].Time < s[j].Time
 }
 func (s Submissions) Swap(i, j int) {
 	s[i], s[j] = s[j], s[i]
