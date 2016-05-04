@@ -18,6 +18,7 @@
  */
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
+#include <QtQml>
 #include <QQuickWindow>
 #include <QVariant>
 #include <QMetaObject>
