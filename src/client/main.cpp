@@ -25,12 +25,15 @@
 #include <QTcpSocket>
 #include <QtEndian>
 #include "ScoreboardClient.h"
+#include "clock.h"
 
 int main(int argc, char *argv[])
 {
     QGuiApplication app(argc, argv);
 
     QQmlApplicationEngine engine;
+
+	qmlRegisterType<Clock>("de.bulsa.clock", 0, 1, "Clock");
 
     engine.load(QUrl(QStringLiteral("qrc:/main.qml")));
 

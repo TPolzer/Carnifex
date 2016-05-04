@@ -18,6 +18,7 @@
  */
 import QtQuick 2.0
 import QtQuick.Window 2.0
+import de.bulsa.clock 0.1
 import "helper.js" as H
 
 Window {
@@ -51,6 +52,20 @@ Window {
 		text: name
 		anchors.left: parent.left
 		anchors.margins: em
+	}
+	ScoreText {
+        id: clockDisplay
+		text: sign + clock.formatUTCTime(new Date(Math.abs(sinceStart)), "hh':'mm':'ss'.'zzz").substr(0,10)
+        property var sinceStart: clock.time - reference
+        property var sign: (sinceStart < 0) ? '-' : ''
+        property var reference: new Date()
+		anchors.right: parent.right
+		anchors.margins: em
+        Clock {
+            id: clock
+            interval: 100
+            offset: clockDisplay.reference%interval
+        }
 	}
 
     Rectangle {
