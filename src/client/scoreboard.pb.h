@@ -389,10 +389,19 @@ class ContestSetup : public ::google::protobuf::Message {
   inline ::google::protobuf::RepeatedPtrField< ::wire::Problem >*
       mutable_problems();
 
+  // required int64 Start = 4;
+  inline bool has_start() const;
+  inline void clear_start();
+  static const int kStartFieldNumber = 4;
+  inline ::google::protobuf::int64 start() const;
+  inline void set_start(::google::protobuf::int64 value);
+
   // @@protoc_insertion_point(class_scope:wire.ContestSetup)
  private:
   inline void set_has_name();
   inline void clear_has_name();
+  inline void set_has_start();
+  inline void clear_has_start();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
@@ -401,6 +410,7 @@ class ContestSetup : public ::google::protobuf::Message {
   ::std::string* name_;
   ::google::protobuf::RepeatedPtrField< ::wire::Team > teams_;
   ::google::protobuf::RepeatedPtrField< ::wire::Problem > problems_;
+  ::google::protobuf::int64 start_;
   friend void  protobuf_AddDesc_scoreboard_2eproto();
   friend void protobuf_AssignDesc_scoreboard_2eproto();
   friend void protobuf_ShutdownFile_scoreboard_2eproto();
@@ -1017,6 +1027,30 @@ inline ::google::protobuf::RepeatedPtrField< ::wire::Problem >*
 ContestSetup::mutable_problems() {
   // @@protoc_insertion_point(field_mutable_list:wire.ContestSetup.Problems)
   return &problems_;
+}
+
+// required int64 Start = 4;
+inline bool ContestSetup::has_start() const {
+  return (_has_bits_[0] & 0x00000008u) != 0;
+}
+inline void ContestSetup::set_has_start() {
+  _has_bits_[0] |= 0x00000008u;
+}
+inline void ContestSetup::clear_has_start() {
+  _has_bits_[0] &= ~0x00000008u;
+}
+inline void ContestSetup::clear_start() {
+  start_ = GOOGLE_LONGLONG(0);
+  clear_has_start();
+}
+inline ::google::protobuf::int64 ContestSetup::start() const {
+  // @@protoc_insertion_point(field_get:wire.ContestSetup.Start)
+  return start_;
+}
+inline void ContestSetup::set_start(::google::protobuf::int64 value) {
+  set_has_start();
+  start_ = value;
+  // @@protoc_insertion_point(field_set:wire.ContestSetup.Start)
 }
 
 // -------------------------------------------------------------------

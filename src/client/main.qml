@@ -33,6 +33,7 @@ Window {
     property var teams: []
 	property string name: ""
 	property point focused: "-1,-1"
+	property var start: new Date().valueOf()
 	Team {
 		id: dummyTeam
 		submits: H.repeat(n, 0)
@@ -45,6 +46,7 @@ Window {
         contest.problems = problems
         contest.teams = teams
 		contest.name = contestDesc.name
+		contest.start = contestDesc.start
     }
 
 	ScoreText {
@@ -58,7 +60,7 @@ Window {
 		text: sign + clock.formatUTCTime(new Date(Math.abs(sinceStart)), "hh':'mm':'ss'.'zzz").substr(0,10)
         property var sinceStart: clock.time - reference
         property var sign: (sinceStart < 0) ? '-' : ''
-        property var reference: new Date()
+        property var reference: contest.start
 		anchors.right: parent.right
 		anchors.margins: em
         Clock {

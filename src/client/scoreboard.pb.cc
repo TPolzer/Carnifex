@@ -90,10 +90,11 @@ void protobuf_AssignDesc_scoreboard_2eproto() {
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(Event));
   ContestSetup_descriptor_ = file->message_type(2);
-  static const int ContestSetup_offsets_[3] = {
+  static const int ContestSetup_offsets_[4] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ContestSetup, name_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ContestSetup, teams_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ContestSetup, problems_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ContestSetup, start_),
   };
   ContestSetup_reflection_ =
     new ::google::protobuf::internal::GeneratedMessageReflection(
@@ -193,13 +194,13 @@ void protobuf_AddDesc_scoreboard_2eproto() {
     "\n\005Event\022\014\n\004Team\030\006 \002(\003\022\017\n\007Problem\030\001 \002(\003\022\023"
     "\n\013SubmitCount\030\002 \002(\003\022\017\n\007Penalty\030\003 \002(\003\022\033\n\005"
     "State\030\004 \002(\0162\014.wire.SState\022\035\n\010Unfrozen\030\005 "
-    "\001(\0132\013.wire.Event\"X\n\014ContestSetup\022\014\n\004Name"
+    "\001(\0132\013.wire.Event\"g\n\014ContestSetup\022\014\n\004Name"
     "\030\001 \002(\t\022\031\n\005Teams\030\002 \003(\0132\n.wire.Team\022\037\n\010Pro"
-    "blems\030\003 \003(\0132\r.wire.Problem\"3\n\007Problem\022\n\n"
-    "\002Id\030\001 \002(\003\022\r\n\005Label\030\002 \002(\t\022\r\n\005Color\030\003 \001(\t\""
-    " \n\004Team\022\n\n\002Id\030\001 \002(\003\022\014\n\004Name\030\002 \002(\t*8\n\006SSt"
-    "ate\022\013\n\007CORRECT\020\001\022\t\n\005WRONG\020\002\022\013\n\007PENDING\020\003"
-    "\022\t\n\005FIRST\020\004", 491);
+    "blems\030\003 \003(\0132\r.wire.Problem\022\r\n\005Start\030\004 \002("
+    "\003\"3\n\007Problem\022\n\n\002Id\030\001 \002(\003\022\r\n\005Label\030\002 \002(\t\022"
+    "\r\n\005Color\030\003 \001(\t\" \n\004Team\022\n\n\002Id\030\001 \002(\003\022\014\n\004Na"
+    "me\030\002 \002(\t*8\n\006SState\022\013\n\007CORRECT\020\001\022\t\n\005WRONG"
+    "\020\002\022\013\n\007PENDING\020\003\022\t\n\005FIRST\020\004", 506);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "scoreboard.proto", &protobuf_RegisterTypes);
   Message::default_instance_ = new Message();
@@ -988,6 +989,7 @@ void Event::Swap(Event* other) {
 const int ContestSetup::kNameFieldNumber;
 const int ContestSetup::kTeamsFieldNumber;
 const int ContestSetup::kProblemsFieldNumber;
+const int ContestSetup::kStartFieldNumber;
 #endif  // !_MSC_VER
 
 ContestSetup::ContestSetup()
@@ -1010,6 +1012,7 @@ void ContestSetup::SharedCtor() {
   ::google::protobuf::internal::GetEmptyString();
   _cached_size_ = 0;
   name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  start_ = GOOGLE_LONGLONG(0);
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 
@@ -1048,10 +1051,13 @@ ContestSetup* ContestSetup::New() const {
 }
 
 void ContestSetup::Clear() {
-  if (has_name()) {
-    if (name_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
-      name_->clear();
+  if (_has_bits_[0 / 32] & 9) {
+    if (has_name()) {
+      if (name_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
+        name_->clear();
+      }
     }
+    start_ = GOOGLE_LONGLONG(0);
   }
   teams_.Clear();
   problems_.Clear();
@@ -1109,6 +1115,21 @@ bool ContestSetup::MergePartialFromCodedStream(
           goto handle_unusual;
         }
         if (input->ExpectTag(26)) goto parse_Problems;
+        if (input->ExpectTag(32)) goto parse_Start;
+        break;
+      }
+
+      // required int64 Start = 4;
+      case 4: {
+        if (tag == 32) {
+         parse_Start:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::int64, ::google::protobuf::internal::WireFormatLite::TYPE_INT64>(
+                 input, &start_)));
+          set_has_start();
+        } else {
+          goto handle_unusual;
+        }
         if (input->ExpectAtEnd()) goto success;
         break;
       }
@@ -1160,6 +1181,11 @@ void ContestSetup::SerializeWithCachedSizes(
       3, this->problems(i), output);
   }
 
+  // required int64 Start = 4;
+  if (has_start()) {
+    ::google::protobuf::internal::WireFormatLite::WriteInt64(4, this->start(), output);
+  }
+
   if (!unknown_fields().empty()) {
     ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
         unknown_fields(), output);
@@ -1195,6 +1221,11 @@ void ContestSetup::SerializeWithCachedSizes(
         3, this->problems(i), target);
   }
 
+  // required int64 Start = 4;
+  if (has_start()) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteInt64ToArray(4, this->start(), target);
+  }
+
   if (!unknown_fields().empty()) {
     target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
         unknown_fields(), target);
@@ -1212,6 +1243,13 @@ int ContestSetup::ByteSize() const {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::StringSize(
           this->name());
+    }
+
+    // required int64 Start = 4;
+    if (has_start()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::Int64Size(
+          this->start());
     }
 
   }
@@ -1262,6 +1300,9 @@ void ContestSetup::MergeFrom(const ContestSetup& from) {
     if (from.has_name()) {
       set_name(from.name());
     }
+    if (from.has_start()) {
+      set_start(from.start());
+    }
   }
   mutable_unknown_fields()->MergeFrom(from.unknown_fields());
 }
@@ -1279,7 +1320,7 @@ void ContestSetup::CopyFrom(const ContestSetup& from) {
 }
 
 bool ContestSetup::IsInitialized() const {
-  if ((_has_bits_[0] & 0x00000001) != 0x00000001) return false;
+  if ((_has_bits_[0] & 0x00000009) != 0x00000009) return false;
 
   if (!::google::protobuf::internal::AllAreInitialized(this->teams())) return false;
   if (!::google::protobuf::internal::AllAreInitialized(this->problems())) return false;
@@ -1291,6 +1332,7 @@ void ContestSetup::Swap(ContestSetup* other) {
     std::swap(name_, other->name_);
     teams_.Swap(&other->teams_);
     problems_.Swap(&other->problems_);
+    std::swap(start_, other->start_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
     _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);

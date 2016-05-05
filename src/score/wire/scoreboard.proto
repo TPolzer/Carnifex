@@ -20,6 +20,7 @@ message ContestSetup {
 	required string Name = 1;
 	repeated Team Teams = 2;
 	repeated Problem Problems = 3;
+	required int64 Start = 4;
 }
 
 message Problem {

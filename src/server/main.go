@@ -346,6 +346,7 @@ func (state *ContestState) ContestSetup() (*wire.Message) {
 	setup := new(wire.ContestSetup)
 	setup.Name = &state.contest.Name
 	setup.Problems = state.problems
+	setup.Start = &state.contest.Start
 	var teams []*wire.Team
 	for i, _ := range state.teams {
 		t := &state.teams[i] // force reference semantic

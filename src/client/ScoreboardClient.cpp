@@ -72,6 +72,7 @@ void ScoreboardClient::readyRead() {
 			} else if(m.has_setup()) {
 				auto setup = m.setup();
 				auto name = QString::fromStdString(setup.name());
+                double start = setup.start() * 1000.0;
 				auto teams = setup.teams();
 				sort(teams.begin(), teams.end(), [](const wire::Team& a, const wire::Team& b){
 					return a.name() < b.name();
@@ -116,6 +117,7 @@ void ScoreboardClient::readyRead() {
 				}
 				QVariantMap contest;
 				contest["name"] = name;
+                contest["start"] = start;
 				emit contestSetup(contest, QVariant(problemList), teamList);
 
 				//TODO is this correct / sufficient / necessary?
