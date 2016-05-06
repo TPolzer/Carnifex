@@ -21,7 +21,7 @@ import "helper.js" as H
 
 Item {
 	property var team
-	property var cols: H.asArray(children).concat(H.asArray(row.children))
+	property var cols: [rank, teamname].concat(H.repArray(problems)).concat([solved, time])
 	property int focused: 0
 	Rectangle {
 		anchors.fill: parent
@@ -57,6 +57,7 @@ Item {
 		anchors.right: solved.left
 		height: parent.height
 		Repeater {
+            id: problems
 			model: contest.problems
 			Item {
 				property var columnTitle: contest.problems[index]

@@ -124,10 +124,21 @@ Window {
 					y: rs ? -page*rs*Math.floor(table.height/rs) : 0
 					Behavior on y { SmoothedAnimation {duration: 800; velocity: -1} }
 					Repeater {
+						model: columnPrototype.cols
+                        Rectangle {
+                            color: Qt.rgba(0,0,0,0.1)
+							height: parent.pages*table.height
+                            width: modelData.width
+                            x: H.walkUpX(columnPrototype, modelData)
+                            visible: (index+1)%2
+                        }
+                    }
+					Repeater {
 						model: teams
                         Rectangle {
-                            color: (index%2) ? '#28B2FF' : '#874AE8'
+                            color: Qt.rgba(0,0,0,0.1)
 							height: rs
+                            visible: index%2
 							anchors.left: parent.left
 							anchors.right: parent.right
 							y: index*rs
