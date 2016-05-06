@@ -127,7 +127,7 @@ Window {
 						model: columnPrototype.cols
                         Rectangle {
                             color: Qt.rgba(0,0,0,0.1)
-							height: parent.pages*table.height
+							height: parent ? parent.pages*table.height : 0
                             width: modelData.width
                             x: H.walkUpX(columnPrototype, modelData)
                             visible: (index+1)%2
