@@ -23,6 +23,7 @@
 #include <QMetaEnum>
 #include <QQmlComponent>
 #include <QVariant>
+#include <QTimer>
 #include "qmlproto.h"
 #include "scoreboard.pb.h"
 
@@ -33,15 +34,26 @@ ScoreboardClient::ScoreboardClient(QQmlEngine& engine)
 }
 
 void ScoreboardClient::run() {
-	connect(&socket, &QTcpSocket::connected, this, &ScoreboardClient::connected);
+    QObject::connect(&socket, &QTcpSocket::connected, this, &ScoreboardClient::connected);
 	qRegisterMetaType<QAbstractSocket::SocketError>("QAbstractSocket::SocketError");
-	socketIsFatal = connect(&socket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(fatal(QAbstractSocket::SocketError)));
-	connect(&socket, &QIODevice::readyRead, this, &ScoreboardClient::readyRead);
+	socketIsFatal = QObject::connect(&socket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(fatal(QAbstractSocket::SocketError)));
+    connect();
+}
+
+void ScoreboardClient::connect() {
+    QObject::connect(&socket, &QIODevice::readyRead, this, &ScoreboardClient::readyRead);
 	socket.connectToHost(serverName, serverPort);
+}
+
+void ScoreboardClient::reconnect(QAbstractSocket::SocketError) {
+	std::cerr << "reconnecting\n";
+    QTimer::singleShot(2000, this, &ScoreboardClient::connect);
 }
 
 void ScoreboardClient::connected() {
 	std::cerr << "connected\n";
+    pos = end(buffer);
+	if(socketIsFatal) QObject::connect(&socket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(reconnect(QAbstractSocket::SocketError)));
 	disconnect(socketIsFatal);
 }
 
@@ -73,6 +85,8 @@ void ScoreboardClient::readyRead() {
 			} else if(m.has_setup()) {
 				this->teams.clear();
 				this->problems.clear();
+                this->ranking.clear();
+                this->pendingFreeze.clear();
 				auto setup = m.setup();
 				auto name = QString::fromStdString(setup.name());
                 double start = setup.start() * 1000.0;
@@ -148,6 +162,6 @@ void ScoreboardClient::applyEvent(const wire::Event& event) {
 }
 
 void ScoreboardClient::fatal(QAbstractSocket::SocketError error) {
-	//std::cerr << "fatal: " << QMetaEnum::fromType<decltype(error)>().valueToKey(error) << std::endl;
-	emit this->error();
+	std::cerr << "fatal: " << QMetaEnum::fromType<decltype(error)>().valueToKey(error) << std::endl;
+    abort();
 }

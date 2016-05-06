@@ -49,7 +49,9 @@ signals:
 	void event(QVariant event);
 	void error();
 public slots:
+    void connect();
 	void connected();
+    void reconnect(QAbstractSocket::SocketError);
 	void fatal(QAbstractSocket::SocketError);
 	void readyRead();
 	void run();
