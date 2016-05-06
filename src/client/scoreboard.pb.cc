@@ -70,11 +70,12 @@ void protobuf_AssignDesc_scoreboard_2eproto() {
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(Message));
   Event_descriptor_ = file->message_type(1);
-  static const int Event_offsets_[6] = {
+  static const int Event_offsets_[7] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Event, team_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Event, problem_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Event, submitcount_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Event, penalty_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Event, contesttime_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Event, state_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Event, unfrozen_),
   };
@@ -190,17 +191,18 @@ void protobuf_AddDesc_scoreboard_2eproto() {
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
     "\n\020scoreboard.proto\022\004wire\"[\n\007Message\022\034\n\005e"
     "vent\030\001 \001(\0132\013.wire.EventH\000\022#\n\005setup\030\002 \001(\013"
-    "2\022.wire.ContestSetupH\000B\r\n\013MessageType\"\210\001"
+    "2\022.wire.ContestSetupH\000B\r\n\013MessageType\"\235\001"
     "\n\005Event\022\014\n\004Team\030\006 \002(\003\022\017\n\007Problem\030\001 \002(\003\022\023"
-    "\n\013SubmitCount\030\002 \002(\003\022\017\n\007Penalty\030\003 \002(\003\022\033\n\005"
-    "State\030\004 \002(\0162\014.wire.SState\022\035\n\010Unfrozen\030\005 "
-    "\001(\0132\013.wire.Event\"g\n\014ContestSetup\022\014\n\004Name"
-    "\030\001 \002(\t\022\031\n\005Teams\030\002 \003(\0132\n.wire.Team\022\037\n\010Pro"
-    "blems\030\003 \003(\0132\r.wire.Problem\022\r\n\005Start\030\004 \002("
-    "\003\"3\n\007Problem\022\n\n\002Id\030\001 \002(\003\022\r\n\005Label\030\002 \002(\t\022"
-    "\r\n\005Color\030\003 \001(\t\" \n\004Team\022\n\n\002Id\030\001 \002(\003\022\014\n\004Na"
-    "me\030\002 \002(\t*8\n\006SState\022\013\n\007CORRECT\020\001\022\t\n\005WRONG"
-    "\020\002\022\013\n\007PENDING\020\003\022\t\n\005FIRST\020\004", 506);
+    "\n\013SubmitCount\030\002 \002(\003\022\017\n\007Penalty\030\003 \002(\003\022\023\n\013"
+    "ContestTime\030\007 \001(\003\022\033\n\005State\030\004 \002(\0162\014.wire."
+    "SState\022\035\n\010Unfrozen\030\005 \001(\0132\013.wire.Event\"g\n"
+    "\014ContestSetup\022\014\n\004Name\030\001 \002(\t\022\031\n\005Teams\030\002 \003"
+    "(\0132\n.wire.Team\022\037\n\010Problems\030\003 \003(\0132\r.wire."
+    "Problem\022\r\n\005Start\030\004 \002(\003\"3\n\007Problem\022\n\n\002Id\030"
+    "\001 \002(\003\022\r\n\005Label\030\002 \002(\t\022\r\n\005Color\030\003 \001(\t\" \n\004T"
+    "eam\022\n\n\002Id\030\001 \002(\003\022\014\n\004Name\030\002 \002(\t*8\n\006SState\022"
+    "\013\n\007CORRECT\020\001\022\t\n\005WRONG\020\002\022\013\n\007PENDING\020\003\022\t\n\005"
+    "FIRST\020\004", 527);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "scoreboard.proto", &protobuf_RegisterTypes);
   Message::default_instance_ = new Message();
@@ -545,6 +547,7 @@ const int Event::kTeamFieldNumber;
 const int Event::kProblemFieldNumber;
 const int Event::kSubmitCountFieldNumber;
 const int Event::kPenaltyFieldNumber;
+const int Event::kContestTimeFieldNumber;
 const int Event::kStateFieldNumber;
 const int Event::kUnfrozenFieldNumber;
 #endif  // !_MSC_VER
@@ -572,6 +575,7 @@ void Event::SharedCtor() {
   problem_ = GOOGLE_LONGLONG(0);
   submitcount_ = GOOGLE_LONGLONG(0);
   penalty_ = GOOGLE_LONGLONG(0);
+  contesttime_ = GOOGLE_LONGLONG(0);
   state_ = 1;
   unfrozen_ = NULL;
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
@@ -620,8 +624,8 @@ void Event::Clear() {
     ::memset(&first, 0, n);                                \
   } while (0)
 
-  if (_has_bits_[0 / 32] & 63) {
-    ZR_(team_, penalty_);
+  if (_has_bits_[0 / 32] & 127) {
+    ZR_(team_, contesttime_);
     state_ = 1;
     if (has_unfrozen()) {
       if (unfrozen_ != NULL) unfrozen_->::wire::Event::Clear();
@@ -733,6 +737,21 @@ bool Event::MergePartialFromCodedStream(
         } else {
           goto handle_unusual;
         }
+        if (input->ExpectTag(56)) goto parse_ContestTime;
+        break;
+      }
+
+      // optional int64 ContestTime = 7;
+      case 7: {
+        if (tag == 56) {
+         parse_ContestTime:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::int64, ::google::protobuf::internal::WireFormatLite::TYPE_INT64>(
+                 input, &contesttime_)));
+          set_has_contesttime();
+        } else {
+          goto handle_unusual;
+        }
         if (input->ExpectAtEnd()) goto success;
         break;
       }
@@ -794,6 +813,11 @@ void Event::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteInt64(6, this->team(), output);
   }
 
+  // optional int64 ContestTime = 7;
+  if (has_contesttime()) {
+    ::google::protobuf::internal::WireFormatLite::WriteInt64(7, this->contesttime(), output);
+  }
+
   if (!unknown_fields().empty()) {
     ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
         unknown_fields(), output);
@@ -837,6 +861,11 @@ void Event::SerializeWithCachedSizes(
     target = ::google::protobuf::internal::WireFormatLite::WriteInt64ToArray(6, this->team(), target);
   }
 
+  // optional int64 ContestTime = 7;
+  if (has_contesttime()) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteInt64ToArray(7, this->contesttime(), target);
+  }
+
   if (!unknown_fields().empty()) {
     target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
         unknown_fields(), target);
@@ -875,6 +904,13 @@ int Event::ByteSize() const {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::Int64Size(
           this->penalty());
+    }
+
+    // optional int64 ContestTime = 7;
+    if (has_contesttime()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::Int64Size(
+          this->contesttime());
     }
 
     // required .wire.SState State = 4;
@@ -929,6 +965,9 @@ void Event::MergeFrom(const Event& from) {
     if (from.has_penalty()) {
       set_penalty(from.penalty());
     }
+    if (from.has_contesttime()) {
+      set_contesttime(from.contesttime());
+    }
     if (from.has_state()) {
       set_state(from.state());
     }
@@ -952,7 +991,7 @@ void Event::CopyFrom(const Event& from) {
 }
 
 bool Event::IsInitialized() const {
-  if ((_has_bits_[0] & 0x0000001f) != 0x0000001f) return false;
+  if ((_has_bits_[0] & 0x0000002f) != 0x0000002f) return false;
 
   if (has_unfrozen()) {
     if (!this->unfrozen().IsInitialized()) return false;
@@ -966,6 +1005,7 @@ void Event::Swap(Event* other) {
     std::swap(problem_, other->problem_);
     std::swap(submitcount_, other->submitcount_);
     std::swap(penalty_, other->penalty_);
+    std::swap(contesttime_, other->contesttime_);
     std::swap(state_, other->state_);
     std::swap(unfrozen_, other->unfrozen_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);

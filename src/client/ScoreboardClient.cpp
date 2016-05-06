@@ -23,6 +23,7 @@
 #include <QMetaEnum>
 #include <QQmlComponent>
 #include <QVariant>
+#include "qmlproto.h"
 #include "scoreboard.pb.h"
 
 
@@ -70,6 +71,8 @@ void ScoreboardClient::readyRead() {
 			if(m.has_event()) {
 				applyEvent(m.event());
 			} else if(m.has_setup()) {
+				this->teams.clear();
+				this->problems.clear();
 				auto setup = m.setup();
 				auto name = QString::fromStdString(setup.name());
                 double start = setup.start() * 1000.0;
@@ -82,8 +85,6 @@ void ScoreboardClient::readyRead() {
 					QUrl(QStringLiteral("qrc:/Team.qml")));
 				QVariantList teamList;
 				QVariantList problemList;
-				this->teams.clear();
-				this->problems.clear();
 				std::sort(problems.begin(), problems.end(), [](const wire::Problem& a, const wire::Problem& b){
 					return a.label() < b.label();
 				});
@@ -94,18 +95,6 @@ void ScoreboardClient::readyRead() {
 					this->teams[id] = qmlTeam;
 					qmlTeam->setProperty("name", name);
 					qmlTeam->setProperty("pos", teamList.size());
-					if(teamList.size() == 0) {
-						qmlTeam->setProperty("rank", 1);
-					}
-					QVariantList empty;
-					for(const auto& problem : problems) {
-						empty.append(0);
-					}
-					qmlTeam->setProperty("correct", empty);
-					qmlTeam->setProperty("submits", empty);
-					qmlTeam->setProperty("pending", empty);
-					qmlTeam->setProperty("penalties", empty);
-					qmlTeam->setProperty("first", empty);
 					teamList.push_back(QVariant::fromValue(qmlTeam));
 				}
 				for(const auto& t : teams) {
@@ -135,53 +124,27 @@ void ScoreboardClient::readyRead() {
 }
 
 bool ScoreboardClient::compareScore(QObject *a, QObject *b) {
-	auto sd = a->property("solved").toInt() - b->property("solved").toInt();
-	if(sd < 0) return false;
-	if(sd > 0) return true;
-	auto pd = a->property("penalty").toInt() - b->property("penalty").toInt();
-	if(pd < 0) return true;
-	if(pd > 0) return false;
-	auto fd = a->property("firsts").toInt() - b->property("firsts").toInt();
-	if(fd > 0) return true;
-	if(fd < 0) return false;
-	return false;
+    QVariant res;
+    QMetaObject::invokeMethod(a, "betterThan", Q_RETURN_ARG(QVariant, res), Q_ARG(QVariant, QVariant::fromValue(b)));
+    return res.toBool();
 }
 
 void ScoreboardClient::applyEvent(const wire::Event& event) {
 	auto team = teams[event.team()];
 	auto problem = problems[event.problem()];
-	auto submitCount = event.submitcount();
-	auto penalty = event.penalty();
-	auto state = event.state();
 	if(event.has_unfrozen()) {
 		pendingFreeze[team][problem] = event.unfrozen();
 	}
-	auto Tsubmits = team->property("submits").toList();
-	auto Tpending = team->property("pending").toList();
-	auto Tcorrect = team->property("correct").toList();
-	auto Tpenalties = team->property("penalties").toList();
-	auto Tfirst = team->property("first").toList();
-	Tsubmits[problem] = QVariant(qint64(submitCount));
-	Tpending[problem] = QVariant(state == wire::PENDING);
-	Tcorrect[problem] = QVariant(state == wire::CORRECT || state == wire::FIRST);
-	Tfirst[problem] = QVariant(state == wire::FIRST);
-	Tpenalties[problem] = QVariant(qint64(penalty)/60);//TODO: correct rounding?
-	team->setProperty("submits", Tsubmits);
-	team->setProperty("pending", Tpending);
-	team->setProperty("correct", Tcorrect);
-	team->setProperty("penalties", Tpenalties);
-	team->setProperty("first", Tfirst);
+	QVariantMap jEvent = messageToObject(event);
+	QMetaObject::invokeMethod(team, "applyEvent", Q_ARG(QVariant, jEvent), Q_ARG(QVariant, problem));
 	std::stable_sort(std::begin(ranking),std::end(ranking),&compareScore);
-	int rank = 1;
-	int pos = 0;
-	for(auto it = begin(ranking); it != end(ranking); ++it) {
-		if(it == begin(ranking) || compareScore(*std::prev(it), *it)) {
-			(*it)->setProperty("rank", rank++);
-		} else {
-			(*it)->setProperty("rank", "");
-		}
-		(*it)->setProperty("pos", pos++);
-	}
+    int rank = 0;
+    for(quint64 pos = 0; pos < ranking.size(); ++pos) {
+        ranking[pos]->setProperty("pos", pos);
+        if(pos == 0 || compareScore(ranking[pos-1], ranking[pos]))
+            rank = pos+1;
+        ranking[pos]->setProperty("rank", rank);
+    }
 }
 
 void ScoreboardClient::fatal(QAbstractSocket::SocketError error) {

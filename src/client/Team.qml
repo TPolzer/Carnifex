@@ -1,6 +1,6 @@
 /*
  * This file is part of "The Scoreboard"
- * Copyright (C) 2016  Tobias Polzer
+ * Copyright (C) 2016  Tobias Polzer, Dominik Paulus
 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -21,14 +21,37 @@ import "helper.js" as H
 
 Item {
     property var name: ""
-    property var rank: ""
+    property var rank: "1"
     property int pos: 0
     property var submits: []
     property var pending: []
-    property var correct: []
+	property var correct: []
+	property var correctTimes: []
     property var penalties: []
     property var first: []
     property var solved: correct.reduce(H.add, 0)
-    property int penalty: penalties.reduce(H.add, 0)
-    property int firsts: first.reduce(H.add, 0)
+	property int penalty: penalties.reduce(H.add, 0)
+	property int lastSolved: Math.max.apply(null, correctTimes)
+	function betterThan(other) {
+		var sd = solved - other.solved;
+		if(sd != 0) return sd > 0;
+		var pd = penalty - other.penalty;
+		if(pd != 0) return pd < 0;
+		var ld = lastSolved - other.lastSolved;
+		if(ld != 0) return ld < 0;
+		return false;
+	}
+	function applyEvent(event, problem) {
+		submits[problem] = event.SubmitCount;
+		pending[problem] = event.State == 'PENDING';
+		correct[problem] = event.State == 'CORRECT' || event.State == 'FIRST'
+		first[problem] = event.State == 'FIRST'
+		penalties[problem] = event.Penalty;
+		if(correct[problem]) {
+			correctTimes[problem] = event.ContestTime;
+		}
+		submits = submits; pending = pending;
+		correct = correct; first = first;
+		penalties = penalties; correctTimes = correctTimes;
+	}
 }

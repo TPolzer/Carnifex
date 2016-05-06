@@ -1,6 +1,6 @@
 /*
  * This file is part of "The Scoreboard"
- * Copyright (C) 2016  Tobias Polzer
+ * Copyright (C) 2016  Tobias Polzer, Dominik Paulus
 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -24,7 +24,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
-	"math"
 	"net"
     "net/http"
     "net/url"
@@ -326,11 +325,11 @@ func (state *ContestState) summarize(submissions Submissions, respectFreeze bool
 						*event.State = wire.SState_FIRST
 					}
 				}
-				//TODO how/when to round?
-				*event.Penalty += int64(math.Ceil(s.Time)) - state.contest.Start
+				event.ContestTime = proto.Int64(int64((s.Time - float64(state.contest.Start))/60))
+				*event.Penalty += *event.ContestTime
 				return
 			} else { //TODO special-case compile error penalty
-				penalty += state.contest.Penalty
+				penalty += state.contest.Penalty / 60
 				*event.State = wire.SState_WRONG
 			}
 		}
@@ -413,7 +412,7 @@ func (state *ContestState) checkFirsts(submission Submission) {
 	}
 	oldFirst, ok := state.firsts[submission.Problem]
 	if(ok) {
-		oldTime, newTime := math.Floor(oldFirst[0].Time/60), math.Floor(submission.Time/60) // TODO is this correct??
+		oldTime, newTime := oldFirst[0].Time, submission.Time
 		if(oldTime < newTime) {
 			return
 		} else if (oldTime > newTime) {
