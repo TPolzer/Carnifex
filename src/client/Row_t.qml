@@ -40,12 +40,23 @@ Item {
 		width: 3*em
 		horizontalAlignment: Text.AlignLeft
 	}
+	Image {
+		anchors.left: rank.right
+		id: coat
+		width: height
+		anchors.top: parent.top
+		anchors.bottom: parent.bottom
+		anchors.margins: 0.1*em
+		fillMode: Image.PreserveAspectFit
+		source: contest.coats[team.affiliation]
+	}
 	ScoreText {
+		anchors.leftMargin: 0.1*em
 		property var columnTitle: "Team"
 		anchors.verticalCenter: parent.verticalCenter
 		text: team.name
 		id: teamname
-		anchors.left: rank.right
+		anchors.left: coat.right
 		anchors.right: row.left
 		horizontalAlignment: Text.AlignLeft
 		clip: true

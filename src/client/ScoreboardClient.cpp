@@ -122,9 +122,11 @@ void ScoreboardClient::setup(const wire::ContestSetup& setup) {
 	for(const auto& team : teams) {
 		QObject *qmlTeam = teamComponent.create();
 		auto name = QString::fromStdString(team.name());
+		auto affiliation = QString::fromStdString(team.affiliation());
 		auto id = team.id();
 		this->teams[id] = qmlTeam;
 		qmlTeam->setProperty("name", name);
+		qmlTeam->setProperty("affiliation", affiliation);
 		qmlTeam->setProperty("pos", teamList.size());
 		teamList.push_back(QVariant::fromValue(qmlTeam));
 	}

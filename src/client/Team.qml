@@ -21,7 +21,8 @@ import "helper.js" as H
 
 Item {
     property var name: ""
-    property var rank: "1"
+	property var rank: "1"
+	property var affiliation: ''
     property int pos: 0
     property var submits: []
     property var pending: []

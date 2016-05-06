@@ -353,6 +353,7 @@ func (state *ContestState) ContestSetup() (*wire.Message) {
 		team := &wire.Team{
 			Name: &t.Name,
 			Id: &id,
+			Affiliation: &t.Affiliation,
 		}
 		teams = append(teams, team)
 	}
@@ -575,6 +576,7 @@ type ContestConfig struct {
 type Team struct {
 	Id TeamId
 	Name string
+	Affiliation string
 }
 
 type APIMethod int8

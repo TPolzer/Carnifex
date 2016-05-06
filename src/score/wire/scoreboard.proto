@@ -33,6 +33,7 @@ message Problem {
 message Team {
 	required int64 Id = 1;
 	required string Name = 2;
+	optional string Affiliation = 3;
 }
 
 enum SState {

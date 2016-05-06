@@ -611,12 +611,26 @@ class Team : public ::google::protobuf::Message {
   inline ::std::string* release_name();
   inline void set_allocated_name(::std::string* name);
 
+  // optional string Affiliation = 3;
+  inline bool has_affiliation() const;
+  inline void clear_affiliation();
+  static const int kAffiliationFieldNumber = 3;
+  inline const ::std::string& affiliation() const;
+  inline void set_affiliation(const ::std::string& value);
+  inline void set_affiliation(const char* value);
+  inline void set_affiliation(const char* value, size_t size);
+  inline ::std::string* mutable_affiliation();
+  inline ::std::string* release_affiliation();
+  inline void set_allocated_affiliation(::std::string* affiliation);
+
   // @@protoc_insertion_point(class_scope:wire.Team)
  private:
   inline void set_has_id();
   inline void clear_has_id();
   inline void set_has_name();
   inline void clear_has_name();
+  inline void set_has_affiliation();
+  inline void clear_has_affiliation();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
@@ -624,6 +638,7 @@ class Team : public ::google::protobuf::Message {
   mutable int _cached_size_;
   ::google::protobuf::int64 id_;
   ::std::string* name_;
+  ::std::string* affiliation_;
   friend void  protobuf_AddDesc_scoreboard_2eproto();
   friend void protobuf_AssignDesc_scoreboard_2eproto();
   friend void protobuf_ShutdownFile_scoreboard_2eproto();
@@ -1369,6 +1384,82 @@ inline void Team::set_allocated_name(::std::string* name) {
     name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   }
   // @@protoc_insertion_point(field_set_allocated:wire.Team.Name)
+}
+
+// optional string Affiliation = 3;
+inline bool Team::has_affiliation() const {
+  return (_has_bits_[0] & 0x00000004u) != 0;
+}
+inline void Team::set_has_affiliation() {
+  _has_bits_[0] |= 0x00000004u;
+}
+inline void Team::clear_has_affiliation() {
+  _has_bits_[0] &= ~0x00000004u;
+}
+inline void Team::clear_affiliation() {
+  if (affiliation_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
+    affiliation_->clear();
+  }
+  clear_has_affiliation();
+}
+inline const ::std::string& Team::affiliation() const {
+  // @@protoc_insertion_point(field_get:wire.Team.Affiliation)
+  return *affiliation_;
+}
+inline void Team::set_affiliation(const ::std::string& value) {
+  set_has_affiliation();
+  if (affiliation_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
+    affiliation_ = new ::std::string;
+  }
+  affiliation_->assign(value);
+  // @@protoc_insertion_point(field_set:wire.Team.Affiliation)
+}
+inline void Team::set_affiliation(const char* value) {
+  set_has_affiliation();
+  if (affiliation_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
+    affiliation_ = new ::std::string;
+  }
+  affiliation_->assign(value);
+  // @@protoc_insertion_point(field_set_char:wire.Team.Affiliation)
+}
+inline void Team::set_affiliation(const char* value, size_t size) {
+  set_has_affiliation();
+  if (affiliation_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
+    affiliation_ = new ::std::string;
+  }
+  affiliation_->assign(reinterpret_cast<const char*>(value), size);
+  // @@protoc_insertion_point(field_set_pointer:wire.Team.Affiliation)
+}
+inline ::std::string* Team::mutable_affiliation() {
+  set_has_affiliation();
+  if (affiliation_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
+    affiliation_ = new ::std::string;
+  }
+  // @@protoc_insertion_point(field_mutable:wire.Team.Affiliation)
+  return affiliation_;
+}
+inline ::std::string* Team::release_affiliation() {
+  clear_has_affiliation();
+  if (affiliation_ == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
+    return NULL;
+  } else {
+    ::std::string* temp = affiliation_;
+    affiliation_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+    return temp;
+  }
+}
+inline void Team::set_allocated_affiliation(::std::string* affiliation) {
+  if (affiliation_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
+    delete affiliation_;
+  }
+  if (affiliation) {
+    set_has_affiliation();
+    affiliation_ = affiliation;
+  } else {
+    clear_has_affiliation();
+    affiliation_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  }
+  // @@protoc_insertion_point(field_set_allocated:wire.Team.Affiliation)
 }
 
 

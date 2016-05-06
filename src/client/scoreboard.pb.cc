@@ -126,9 +126,10 @@ void protobuf_AssignDesc_scoreboard_2eproto() {
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(Problem));
   Team_descriptor_ = file->message_type(4);
-  static const int Team_offsets_[2] = {
+  static const int Team_offsets_[3] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Team, id_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Team, name_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Team, affiliation_),
   };
   Team_reflection_ =
     new ::google::protobuf::internal::GeneratedMessageReflection(
@@ -199,10 +200,10 @@ void protobuf_AddDesc_scoreboard_2eproto() {
     "\014ContestSetup\022\014\n\004Name\030\001 \002(\t\022\031\n\005Teams\030\002 \003"
     "(\0132\n.wire.Team\022\037\n\010Problems\030\003 \003(\0132\r.wire."
     "Problem\022\r\n\005Start\030\004 \002(\003\"3\n\007Problem\022\n\n\002Id\030"
-    "\001 \002(\003\022\r\n\005Label\030\002 \002(\t\022\r\n\005Color\030\003 \001(\t\" \n\004T"
-    "eam\022\n\n\002Id\030\001 \002(\003\022\014\n\004Name\030\002 \002(\t*8\n\006SState\022"
-    "\013\n\007CORRECT\020\001\022\t\n\005WRONG\020\002\022\013\n\007PENDING\020\003\022\t\n\005"
-    "FIRST\020\004", 527);
+    "\001 \002(\003\022\r\n\005Label\030\002 \002(\t\022\r\n\005Color\030\003 \001(\t\"5\n\004T"
+    "eam\022\n\n\002Id\030\001 \002(\003\022\014\n\004Name\030\002 \002(\t\022\023\n\013Affilia"
+    "tion\030\003 \001(\t*8\n\006SState\022\013\n\007CORRECT\020\001\022\t\n\005WRO"
+    "NG\020\002\022\013\n\007PENDING\020\003\022\t\n\005FIRST\020\004", 548);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "scoreboard.proto", &protobuf_RegisterTypes);
   Message::default_instance_ = new Message();
@@ -1737,6 +1738,7 @@ void Problem::Swap(Problem* other) {
 #ifndef _MSC_VER
 const int Team::kIdFieldNumber;
 const int Team::kNameFieldNumber;
+const int Team::kAffiliationFieldNumber;
 #endif  // !_MSC_VER
 
 Team::Team()
@@ -1760,6 +1762,7 @@ void Team::SharedCtor() {
   _cached_size_ = 0;
   id_ = GOOGLE_LONGLONG(0);
   name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  affiliation_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 
@@ -1771,6 +1774,9 @@ Team::~Team() {
 void Team::SharedDtor() {
   if (name_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
     delete name_;
+  }
+  if (affiliation_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
+    delete affiliation_;
   }
   if (this != default_instance_) {
   }
@@ -1798,11 +1804,16 @@ Team* Team::New() const {
 }
 
 void Team::Clear() {
-  if (_has_bits_[0 / 32] & 3) {
+  if (_has_bits_[0 / 32] & 7) {
     id_ = GOOGLE_LONGLONG(0);
     if (has_name()) {
       if (name_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
         name_->clear();
+      }
+    }
+    if (has_affiliation()) {
+      if (affiliation_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
+        affiliation_->clear();
       }
     }
   }
@@ -1844,6 +1855,23 @@ bool Team::MergePartialFromCodedStream(
             this->name().data(), this->name().length(),
             ::google::protobuf::internal::WireFormat::PARSE,
             "name");
+        } else {
+          goto handle_unusual;
+        }
+        if (input->ExpectTag(26)) goto parse_Affiliation;
+        break;
+      }
+
+      // optional string Affiliation = 3;
+      case 3: {
+        if (tag == 26) {
+         parse_Affiliation:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
+                input, this->mutable_affiliation()));
+          ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
+            this->affiliation().data(), this->affiliation().length(),
+            ::google::protobuf::internal::WireFormat::PARSE,
+            "affiliation");
         } else {
           goto handle_unusual;
         }
@@ -1891,6 +1919,16 @@ void Team::SerializeWithCachedSizes(
       2, this->name(), output);
   }
 
+  // optional string Affiliation = 3;
+  if (has_affiliation()) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
+      this->affiliation().data(), this->affiliation().length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE,
+      "affiliation");
+    ::google::protobuf::internal::WireFormatLite::WriteStringMaybeAliased(
+      3, this->affiliation(), output);
+  }
+
   if (!unknown_fields().empty()) {
     ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
         unknown_fields(), output);
@@ -1917,6 +1955,17 @@ void Team::SerializeWithCachedSizes(
         2, this->name(), target);
   }
 
+  // optional string Affiliation = 3;
+  if (has_affiliation()) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
+      this->affiliation().data(), this->affiliation().length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE,
+      "affiliation");
+    target =
+      ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
+        3, this->affiliation(), target);
+  }
+
   if (!unknown_fields().empty()) {
     target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
         unknown_fields(), target);
@@ -1941,6 +1990,13 @@ int Team::ByteSize() const {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::StringSize(
           this->name());
+    }
+
+    // optional string Affiliation = 3;
+    if (has_affiliation()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::StringSize(
+          this->affiliation());
     }
 
   }
@@ -1976,6 +2032,9 @@ void Team::MergeFrom(const Team& from) {
     if (from.has_name()) {
       set_name(from.name());
     }
+    if (from.has_affiliation()) {
+      set_affiliation(from.affiliation());
+    }
   }
   mutable_unknown_fields()->MergeFrom(from.unknown_fields());
 }
@@ -2002,6 +2061,7 @@ void Team::Swap(Team* other) {
   if (other != this) {
     std::swap(id_, other->id_);
     std::swap(name_, other->name_);
+    std::swap(affiliation_, other->affiliation_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
     _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
