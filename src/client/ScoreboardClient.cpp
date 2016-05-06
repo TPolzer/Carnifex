@@ -37,6 +37,7 @@ void ScoreboardClient::run() {
     QObject::connect(&socket, &QTcpSocket::connected, this, &ScoreboardClient::connected);
 	qRegisterMetaType<QAbstractSocket::SocketError>("QAbstractSocket::SocketError");
 	socketIsFatal = QObject::connect(&socket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(fatal(QAbstractSocket::SocketError)));
+	QObject::connect(this, &ScoreboardClient::error, this, &ScoreboardClient::reset);
     connect();
 }
 
@@ -48,6 +49,11 @@ void ScoreboardClient::connect() {
 void ScoreboardClient::reconnect(QAbstractSocket::SocketError) {
 	std::cerr << "reconnecting\n";
     QTimer::singleShot(2000, this, &ScoreboardClient::connect);
+}
+
+void ScoreboardClient::reset() {
+	socket.close();
+	emit reconnect(QAbstractSocket::UnknownSocketError);
 }
 
 void ScoreboardClient::connected() {
@@ -83,50 +89,7 @@ void ScoreboardClient::readyRead() {
 			if(m.has_event()) {
 				applyEvent(m.event());
 			} else if(m.has_setup()) {
-				this->teams.clear();
-				this->problems.clear();
-                this->ranking.clear();
-                this->pendingFreeze.clear();
-				auto setup = m.setup();
-				auto name = QString::fromStdString(setup.name());
-                double start = setup.start() * 1000.0;
-				auto teams = setup.teams();
-				sort(teams.begin(), teams.end(), [](const wire::Team& a, const wire::Team& b){
-					return a.name() < b.name();
-				});
-				auto problems = setup.problems();
-				QQmlComponent teamComponent(&engine,
-					QUrl(QStringLiteral("qrc:/Team.qml")));
-				QVariantList teamList;
-				QVariantList problemList;
-				std::sort(problems.begin(), problems.end(), [](const wire::Problem& a, const wire::Problem& b){
-					return a.label() < b.label();
-				});
-				for(const auto& team : teams) {
-					QObject *qmlTeam = teamComponent.create();
-					auto name = QString::fromStdString(team.name());
-					auto id = team.id();
-					this->teams[id] = qmlTeam;
-					qmlTeam->setProperty("name", name);
-					qmlTeam->setProperty("pos", teamList.size());
-					teamList.push_back(QVariant::fromValue(qmlTeam));
-				}
-				for(const auto& t : teams) {
-					ranking.push_back(this->teams[t.id()]);
-				}
-				for(const auto& problem : problems) {
-					this->problems[problem.id()] = problemList.size();
-					problemList.push_back(QString::fromStdString(problem.label()));
-				}
-				QVariantMap contest;
-				contest["name"] = name;
-                contest["start"] = start;
-				emit contestSetup(contest, QVariant(problemList), teamList);
-
-				//TODO is this correct / sufficient / necessary?
-				QQmlEngine::setObjectOwnership(qvariant_cast<QObject *>(teamList), QQmlEngine::JavaScriptOwnership);
-				QQmlEngine::setObjectOwnership(qvariant_cast<QObject *>(problemList), QQmlEngine::JavaScriptOwnership);
-				std::cerr << "Received setup for Contest \"" << setup.name() << "\"" <<std::endl;
+				setup(m.setup());
 			} else {
 				std::cerr << "Received inconsistent message (#2)" << std::endl;
 				emit error();
@@ -135,6 +98,52 @@ void ScoreboardClient::readyRead() {
 	}
 	if(socket.bytesAvailable())
 		readyRead();
+}
+
+void ScoreboardClient::setup(const wire::ContestSetup& setup) {
+	this->teams.clear();
+	this->problems.clear();
+	this->ranking.clear();
+	this->pendingFreeze.clear();
+	auto name = QString::fromStdString(setup.name());
+	double start = setup.start() * 1000.0;
+	auto teams = setup.teams();
+	sort(teams.begin(), teams.end(), [](const wire::Team& a, const wire::Team& b){
+			return a.name() < b.name();
+			});
+	auto problems = setup.problems();
+	QQmlComponent teamComponent(&engine,
+			QUrl(QStringLiteral("qrc:/Team.qml")));
+	QVariantList teamList;
+	QVariantList problemList;
+	std::sort(problems.begin(), problems.end(), [](const wire::Problem& a, const wire::Problem& b){
+			return a.label() < b.label();
+			});
+	for(const auto& team : teams) {
+		QObject *qmlTeam = teamComponent.create();
+		auto name = QString::fromStdString(team.name());
+		auto id = team.id();
+		this->teams[id] = qmlTeam;
+		qmlTeam->setProperty("name", name);
+		qmlTeam->setProperty("pos", teamList.size());
+		teamList.push_back(QVariant::fromValue(qmlTeam));
+	}
+	for(const auto& t : teams) {
+		ranking.push_back(this->teams[t.id()]);
+	}
+	for(const auto& problem : problems) {
+		this->problems[problem.id()] = problemList.size();
+		problemList.push_back(QString::fromStdString(problem.label()));
+	}
+	QVariantMap contest;
+	contest["name"] = name;
+	contest["start"] = start;
+	emit contestSetup(contest, QVariant(problemList), teamList);
+
+	//TODO is this correct / sufficient / necessary?
+	QQmlEngine::setObjectOwnership(qvariant_cast<QObject *>(teamList), QQmlEngine::JavaScriptOwnership);
+	QQmlEngine::setObjectOwnership(qvariant_cast<QObject *>(problemList), QQmlEngine::JavaScriptOwnership);
+	std::cerr << "Received setup for Contest \"" << setup.name() << "\"" <<std::endl;
 }
 
 bool ScoreboardClient::compareScore(QObject *a, QObject *b) {
@@ -162,6 +171,6 @@ void ScoreboardClient::applyEvent(const wire::Event& event) {
 }
 
 void ScoreboardClient::fatal(QAbstractSocket::SocketError error) {
-	std::cerr << "fatal: " << QMetaEnum::fromType<decltype(error)>().valueToKey(error) << std::endl;
+	std::cerr << "fatal: " << QMetaEnum::fromType<QAbstractSocket::SocketError>().valueToKey(error) << std::endl;
     abort();
 }

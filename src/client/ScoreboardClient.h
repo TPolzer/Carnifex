@@ -42,6 +42,7 @@ private:
 	std::map<qint64, qint64> problems; // id -> idx
 	static bool compareScore(QObject*, QObject*);
 	void applyEvent(const wire::Event&);
+	void setup(const wire::ContestSetup&);
 public:
 	ScoreboardClient(QQmlEngine& engine);
 signals:
@@ -51,6 +52,7 @@ signals:
 public slots:
     void connect();
 	void connected();
+	void reset();
     void reconnect(QAbstractSocket::SocketError);
 	void fatal(QAbstractSocket::SocketError);
 	void readyRead();
