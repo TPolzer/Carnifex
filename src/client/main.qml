@@ -20,6 +20,7 @@ import QtQuick 2.0
 import QtQuick.Window 2.0
 import de.bulsa.clock 0.1
 import "helper.js" as H
+import "artwork/mapping.js" as C
 
 Window {
     visible: true
@@ -34,16 +35,7 @@ Window {
 	property string name: ""
 	property point focused: "-1,-1"
 	property var start: new Date().valueOf()
-	property var coats: {
-		{
-			'Universität des Saarlandes': 'https://upload.wikimedia.org/wikipedia/commons/8/8e/Wappen_des_Saarlands.svg',
-			'FAU Erlangen-Nürnberg': 'https://upload.wikimedia.org/wikipedia/commons/8/87/Wappen_Erlangen.svg',
-			'Reykjavik University': 'https://upload.wikimedia.org/wikipedia/commons/c/c8/ISL_Reykjavik_COA.svg',
-			'Georg-August-Universität Göttingen': 'https://upload.wikimedia.org/wikipedia/commons/0/0a/Stadtwappen_Goettingen.PNG',
-			'TU München': 'https://upload.wikimedia.org/wikipedia/commons/1/17/Muenchen_Kleines_Stadtwappen.svg',
-			'Karlsruher Institut für Technologie': 'https://upload.wikimedia.org/wikipedia/commons/5/5b/Coat_of_arms_de-bw_Karlsruhe.svg',
-		}
-	}
+	property var coats: C.coats()
 
 	Team {
 		id: dummyTeam

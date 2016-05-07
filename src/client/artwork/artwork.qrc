@@ -1,0 +1,11 @@
+<RCC>
+    <qresource prefix="/artwork">
+        <file>mapping.js</file>
+		<file>Wappen_Erlangen.svgz</file>
+		<file>ISL_Reykjavik_COA.svgz</file>
+		<file>Wappen_des_Saarlands.svgz</file>
+		<file>Stadtwappen_Goettingen.PNG</file>
+		<file>Muenchen_Kleines_Stadtwappen.svgz</file>
+		<file>Coat_of_arms_de-bw_Karlsruhe.svgz</file>
+    </qresource>
+</RCC>

@@ -11,7 +11,7 @@ find_package(Protobuf REQUIRED)
 find_package(Qt5Widgets)
 
 # Tell CMake to create the helloworld executable
-add_executable(client main.cpp ScoreboardClient.cpp qml.qrc scoreboard.pb.cc clock.cc qmlproto.cpp)
+add_executable(client main.cpp ScoreboardClient.cpp qml.qrc scoreboard.pb.cc clock.cc qmlproto.cpp artwork/artwork.qrc)
 target_link_libraries(client Qt5::Widgets Qt5::Quick)
 target_link_libraries(client ${PROTOBUF_LIBRARIES})
 # set_property(TARGET client PROPERTY CXX_STANDARD 11)

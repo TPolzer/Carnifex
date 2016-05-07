@@ -4,6 +4,6 @@
         <file>Row_t.qml</file>
         <file>helper.js</file>
         <file>ScoreText.qml</file>
-        <file>Team.qml</file>
+		<file>Team.qml</file>
     </qresource>
 </RCC>
