@@ -33,6 +33,7 @@ type Config struct {
 	BaseUrl string
 	Simulate bool
 	SimulationSpeed float64
+	SharedSecret string
 	Poll_ms time.Duration
 	Check_s time.Duration
 }
@@ -102,7 +103,7 @@ func main() {
 		judgings = simulate(judgings, float64(ContestState.Contest.Start), config.SimulationSpeed).(chan score.Judging)
 	}
 
-	go ListenTCP(8080, subscribe, unsubscribe)
+	go ListenTCP(8080, config.SharedSecret, subscribe, unsubscribe)
 
 	log.Print("succesfully connected to judge and listening for clients")
 

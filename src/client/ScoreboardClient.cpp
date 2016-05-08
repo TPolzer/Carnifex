@@ -19,18 +19,30 @@
 #include "ScoreboardClient.h"
 #include <iostream>
 #include <vector>
+#include <new>
 #include <QtEndian>
 #include <QMetaEnum>
 #include <QQmlComponent>
 #include <QVariant>
+#include <QString>
 #include <QTimer>
+#include <sodium.h>
 #include "qmlproto.h"
 #include "scoreboard.pb.h"
 
+constexpr static int KEYLEN = 32;
+static_assert(crypto_secretbox_KEYBYTES == KEYLEN, "key length disagreement");
+constexpr static int NONCELEN = 24;
+static_assert(crypto_secretbox_NONCEBYTES == NONCELEN, "nonce length disagreement");
+constexpr static int SALTLEN = 32;
 
-ScoreboardClient::ScoreboardClient(QQmlEngine& engine)
-	:buffer(8), engine(engine), pos(end(buffer))
+
+ScoreboardClient::ScoreboardClient(const QJsonDocument &config, QQmlEngine &engine)
+	:config(config.object()), engine(engine)
 {
+	sharedSecret = this->config["sharedsecret"].toString().toStdString();
+	key = std::unique_ptr<unsigned char[]>(new unsigned char[KEYLEN]);
+	nonce = std::unique_ptr<unsigned char[]>(new unsigned char[NONCELEN]);
 }
 
 void ScoreboardClient::run() {
@@ -58,13 +70,35 @@ void ScoreboardClient::reset() {
 
 void ScoreboardClient::connected() {
 	std::cerr << "connected\n";
-    pos = end(buffer);
+	encrypted = false;
+	buffer.resize(NONCELEN-8+SALTLEN);
+	nctr = 0;
+    pos = begin(buffer);
 	if(socketIsFatal) QObject::connect(&socket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(reconnect(QAbstractSocket::SocketError)));
 	disconnect(socketIsFatal);
 }
 
 void ScoreboardClient::readyRead() {
-	if(pos == end(buffer)) {
+	if(!encrypted) {
+		pos += socket.read(&*pos, end(buffer)-pos);
+		if(pos == end(buffer)) {
+			//salt is only needed temporarily to derive the key
+			unsigned char salt[SALTLEN];
+			
+			std::copy_n(begin(buffer), NONCELEN-8, nonce.get()+8); // nonce is 8 bytes counter . 16 bytes session nonce
+			std::copy_n(begin(buffer)+NONCELEN-8, SALTLEN, salt);
+			
+			if(crypto_pwhash_scryptsalsa208sha256_ll(
+					reinterpret_cast<const uchar*>(sharedSecret.c_str()), sharedSecret.size(),
+					salt, SALTLEN,
+					16384, 8, 1,
+					key.get(), 32
+			)) {
+				throw std::bad_alloc();//OOM
+			};
+			encrypted = true;
+		}
+	} else if(pos == end(buffer)) {
 		if(socket.bytesAvailable() < sizeof(packetSize))
 			return;
 		buffer.assign(sizeof(packetSize), 0x3f);
@@ -75,11 +109,23 @@ void ScoreboardClient::readyRead() {
 			emit error();
 			return;
 		}
-		buffer.resize(packetSize);
+		buffer.resize(packetSize + crypto_secretbox_MACBYTES);
 		pos = begin(buffer);
 	} else {
 		pos += socket.read(&*pos, end(buffer)-pos);
 		if(pos == end(buffer)) {
+			qToBigEndian(nctr, nonce.get());
+			++nctr;
+			auto ucharBuf = reinterpret_cast<unsigned char*>(&buffer[0]);
+			int fail = crypto_secretbox_open_easy(
+					ucharBuf, ucharBuf,
+					buffer.size(), nonce.get(), key.get()
+			);
+			if(fail) {
+				std::cerr << "decryption of packet " << nctr-1 << " failed" << std::endl;
+				emit error();
+				return;
+			}
             m.ParseFromArray(&buffer[0], packetSize);
 			if(!m.IsInitialized()) {
 				std::cerr << "Received inconsistent message (#1)" << std::endl;

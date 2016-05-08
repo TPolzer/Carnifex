@@ -20,17 +20,24 @@
 #include <QQmlApplicationEngine>
 #include <QtQml>
 #include <QQuickWindow>
-#include <QVariant>
-#include <QMetaObject>
-#include <QJsonArray>
-#include <QTcpSocket>
-#include <QtEndian>
+#include <QFile>
+#include <iostream>
+#include <sodium.h>
 #include "ScoreboardClient.h"
 #include "clock.h"
 
 int main(int argc, char *argv[])
 {
+	if(sodium_init()) {
+		std::cerr << "is /dev/urandom accessible?\n";
+		abort();
+	}
     QGuiApplication app(argc, argv);
+
+	QFile configFile("config.json");
+	configFile.open(QIODevice::ReadOnly | QIODevice::Text);
+	QJsonDocument config = QJsonDocument::fromJson(configFile.readAll());
+
 
     QQmlApplicationEngine engine;
 
@@ -39,7 +46,7 @@ int main(int argc, char *argv[])
     engine.load(QUrl(QStringLiteral("qrc:/main.qml")));
 
     QQuickWindow *obj = qobject_cast<QQuickWindow*>(engine.rootObjects().first());
-	ScoreboardClient client(engine);
+	ScoreboardClient client(config, engine);
 	client.run();
 
 	QObject::connect(&client, SIGNAL(contestSetup(QVariant,QVariant,QVariant)),

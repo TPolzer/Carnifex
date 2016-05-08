@@ -5,6 +5,7 @@ You probably need:
 - a golang toolchain
 - a C++ toolchain
 - Qt5 development files
+- libsodium development files
 - cmake
 
 The setup currently involves:
@@ -18,5 +19,6 @@ The setup currently involves:
 To use it:
 - put your credentials into credentials.json
 - adjust the server url in config.json
+- put a secret passphrase in config.json for both server and client
 - start the server
 - start the client

@@ -21,6 +21,9 @@
 #include <QTcpSocket>
 #include <vector>
 #include <QQmlEngine>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <memory>
 #include "scoreboard.pb.h"
 
 class ScoreboardClient : public QObject
@@ -35,16 +38,22 @@ private:
 	decltype(begin(buffer)) pos;
 	qint64 packetSize;
 	wire::Message m;
+	const QJsonObject config;
 	QQmlEngine& engine;
 	std::map<qint64, QObject*> teams;
 	std::vector<QObject*> ranking;
 	std::map<QObject*, std::map<qint64, wire::Event>> pendingFreeze; // team->problem->unfreeze
 	std::map<qint64, qint64> problems; // id -> idx
+	bool encrypted;
+	std::unique_ptr<unsigned char[]> key;
+	std::unique_ptr<unsigned char[]> nonce;
+	std::string sharedSecret;
+	quint64 nctr;
 	static bool compareScore(QObject*, QObject*);
 	void applyEvent(const wire::Event&);
 	void setup(const wire::ContestSetup&);
 public:
-	ScoreboardClient(QQmlEngine& engine);
+	ScoreboardClient(const QJsonDocument &config, QQmlEngine &engine);
 signals:
 	void contestSetup(QVariant contest, QVariant problems, QVariant teams);
 	void event(QVariant event);

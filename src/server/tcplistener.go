@@ -19,6 +19,10 @@
 package main
 
 import (
+	"crypto/rand"
+	"golang.org/x/crypto/nacl/secretbox"
+	"golang.org/x/crypto/scrypt"
+
 	"encoding/binary"
 	"log"
 	"net"
@@ -26,7 +30,20 @@ import (
 	"score/wire"
 )
 
-func ListenTCP(port int, subscribe, unsubscribe chan (chan *wire.Message)) {
+func ListenTCP(port int, password string, subscribe, unsubscribe chan (chan *wire.Message)) {
+	var key [32]byte
+	salt := make([]byte, 32) // interoperability with libsodium depends on len == crypto_pwhash_SALTBYTES
+	_, err := rand.Read(salt)
+	if(err != nil) {
+		log.Fatal(err)
+	}
+	tmp, err := scrypt.Key([]byte(password), salt, 16384, 8, 1, 32) // recommended parameters from https://godoc.org/golang.org/x/crypto/scrypt
+	if(err != nil) {
+		log.Fatal(err)
+	}
+	copy(key[:], tmp)
+
+
 	listener, err := net.ListenTCP("tcp", &net.TCPAddr{Port:port})
     if(err != nil) {
         log.Fatal(err)
@@ -37,24 +54,40 @@ func ListenTCP(port int, subscribe, unsubscribe chan (chan *wire.Message)) {
 			log.Fatal(err)
 		}
 		go func() {
+			var nonce [24]byte
+			_, err := rand.Read(nonce[8:])
+			if(err != nil) {
+				log.Printf("Generating random nonce for client %v failed: %v\n", conn, err)
+				conn.Close()
+			}
+			ctr := uint64(0)
+			_, err = conn.Write(append(nonce[8:], salt...))
+			if(err != nil) {
+				conn.Close()
+			}
+
 			messages := make(chan *wire.Message)
 			subscribe <- messages
 			cc := make(chan error)
 			go func() {
 				//look for clients closing the connection
+				//a client should never send any data
 				_, err := conn.Read(make([]byte,1))
 				cc <- err
 			}()
 			MessageLoop:
 			for {
 				select {
-				case message := <-messages:
-					buf, _ := proto.Marshal(message)
-					err := binary.Write(conn, binary.BigEndian, int64(len(buf)))
+				case m := <-messages:
+					message, _ := proto.Marshal(m)
+					err := binary.Write(conn, binary.BigEndian, int64(len(message)))
 					if(err != nil) {
 						break MessageLoop
 					}
-					_, err = conn.Write(buf)
+					binary.BigEndian.PutUint64(nonce[:8], ctr)
+					ctr++
+					encrypted := secretbox.Seal(nil, message, &nonce, &key)
+					_, err = conn.Write(encrypted)
 					if(err != nil) {
 						break MessageLoop
 					}
@@ -63,6 +96,7 @@ func ListenTCP(port int, subscribe, unsubscribe chan (chan *wire.Message)) {
 				}
 			}
 			unsubscribe <- messages
+			conn.Close()
 		}()
 	}
 }
