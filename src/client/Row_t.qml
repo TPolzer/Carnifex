@@ -100,7 +100,7 @@ Item {
 		anchors.right: time.left
 		id: solved
 		text: team.solved
-		width: 4*em
+		width: 3.5*em
 		horizontalAlignment: Text.AlignRight
 	}
 	ScoreText {
@@ -109,7 +109,7 @@ Item {
 		anchors.right: parent.right
 		id: time
 		text: team.penalty
-		width: 4*em
+		width: 3.5*em
 		horizontalAlignment: Text.AlignRight
 	}
 }

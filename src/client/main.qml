@@ -27,7 +27,7 @@ Window {
     id: contest
 	color: 'black'
 
-	property double em: height/30
+	property double em: Math.min(height/30,width/45)
 	property double rs: em*1.2
     property var problems: []
 	property int n: problems.length
