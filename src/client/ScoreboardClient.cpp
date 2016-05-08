@@ -27,6 +27,7 @@
 #include <QString>
 #include <QTimer>
 #include <sodium.h>
+#include <exception>
 #include "qmlproto.h"
 #include "scoreboard.pb.h"
 
@@ -40,6 +41,10 @@ constexpr static int SALTLEN = 32;
 ScoreboardClient::ScoreboardClient(const QJsonDocument &config, QQmlEngine &engine)
 	:config(config.object()), engine(engine)
 {
+	auto sharedSecretIt = this->config.find("sharedsecret");
+	if(sharedSecretIt == this->config.end()) {
+		throw std::runtime_error("no sharedsecret provided");
+	}
 	sharedSecret = this->config["sharedsecret"].toString().toStdString();
 	key = std::unique_ptr<unsigned char[]>(new unsigned char[KEYLEN]);
 	nonce = std::unique_ptr<unsigned char[]>(new unsigned char[NONCELEN]);

@@ -33,7 +33,7 @@ type Config struct {
 	BaseUrl string
 	Simulate bool
 	SimulationSpeed float64
-	SharedSecret string
+	SharedSecret *string
 	Poll_ms time.Duration
 	Check_s time.Duration
 }
@@ -64,6 +64,9 @@ func main() {
 	err = json.Unmarshal(bytes, &config)
 	if(err != nil) {
 		log.Fatal("config.json is invalid")
+	}
+	if(config.SharedSecret == nil) {
+		log.Fatal("no sharedsecret provided in config")
 	}
 
 	judgeUrl, err := url.Parse(config.BaseUrl)
@@ -103,7 +106,7 @@ func main() {
 		judgings = simulate(judgings, float64(ContestState.Contest.Start), config.SimulationSpeed).(chan score.Judging)
 	}
 
-	go ListenTCP(8080, config.SharedSecret, subscribe, unsubscribe)
+	go ListenTCP(8080, *config.SharedSecret, subscribe, unsubscribe)
 
 	log.Print("succesfully connected to judge and listening for clients")
 
