@@ -63,6 +63,7 @@ void ScoreboardClient::run() {
 	qRegisterMetaType<QAbstractSocket::SocketError>("QAbstractSocket::SocketError");
 	socketIsFatal = QObject::connect(&socket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(fatal(QAbstractSocket::SocketError)));
 	QObject::connect(this, &ScoreboardClient::error, this, &ScoreboardClient::reset);
+	QObject::connect(&beatTimer, &QTimer::timeout, this, &ScoreboardClient::reset);
     connect();
 }
 
@@ -86,6 +87,9 @@ void ScoreboardClient::connected() {
 	encrypted = false;
 	buffer.resize(NONCELEN-8+SALTLEN);
 	nctr = 0;
+	expectedBeat = 0;
+	beatTimer.setSingleShot(true);
+	beatTimer.start(4000);
     pos = begin(buffer);
 	if(socketIsFatal) QObject::connect(&socket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(reconnect(QAbstractSocket::SocketError)));
 	disconnect(socketIsFatal);
@@ -151,6 +155,11 @@ void ScoreboardClient::readyRead() {
 				applyEvent(m.event());
 			} else if(m.has_setup()) {
 				setup(m.setup());
+			} else if(m.has_heartbeat()) {
+				if(m.heartbeat() == expectedBeat) {
+					expectedBeat++;
+					beatTimer.start(); // rearm
+				}
 			} else {
 				std::cerr << "Received inconsistent message (#2)" << std::endl;
 				emit error();

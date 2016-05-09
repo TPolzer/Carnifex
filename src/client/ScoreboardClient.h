@@ -23,6 +23,7 @@
 #include <QQmlEngine>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QTimer>
 #include <memory>
 #include "scoreboard.pb.h"
 
@@ -45,6 +46,8 @@ private:
 	std::map<QObject*, std::map<qint64, wire::Event>> pendingFreeze; // team->problem->unfreeze
 	std::map<qint64, qint64> problems; // id -> idx
 	bool encrypted;
+	qint64 expectedBeat;
+	QTimer beatTimer;
 	std::unique_ptr<unsigned char[]> key;
 	std::unique_ptr<unsigned char[]> nonce;
 	std::string sharedSecret;

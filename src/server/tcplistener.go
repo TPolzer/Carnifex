@@ -26,6 +26,7 @@ import (
 	"encoding/binary"
 	"log"
 	"net"
+	"time"
 	"github.com/golang/protobuf/proto"
 	"score/wire"
 )
@@ -61,6 +62,18 @@ func ListenTCP(port int, password string, subscribe, unsubscribe chan (chan *wir
 				conn.Close()
 			}
 			ctr := uint64(0)
+			write := func (m *wire.Message) (err error) {
+				message, _ := proto.Marshal(m)
+				err = binary.Write(conn, binary.BigEndian, int64(len(message)))
+				if(err != nil) {
+					return
+				}
+				binary.BigEndian.PutUint64(nonce[:8], ctr)
+				ctr++
+				encrypted := secretbox.Seal(nil, message, &nonce, &key)
+				_, err = conn.Write(encrypted)
+				return
+			}
 			_, err = conn.Write(append(nonce[8:], salt...))
 			if(err != nil) {
 				conn.Close()
@@ -75,19 +88,24 @@ func ListenTCP(port int, password string, subscribe, unsubscribe chan (chan *wir
 				_, err := conn.Read(make([]byte,1))
 				cc <- err
 			}()
+			ticker := time.NewTicker(time.Second)
+			defer ticker.Stop()
+			beat := int64(0)
 			MessageLoop:
 			for {
 				select {
-				case m := <-messages:
-					message, _ := proto.Marshal(m)
-					err := binary.Write(conn, binary.BigEndian, int64(len(message)))
+				case _ = <-ticker.C:
+					err := write(&wire.Message{
+						MessageType: &wire.Message_HeartBeat{
+							HeartBeat: beat,
+						},
+					})
+					beat++
 					if(err != nil) {
 						break MessageLoop
 					}
-					binary.BigEndian.PutUint64(nonce[:8], ctr)
-					ctr++
-					encrypted := secretbox.Seal(nil, message, &nonce, &key)
-					_, err = conn.Write(encrypted)
+				case m := <-messages:
+					err := write(m)
 					if(err != nil) {
 						break MessageLoop
 					}

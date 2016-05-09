@@ -89,6 +89,7 @@ class Message : public ::google::protobuf::Message {
   enum MessageTypeCase {
     kEvent = 1,
     kSetup = 2,
+    kHeartBeat = 3,
     MESSAGETYPE_NOT_SET = 0,
   };
 
@@ -140,11 +141,19 @@ class Message : public ::google::protobuf::Message {
   inline ::wire::ContestSetup* release_setup();
   inline void set_allocated_setup(::wire::ContestSetup* setup);
 
+  // optional int64 HeartBeat = 3;
+  inline bool has_heartbeat() const;
+  inline void clear_heartbeat();
+  static const int kHeartBeatFieldNumber = 3;
+  inline ::google::protobuf::int64 heartbeat() const;
+  inline void set_heartbeat(::google::protobuf::int64 value);
+
   inline MessageTypeCase MessageType_case() const;
   // @@protoc_insertion_point(class_scope:wire.Message)
  private:
   inline void set_has_event();
   inline void set_has_setup();
+  inline void set_has_heartbeat();
 
   inline bool has_MessageType();
   void clear_MessageType();
@@ -157,6 +166,7 @@ class Message : public ::google::protobuf::Message {
   union MessageTypeUnion {
     ::wire::Event* event_;
     ::wire::ContestSetup* setup_;
+    ::google::protobuf::int64 heartbeat_;
   } MessageType_;
   ::google::protobuf::uint32 _oneof_case_[1];
 
@@ -737,6 +747,33 @@ inline void Message::set_allocated_setup(::wire::ContestSetup* setup) {
     set_has_setup();
     MessageType_.setup_ = setup;
   }
+}
+
+// optional int64 HeartBeat = 3;
+inline bool Message::has_heartbeat() const {
+  return MessageType_case() == kHeartBeat;
+}
+inline void Message::set_has_heartbeat() {
+  _oneof_case_[0] = kHeartBeat;
+}
+inline void Message::clear_heartbeat() {
+  if (has_heartbeat()) {
+    MessageType_.heartbeat_ = GOOGLE_LONGLONG(0);
+    clear_has_MessageType();
+  }
+}
+inline ::google::protobuf::int64 Message::heartbeat() const {
+  if (has_heartbeat()) {
+    return MessageType_.heartbeat_;
+  }
+  return GOOGLE_LONGLONG(0);
+}
+inline void Message::set_heartbeat(::google::protobuf::int64 value) {
+  if (!has_heartbeat()) {
+    clear_MessageType();
+    set_has_heartbeat();
+  }
+  MessageType_.heartbeat_ = value;
 }
 
 inline bool Message::has_MessageType() {
