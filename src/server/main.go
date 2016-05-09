@@ -36,6 +36,7 @@ type Config struct {
 	SharedSecret *string
 	Poll_ms time.Duration
 	Check_s time.Duration
+	ServerPort int
 }
 
 func main() {
@@ -106,7 +107,10 @@ func main() {
 		judgings = simulate(judgings, float64(ContestState.Contest.Start), config.SimulationSpeed).(chan score.Judging)
 	}
 
-	go ListenTCP(8080, *config.SharedSecret, subscribe, unsubscribe)
+	if(config.ServerPort == 0) {
+		config.ServerPort = 8080
+	}
+	go ListenTCP(config.ServerPort, *config.SharedSecret, subscribe, unsubscribe)
 
 	log.Print("succesfully connected to judge and listening for clients")
 

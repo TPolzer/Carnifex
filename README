@@ -19,6 +19,7 @@ The setup currently involves:
 To use it:
 - put your credentials into credentials.json
 - adjust the server url in config.json
-- put a secret passphrase in config.json for both server and client
+- put a secret passphrase in config.json for both server and client (the whole file can be shared between both)
+- possibly adjust server name / port in config.json
 - start the server
 - start the client

@@ -45,7 +45,15 @@ ScoreboardClient::ScoreboardClient(const QJsonDocument &config, QQmlEngine &engi
 	if(sharedSecretIt == this->config.end()) {
 		throw std::runtime_error("no sharedsecret provided");
 	}
-	sharedSecret = this->config["sharedsecret"].toString().toStdString();
+	sharedSecret = sharedSecretIt->toString().toStdString();
+	auto serverNameIt = this->config.find("servername");
+	if(serverNameIt != this->config.end()) {
+		serverName = serverNameIt->toString();
+	}
+	auto serverPortIt = this->config.find("serverport");
+	if(serverPortIt != this->config.end()) {
+		serverPort = serverPortIt->toInt();
+	}
 	key = std::unique_ptr<unsigned char[]>(new unsigned char[KEYLEN]);
 	nonce = std::unique_ptr<unsigned char[]>(new unsigned char[NONCELEN]);
 }
