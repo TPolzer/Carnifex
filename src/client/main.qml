@@ -43,6 +43,7 @@ Window {
 		pending: submits
 		correct: submits
 		penalties: submits
+		affiliation: 'FAU Erlangen-Nürnberg'
 	}
 
     function contestSetup(contestDesc, problems, teams) {
@@ -142,8 +143,8 @@ Window {
                             color: Qt.rgba(0,0,0,0.1)
 							height: rs
                             visible: index%2
-							anchors.left: parent.left
-							anchors.right: parent.right
+							anchors.left: parent ? parent.left : undefined
+							anchors.right: parent ? parent.right : undefined
 							y: index*rs
                         }
                     }
@@ -154,8 +155,8 @@ Window {
 							focused: (contest.focused.y == index) ? contest.focused.x : 0
 							y: modelData.pos*rs
 							height: rs
-							anchors.left: parent.left
-							anchors.right: parent.right
+							anchors.left: parent ? parent.left : undefined
+							anchors.right: parent ? parent.right : undefined
 							Behavior on y { SmoothedAnimation { duration: 1500; velocity: -1 } }
 						}
 					}
