@@ -1,0 +1,27 @@
+Both server and client expect a file 'config.json' in their working directory.
+Its entries are:
+
+baseurl: [server], string, required
+	The server looks at `baseurl`/api/*, has to end with a slash.
+
+simulate: [server], bool, default false
+	If true, the server will simulate the the contest events relative to server
+	startup time (else events will be relayed in real time).
+
+simulationSpeed [server], double, default 0
+	If simulating, speed up contest by simulationSpeed.
+
+poll_ms [server], int, required
+	Poll the "interesting" bits (submissions, judgings) each `poll_ms`
+	milliseconds (more precisely: sleep between requests).
+
+check_s [server], int, required
+	Poll the nearly stable bits (teams, problems, etc.) each `check_s` seconds.
+
+servername [client], string, default "localhost"
+	the server to connect to
+
+serverport [server,client], int, default 8080
+	the port to connect to / listen on
+
+

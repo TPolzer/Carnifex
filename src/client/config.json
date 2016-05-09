@@ -1,3 +1,12 @@
 {
-	"sharedsecret": "☃: Geheimes ẞpezialwissen"
+	"baseurl": "https://domjudge.cs.fau.de/",
+	"simulate": true,
+	"simulationSpeed": 120,
+	"poll_ms": 1000,
+	"check_s": 10,
+
+	"servername": "localhost",
+
+	"sharedsecret": "☃: Geheimes ẞpezialwissen",
+	"serverport": 8080
 }
