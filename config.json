@@ -8,6 +8,7 @@
 	"servername": "localhost",
 	"minrows": 20,
 	"mincols": 30,
+	"pageInterval": 10,
 
 	"sharedsecret": "☃: Geheimes ẞpezialwissen",
 	"serverport": 8080

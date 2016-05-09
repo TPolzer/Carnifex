@@ -27,7 +27,7 @@ Window {
     id: contest
 	color: 'black'
 
-	property var config
+	property var config: new Object()
 	property double em: 10
 	property double layoutEm: 10
 	onHeightChanged: recalcEm()
@@ -199,7 +199,8 @@ Window {
 					}
 					Timer {
 						id: pageTimer
-						interval: 10000; running: true; repeat: true
+						interval: (config.pageInterval === undefined) ? 10000 : config.pageInterval*1000;
+						running: true; repeat: true
 						onTriggered: {
 							tableContents.autopage = (tableContents.autopage-1+tableContents.pages)
 							tableContents.autopage %= tableContents.pages

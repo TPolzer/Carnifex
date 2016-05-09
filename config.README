@@ -26,3 +26,6 @@ serverport: [server,client], int, default 8080
 
 minrows, mincols: [client], double, required
 	At all the times the scoreboard shows at least `minrows` teams per page and each row is at least `mincols` times wider than tall. One of these inequalities is always fulfilled exactly.
+
+pageInterval: [client], double, default 10
+	The amount of time in seconds to wait between scrolling pages.
