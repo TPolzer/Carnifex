@@ -65,7 +65,7 @@ void ScoreboardClient::connect() {
 
 void ScoreboardClient::reconnect(QAbstractSocket::SocketError) {
 	std::cerr << "reconnecting\n";
-    QTimer::singleShot(2000, this, &ScoreboardClient::connect);
+    QTimer::singleShot(2000, this, SLOT(connect()));
 }
 
 void ScoreboardClient::reset() {
@@ -133,7 +133,7 @@ void ScoreboardClient::readyRead() {
 			}
             m.ParseFromArray(&buffer[0], packetSize);
 			if(!m.IsInitialized()) {
-				std::cerr << "Received inconsistent message (#1)" << std::endl;
+				std::cerr << "Received inconsistent message (" << packetSize << " bytes): " << m.InitializationErrorString() << std::endl;
 				emit error();
 				return;
 			}
@@ -224,6 +224,9 @@ void ScoreboardClient::applyEvent(const wire::Event& event) {
 }
 
 void ScoreboardClient::fatal(QAbstractSocket::SocketError error) {
-	std::cerr << "fatal: " << QMetaEnum::fromType<QAbstractSocket::SocketError>().valueToKey(error) << std::endl;
-    abort();
+	const QMetaObject &mo = QAbstractSocket::staticMetaObject;
+	int index = mo.indexOfEnumerator("SocketError");
+	QMetaEnum metaEnum = mo.enumerator(index);
+	std::cerr << "fatal: " << metaEnum.valueToKey(error) << std::endl;
+	abort();
 }
