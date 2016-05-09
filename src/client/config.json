@@ -6,6 +6,8 @@
 	"check_s": 10,
 
 	"servername": "localhost",
+	"minrows": 20,
+	"mincols": 30,
 
 	"sharedsecret": "☃: Geheimes ẞpezialwissen",
 	"serverport": 8080

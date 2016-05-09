@@ -47,10 +47,14 @@ int main(int argc, char *argv[])
 
     QQuickWindow *obj = qobject_cast<QQuickWindow*>(engine.rootObjects().first());
 	ScoreboardClient client(config, engine);
-	client.run();
-
+	
 	QObject::connect(&client, SIGNAL(contestSetup(QVariant,QVariant,QVariant)),
 			obj, SLOT(contestSetup(QVariant,QVariant,QVariant)));
+	QObject::connect(&client, SIGNAL(configure(QVariant)),
+			obj, SLOT(configure(QVariant)));
+	
+	client.run();
+
 
 
     return app.exec();

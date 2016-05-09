@@ -27,8 +27,37 @@ Window {
     id: contest
 	color: 'black'
 
-	property double em: Math.min(height/30,width/45)
+	property var config
+	property double em: 10
+	property double layoutEm: 10
+	onHeightChanged: recalcEm()
+	onWidthChanged: recalcEm()
+	function recalcEm() {
+		var step = 10;
+		var sign = 1;
+		do {
+			var oldsign = sign;
+			if(sign < 0) {
+				layoutEm -= step;
+			} else if(sign > 0) {
+				layoutEm += step;
+			} else {
+				break;
+			}
+			var sign1 = Math.max(0.1,table.height)/(layoutEm*1.2) - config.minrows;
+			var sign2 = Math.max(0.1,table.width)/(layoutEm*1.2) - config.mincols;
+			if(sign1 < 0 || sign2 < 0)
+				sign = -1;
+			else
+				sign = 1;
+			if(layoutEm <= 0) sign = 1;
+			if(sign * oldsign < 0)
+				step /= 2;
+		} while(step > 1e-10);
+		em = layoutEm;
+	}
 	property double rs: em*1.2
+	property double layoutRs: layoutEm*1.2
     property var problems: []
 	property int n: problems.length
     property var teams: []
@@ -46,18 +75,25 @@ Window {
 		affiliation: 'FAU Erlangen-Nürnberg'
 	}
 
+	function configure(c) {
+		config = c
+		onHeightChanged(height); // trigger row/column count
+	}
+
     function contestSetup(contestDesc, problems, teams) {
         contest.problems = problems
         contest.teams = teams
 		contest.name = contestDesc.name
 		contest.start = contestDesc.start
+		onHeightChanged(height); // trigger row/column count (title height could have changed)
     }
 
 	ScoreText {
 		id: title
 		text: name
 		anchors.left: parent.left
-		anchors.margins: em
+		anchors.margins: layoutEm
+		font.pixelSize: layoutEm
 	}
 	ScoreText {
         id: clockDisplay
@@ -78,25 +114,25 @@ Window {
 		id: scoreboard
 		anchors.fill: parent
 		anchors.margins: title.height
-		radius: em/2
+		radius: layoutEm/2
 		color: '#28B2FF'
 		Item {
 			id: scoreboardContents
 			anchors.fill: parent
-			anchors.leftMargin: em/2
-			anchors.rightMargin: em/2
-			anchors.topMargin: em/3
-			anchors.bottomMargin: em/3
+			anchors.leftMargin: layoutEm/2
+			anchors.rightMargin: layoutEm/2
+			anchors.topMargin: layoutEm/3
+			anchors.bottomMargin: layoutEm/3
 			Rectangle {
 				id: tableHead
 				color: Qt.rgba(0,0,0,0)
-				height: rs
+				height: layoutRs
 				anchors.left: parent.left
 				anchors.right: parent.right
 				Row_t {
 					visible: false
 					id: columnPrototype
-					height: rs
+					height: layoutRs
 					anchors.left: parent.left
 					anchors.right: parent.right
 					team: dummyTeam
@@ -122,10 +158,11 @@ Window {
 					width: parent.width
 					height: rs*teams.length
 					id: tableContents
-					property int pages: Math.ceil(teams.length/Math.floor(table.height/rs))
-					property int page: (contest.focused.y == -1) ? autopage : teams[contest.focused.y].pos/Math.floor(table.height/rs)
+					property int perPage: Math.max(config.minrows, Math.floor(table.height/rs)); // avoid precision problems with exactly minrows
+					property int pages: Math.ceil(teams.length/perPage)
+					property int page: (contest.focused.y == -1) ? autopage : teams[contest.focused.y].pos/perPage
 					property int autopage: 0
-					y: rs ? -page*rs*Math.floor(table.height/rs) : 0
+					y: rs ? -page*rs*perPage : 0
 					Behavior on y { SmoothedAnimation {duration: 800; velocity: -1} }
 					Repeater {
 						model: columnPrototype.cols

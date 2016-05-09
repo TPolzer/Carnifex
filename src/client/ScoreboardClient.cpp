@@ -59,6 +59,7 @@ ScoreboardClient::ScoreboardClient(const QJsonDocument &config, QQmlEngine &engi
 }
 
 void ScoreboardClient::run() {
+	emit configure(this->config.toVariantMap());
     QObject::connect(&socket, &QTcpSocket::connected, this, &ScoreboardClient::connected);
 	qRegisterMetaType<QAbstractSocket::SocketError>("QAbstractSocket::SocketError");
 	socketIsFatal = QObject::connect(&socket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(fatal(QAbstractSocket::SocketError)));

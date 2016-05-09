@@ -58,6 +58,7 @@ private:
 public:
 	ScoreboardClient(const QJsonDocument &config, QQmlEngine &engine);
 signals:
+	void configure(QVariant config);
 	void contestSetup(QVariant contest, QVariant problems, QVariant teams);
 	void event(QVariant event);
 	void error();

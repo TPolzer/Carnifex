@@ -8,20 +8,21 @@ simulate: [server], bool, default false
 	If true, the server will simulate the the contest events relative to server
 	startup time (else events will be relayed in real time).
 
-simulationSpeed [server], double, default 0
+simulationSpeed: [server], double, default 0
 	If simulating, speed up contest by simulationSpeed.
 
-poll_ms [server], int, required
+poll_ms: [server], int, required
 	Poll the "interesting" bits (submissions, judgings) each `poll_ms`
 	milliseconds (more precisely: sleep between requests).
 
-check_s [server], int, required
+check_s: [server], int, required
 	Poll the nearly stable bits (teams, problems, etc.) each `check_s` seconds.
 
-servername [client], string, default "localhost"
+servername: [client], string, default "localhost"
 	the server to connect to
 
-serverport [server,client], int, default 8080
+serverport: [server,client], int, default 8080
 	the port to connect to / listen on
 
-
+minrows, mincols: [client], double, required
+	At all the times the scoreboard shows at least `minrows` teams per page and each row is at least `mincols` times wider than tall. One of these inequalities is always fulfilled exactly.
