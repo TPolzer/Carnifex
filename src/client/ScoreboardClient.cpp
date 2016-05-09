@@ -121,9 +121,11 @@ void ScoreboardClient::readyRead() {
 		if(pos == end(buffer)) {
 			qToBigEndian(nctr, nonce.get());
 			++nctr;
-			auto ucharBuf = reinterpret_cast<unsigned char*>(&buffer[0]);
+			std::vector<char> decrypted(packetSize);
+			auto cipherText = reinterpret_cast<unsigned char*>(&buffer[0]);
+			auto plainText = reinterpret_cast<unsigned char*>(&decrypted[0]);
 			int fail = crypto_secretbox_open_easy(
-					ucharBuf, ucharBuf,
+					plainText, cipherText,
 					buffer.size(), nonce.get(), key.get()
 			);
 			if(fail) {
@@ -131,7 +133,7 @@ void ScoreboardClient::readyRead() {
 				emit error();
 				return;
 			}
-            m.ParseFromArray(&buffer[0], packetSize);
+            m.ParseFromArray(&decrypted[0], packetSize);
 			if(!m.IsInitialized()) {
 				std::cerr << "Received inconsistent message (" << packetSize << " bytes): " << m.InitializationErrorString() << std::endl;
 				emit error();
