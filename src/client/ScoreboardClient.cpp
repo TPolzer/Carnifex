@@ -65,11 +65,11 @@ void ScoreboardClient::run() {
 	socketIsFatal = QObject::connect(&socket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(fatal(QAbstractSocket::SocketError)));
 	QObject::connect(this, &ScoreboardClient::error, this, &ScoreboardClient::reset);
 	QObject::connect(&beatTimer, &QTimer::timeout, this, &ScoreboardClient::reset);
+    QObject::connect(&socket, &QIODevice::readyRead, this, &ScoreboardClient::readyRead);
     connect();
 }
 
 void ScoreboardClient::connect() {
-    QObject::connect(&socket, &QIODevice::readyRead, this, &ScoreboardClient::readyRead);
 	socket.connectToHost(serverName, serverPort);
 }
 
