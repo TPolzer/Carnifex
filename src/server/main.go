@@ -137,10 +137,10 @@ func main() {
 				os.Exit(0)
 			case curses.KEY_LEFT:
 				log.Println("Left key pressed")
-				ContestState.Unfreeze <- true
+				ContestState.Unfreeze <- false
 			case curses.KEY_RIGHT:
 				log.Println("Right key pressed")
-				ContestState.Unfreeze <- false
+				ContestState.Unfreeze <- true
 			}
 		}
 	}();
