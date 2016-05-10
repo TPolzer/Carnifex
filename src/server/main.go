@@ -29,7 +29,7 @@ import (
 	"time"
 	"os"
 
-	"github.com/nsf/termbox-go"
+	curses "github.com/rthornton128/goncurses"
 )
 
 type Config struct {
@@ -42,8 +42,28 @@ type Config struct {
 	ServerPort int
 }
 
+type cursesWriter struct {
+	window *curses.Window
+}
+func (c cursesWriter) Write(p []byte) (n int, err error) {
+	c.window.Print(string(p[:len(p)]))
+	c.window.Refresh()
+	//log.Println(p)
+	return len(p), nil
+}
+
 func main() {
-	termbox.Init()
+	stdscr, err := curses.Init()
+	if err != nil {
+		log.Fatal("Unable to initialize curses interface: " + err.Error())
+	}
+	defer curses.End()
+
+	curses.Echo(false)
+	curses.CBreak(true)
+	stdscr.Keypad(true)
+
+	log.SetOutput(cursesWriter{stdscr})
 
 	bytes, err := ioutil.ReadFile("credentials.json")
 	if(err != nil) {
@@ -111,15 +131,16 @@ func main() {
 	go ListenTCP(config.ServerPort, *config.SharedSecret, subscribe, unsubscribe)
 	go func() {
 		for {
-			event := termbox.PollEvent()
-			if(event.Type == termbox.EventKey && (event.Key == termbox.KeyArrowRight || event.Key == termbox.KeyArrowDown)) {
-				ContestState.Unfreeze <- true
-			}
-			if(event.Type == termbox.EventKey && (event.Key == termbox.KeyArrowLeft || event.Key == termbox.KeyArrowUp)) {
-				ContestState.Unfreeze <- false
-			}
-			if(event.Type == termbox.EventKey && (event.Key == termbox.KeyCtrlC)) {
+			switch stdscr.GetChar() {
+			case 'q':
+				curses.End()
 				os.Exit(0)
+			case curses.KEY_LEFT:
+				log.Println("Left key pressed")
+				ContestState.Unfreeze <- true
+			case curses.KEY_RIGHT:
+				log.Println("Right key pressed")
+				ContestState.Unfreeze <- false
 			}
 		}
 	}();
