@@ -33,27 +33,23 @@ Window {
 	onHeightChanged: recalcEm()
 	onWidthChanged: recalcEm()
 	function recalcEm() {
-		var step = 10;
-		var sign = 1;
-		do {
-			var oldsign = sign;
-			if(sign < 0) {
-				layoutEm -= step;
-			} else if(sign > 0) {
-				layoutEm += step;
-			} else {
-				break;
-			}
-			var sign1 = Math.max(0.1,table.height)/(layoutEm*1.2) - config.minrows;
-			var sign2 = Math.max(0.1,table.width)/(layoutEm*1.2) - config.mincols;
+		var ub = 1000, lb = 0;
+		while(ub - lb > 1e-9) {
+			var mid = ub/2 + lb/2;
+			layoutEm = mid;
+			var sign;
+			var sign1 = Math.max(0,table.height)/layoutRs - config.minrows;
+			var sign2 = Math.max(0,table.width)/layoutRs - config.mincols;
 			if(sign1 < 0 || sign2 < 0)
 				sign = -1;
 			else
 				sign = 1;
-			if(layoutEm <= 0) sign = 1;
-			if(sign * oldsign < 0)
-				step /= 2;
-		} while(step > 1e-10);
+			if(sign < 0) {
+				ub = mid;
+			} else {
+				lb = mid;
+			}
+		}
 		em = layoutEm;
 	}
 	property double rs: em*1.2
