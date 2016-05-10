@@ -18,6 +18,7 @@
  */
 import QtQuick 2.0
 import "helper.js" as H
+import QtGraphicalEffects 1.0
 
 Item {
 	property var team
@@ -31,14 +32,28 @@ Item {
 		visible: focused
 		color: Qt.rgba(0,0,0,0)
 	}
+	Rectangle {
+		anchors.fill: parent
+		color: 'white'
+		id: box
+	}
+	DropShadow {
+		anchors.fill: box
+			horizontalOffset: 5
+			verticalOffset: 3
+			radius: 8.0
+			samples: 17
+			color: "#50000000"
+			source: box
+	}
 	ScoreText {
 		property var columnTitle: "Rank"
 		anchors.verticalCenter: parent.verticalCenter
 		anchors.left: parent.left
 		id: rank
 		text: team.rank
-		width: 3*em
-		horizontalAlignment: Text.AlignLeft
+		width: 2.8*em
+		horizontalAlignment: Text.AlignRight
 	}
 	Image {
 		anchors.left: rank.right
@@ -68,7 +83,7 @@ Item {
 		anchors.right: solved.left
 		height: parent.height
 		Repeater {
-            id: problems
+			id: problems
 			model: contest.problems
 			Item {
 				property var columnTitle: contest.problems[index]
@@ -78,8 +93,7 @@ Item {
 				Rectangle {
 					anchors.verticalCenter: parent.verticalCenter
 					anchors.horizontalCenter: parent.horizontalCenter
-					color: team.first[index] ? 'darkgreen' : team.correct[index] ? '#20E85C' : team.pending[index] ? 'blue' : team.submits[index] ? '#FF3860' : Qt.rgba(0,0,0,0)
-					radius: contest.em/4
+					color: team.first[index] ? '#1daa1d' : team.correct[index] ? '#60e760' : team.pending[index] ? '#6666FF' : team.submits[index] ? '#e87272' : Qt.rgba(0,0,0,0)
 					border.color: 'gold'
 					border.width: (focused == index+1) ? em/8 : 0
 					height: contest.em
@@ -89,13 +103,14 @@ Item {
 						anchors.verticalCenter: parent.verticalCenter
 						horizontalAlignment: Text.AlignHCenter
 						text: team.submits[index]?team.submits[index]:''
+						scale: 0.75
 					}
 				}
 			}
 		}
 	}
 	ScoreText {
-		property var columnTitle: "Solved"
+		property var columnTitle: "🎈"
 		anchors.verticalCenter: parent.verticalCenter
 		anchors.right: time.left
 		id: solved
@@ -107,6 +122,7 @@ Item {
 		property var columnTitle: "Time"
 		anchors.verticalCenter: parent.verticalCenter
 		anchors.right: parent.right
+		anchors.rightMargin: 0.5*em
 		id: time
 		text: team.penalty
 		width: 3.5*em

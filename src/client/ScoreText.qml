@@ -19,6 +19,8 @@
 import QtQuick 2.0
 
 Text {
-    font.pixelSize: contest.em
-    color: 'white'
+	property var scale: 1.0
+	font.pixelSize: scale*contest.em
+	property color col: 'black'
+	color: col
 }
