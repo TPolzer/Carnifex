@@ -29,7 +29,9 @@ Window {
 
 	property var config: new Object()
 	property double em: 10
+	property double rs: em*1.2
 	property double layoutEm: 10
+	property double layoutRs: layoutEm*1.2
 	onHeightChanged: recalcEm()
 	onWidthChanged: recalcEm()
 	function recalcEm() {
@@ -37,14 +39,9 @@ Window {
 		while(ub - lb > 1e-9) {
 			var mid = ub/2 + lb/2;
 			layoutEm = mid;
-			var sign;
 			var sign1 = Math.max(0,table.height)/layoutRs - config.minrows;
 			var sign2 = Math.max(0,table.width)/layoutRs - config.mincols;
-			if(sign1 < 0 || sign2 < 0)
-				sign = -1;
-			else
-				sign = 1;
-			if(sign < 0) {
+			if(sign1 < 0 || sign2 < 0) {
 				ub = mid;
 			} else {
 				lb = mid;
@@ -52,8 +49,6 @@ Window {
 		}
 		em = layoutEm;
 	}
-	property double rs: em*1.2
-	property double layoutRs: layoutEm*1.2
     property var problems: []
 	property int n: problems.length
     property var teams: []
