@@ -189,10 +189,6 @@ void ScoreboardClient::setup(const wire::ContestSetup& setup) {
 			return a.name() < b.name();
 			});
 	auto problems = setup.problems();
-	rs.resolvedProblems = problems.size()+1;
-	rs.resolvingProblem = -1;
-	rs.resolvedTeams = -1;
-	resolveStack.clear();
 	QQmlComponent teamComponent(&engine,
 			QUrl(QStringLiteral("qrc:/Team.qml")));
 	QVariantList teamList;
@@ -218,6 +214,11 @@ void ScoreboardClient::setup(const wire::ContestSetup& setup) {
 		this->problems[problem.id()] = problemList.size();
 		problemList.push_back(QString::fromStdString(problem.label()));
 	}
+	rs.resolvedProblems = problems.size()+1;
+	rs.resolvingProblem = -1;
+	rs.resolvedTeams = -1;
+	refocus();
+	resolveStack.clear();
 	QVariantMap contest;
 	contest["name"] = name;
 	contest["start"] = start;
