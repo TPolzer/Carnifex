@@ -105,6 +105,9 @@ func ListenTCP(port int, password string, subscribe, unsubscribe chan (chan *wir
 						break MessageLoop
 					}
 				case m := <-messages:
+					if(m == nil) {
+						continue
+					}
 					err := write(m)
 					if(err != nil) {
 						break MessageLoop

@@ -27,6 +27,9 @@ import (
 	"score"
 	"score/wire"
 	"time"
+	"os"
+
+	"github.com/nsf/termbox-go"
 )
 
 type Config struct {
@@ -40,12 +43,7 @@ type Config struct {
 }
 
 func main() {
-
-	secure := false
-	scheme := "http"
-	if(secure) {
-		scheme += "s"
-	}
+	termbox.Init()
 
 	bytes, err := ioutil.ReadFile("credentials.json")
 	if(err != nil) {
@@ -111,6 +109,20 @@ func main() {
 		config.ServerPort = 8080
 	}
 	go ListenTCP(config.ServerPort, *config.SharedSecret, subscribe, unsubscribe)
+	go func() {
+		for {
+			event := termbox.PollEvent()
+			if(event.Type == termbox.EventKey && (event.Key == termbox.KeyArrowRight || event.Key == termbox.KeyArrowDown)) {
+				ContestState.Unfreeze <- true
+			}
+			if(event.Type == termbox.EventKey && (event.Key == termbox.KeyArrowLeft || event.Key == termbox.KeyArrowUp)) {
+				ContestState.Unfreeze <- false
+			}
+			if(event.Type == termbox.EventKey && (event.Key == termbox.KeyCtrlC)) {
+				os.Exit(0)
+			}
+		}
+	}();
 
 	log.Print("succesfully connected to judge and listening for clients")
 

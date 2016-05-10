@@ -30,6 +30,8 @@ type ContestState struct {
     Contest *Contest
     Teams []Team
     Problems []*wire.Problem
+	Unfreeze chan bool
+	unfrozen int
     observers []chan *wire.Message
     scoreboard map[TeamId]map[ProblemId]Submissions
     firsts map[ProblemId][]Submission
@@ -41,6 +43,7 @@ func NewContestState(Contest *Contest, Teams []Team, observers []chan *wire.Mess
     state := ContestState{
         Contest: Contest,
         Teams: Teams,
+		Unfreeze: make(chan bool),
         observers: observers,
         scoreboard: make(map[TeamId]map[ProblemId]Submissions),
         submissions: make(map[SubmissionId]Submission),
@@ -97,6 +100,14 @@ func (state *ContestState) EventLoop(submissions chan Submission, judgings chan 
                 }
             }
             close(u)
+		case u:=<-state.Unfreeze:
+			if(u) {
+				state.unfrozen++
+				state.Broadcast(Unfreeze(u))
+			} else if(state.unfrozen > 0) {
+				state.unfrozen--
+				state.Broadcast(Unfreeze(u))
+			}
         }
         if(oldState != state) {
             for _, s := range storedSubmissions {
@@ -115,7 +126,18 @@ func (state *ContestState) Broadcast(message *wire.Message) {
     }
 }
 
+func Unfreeze(unfreeze bool) *wire.Message {
+	return &wire.Message{
+		MessageType: &wire.Message_Unfreeze{
+			Unfreeze: unfreeze,
+		},
+	}
+}
+
 func ToMessage(event *wire.Event) *wire.Message {
+	if(event == nil) {
+		return nil
+	}
     return &wire.Message{
         MessageType: &wire.Message_Event{
             Event: event,
@@ -282,5 +304,8 @@ func (state *ContestState) Tell(observer chan *wire.Message) {
 			}
 			observer <- ToMessage(event)
 		}
+	}
+	for i:=0; i<state.unfrozen; i++ {
+		observer <- Unfreeze(true)
 	}
 }

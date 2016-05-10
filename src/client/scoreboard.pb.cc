@@ -27,6 +27,7 @@ struct MessageOneofInstance {
   const ::wire::Event* event_;
   const ::wire::ContestSetup* setup_;
   ::google::protobuf::int64 heartbeat_;
+  bool unfreeze_;
 }* Message_default_oneof_instance_ = NULL;
 const ::google::protobuf::Descriptor* Event_descriptor_ = NULL;
 const ::google::protobuf::internal::GeneratedMessageReflection*
@@ -52,10 +53,11 @@ void protobuf_AssignDesc_scoreboard_2eproto() {
       "scoreboard.proto");
   GOOGLE_CHECK(file != NULL);
   Message_descriptor_ = file->message_type(0);
-  static const int Message_offsets_[4] = {
+  static const int Message_offsets_[5] = {
     PROTO2_GENERATED_DEFAULT_ONEOF_FIELD_OFFSET(Message_default_oneof_instance_, event_),
     PROTO2_GENERATED_DEFAULT_ONEOF_FIELD_OFFSET(Message_default_oneof_instance_, setup_),
     PROTO2_GENERATED_DEFAULT_ONEOF_FIELD_OFFSET(Message_default_oneof_instance_, heartbeat_),
+    PROTO2_GENERATED_DEFAULT_ONEOF_FIELD_OFFSET(Message_default_oneof_instance_, unfreeze_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Message, MessageType_),
   };
   Message_reflection_ =
@@ -192,21 +194,21 @@ void protobuf_AddDesc_scoreboard_2eproto() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-    "\n\020scoreboard.proto\022\004wire\"p\n\007Message\022\034\n\005e"
-    "vent\030\001 \001(\0132\013.wire.EventH\000\022#\n\005setup\030\002 \001(\013"
-    "2\022.wire.ContestSetupH\000\022\023\n\tHeartBeat\030\003 \001("
-    "\003H\000B\r\n\013MessageType\"\235\001\n\005Event\022\014\n\004Team\030\006 \002"
-    "(\003\022\017\n\007Problem\030\001 \002(\003\022\023\n\013SubmitCount\030\002 \002(\003"
-    "\022\017\n\007Penalty\030\003 \002(\003\022\023\n\013ContestTime\030\007 \001(\003\022\033"
-    "\n\005State\030\004 \002(\0162\014.wire.SState\022\035\n\010Unfrozen\030"
-    "\005 \001(\0132\013.wire.Event\"g\n\014ContestSetup\022\014\n\004Na"
-    "me\030\001 \002(\t\022\031\n\005Teams\030\002 \003(\0132\n.wire.Team\022\037\n\010P"
-    "roblems\030\003 \003(\0132\r.wire.Problem\022\r\n\005Start\030\004 "
-    "\002(\003\"3\n\007Problem\022\n\n\002Id\030\001 \002(\003\022\r\n\005Label\030\002 \002("
-    "\t\022\r\n\005Color\030\003 \001(\t\"5\n\004Team\022\n\n\002Id\030\001 \002(\003\022\014\n\004"
-    "Name\030\002 \002(\t\022\023\n\013Affiliation\030\003 \001(\t*8\n\006SStat"
-    "e\022\013\n\007CORRECT\020\001\022\t\n\005WRONG\020\002\022\013\n\007PENDING\020\003\022\t"
-    "\n\005FIRST\020\004", 569);
+    "\n\020scoreboard.proto\022\004wire\"\204\001\n\007Message\022\034\n\005"
+    "event\030\001 \001(\0132\013.wire.EventH\000\022#\n\005setup\030\002 \001("
+    "\0132\022.wire.ContestSetupH\000\022\023\n\tHeartBeat\030\003 \001"
+    "(\003H\000\022\022\n\010unfreeze\030\004 \001(\010H\000B\r\n\013MessageType\""
+    "\235\001\n\005Event\022\014\n\004Team\030\006 \002(\003\022\017\n\007Problem\030\001 \002(\003"
+    "\022\023\n\013SubmitCount\030\002 \002(\003\022\017\n\007Penalty\030\003 \002(\003\022\023"
+    "\n\013ContestTime\030\007 \001(\003\022\033\n\005State\030\004 \002(\0162\014.wir"
+    "e.SState\022\035\n\010Unfrozen\030\005 \001(\0132\013.wire.Event\""
+    "g\n\014ContestSetup\022\014\n\004Name\030\001 \002(\t\022\031\n\005Teams\030\002"
+    " \003(\0132\n.wire.Team\022\037\n\010Problems\030\003 \003(\0132\r.wir"
+    "e.Problem\022\r\n\005Start\030\004 \002(\003\"3\n\007Problem\022\n\n\002I"
+    "d\030\001 \002(\003\022\r\n\005Label\030\002 \002(\t\022\r\n\005Color\030\003 \001(\t\"5\n"
+    "\004Team\022\n\n\002Id\030\001 \002(\003\022\014\n\004Name\030\002 \002(\t\022\023\n\013Affil"
+    "iation\030\003 \001(\t*8\n\006SState\022\013\n\007CORRECT\020\001\022\t\n\005W"
+    "RONG\020\002\022\013\n\007PENDING\020\003\022\t\n\005FIRST\020\004", 590);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "scoreboard.proto", &protobuf_RegisterTypes);
   Message::default_instance_ = new Message();
@@ -252,6 +254,7 @@ bool SState_IsValid(int value) {
 const int Message::kEventFieldNumber;
 const int Message::kSetupFieldNumber;
 const int Message::kHeartBeatFieldNumber;
+const int Message::kUnfreezeFieldNumber;
 #endif  // !_MSC_VER
 
 Message::Message()
@@ -264,6 +267,7 @@ void Message::InitAsDefaultInstance() {
   Message_default_oneof_instance_->event_ = const_cast< ::wire::Event*>(&::wire::Event::default_instance());
   Message_default_oneof_instance_->setup_ = const_cast< ::wire::ContestSetup*>(&::wire::ContestSetup::default_instance());
   Message_default_oneof_instance_->heartbeat_ = GOOGLE_LONGLONG(0);
+  Message_default_oneof_instance_->unfreeze_ = false;
 }
 
 Message::Message(const Message& from)
@@ -324,6 +328,10 @@ void Message::clear_MessageType() {
       break;
     }
     case kHeartBeat: {
+      // No need to clear
+      break;
+    }
+    case kUnfreeze: {
       // No need to clear
       break;
     }
@@ -388,6 +396,22 @@ bool Message::MergePartialFromCodedStream(
         } else {
           goto handle_unusual;
         }
+        if (input->ExpectTag(32)) goto parse_unfreeze;
+        break;
+      }
+
+      // optional bool unfreeze = 4;
+      case 4: {
+        if (tag == 32) {
+         parse_unfreeze:
+          clear_MessageType();
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   bool, ::google::protobuf::internal::WireFormatLite::TYPE_BOOL>(
+                 input, &MessageType_.unfreeze_)));
+          set_has_unfreeze();
+        } else {
+          goto handle_unusual;
+        }
         if (input->ExpectAtEnd()) goto success;
         break;
       }
@@ -434,6 +458,11 @@ void Message::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteInt64(3, this->heartbeat(), output);
   }
 
+  // optional bool unfreeze = 4;
+  if (has_unfreeze()) {
+    ::google::protobuf::internal::WireFormatLite::WriteBool(4, this->unfreeze(), output);
+  }
+
   if (!unknown_fields().empty()) {
     ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
         unknown_fields(), output);
@@ -461,6 +490,11 @@ void Message::SerializeWithCachedSizes(
   // optional int64 HeartBeat = 3;
   if (has_heartbeat()) {
     target = ::google::protobuf::internal::WireFormatLite::WriteInt64ToArray(3, this->heartbeat(), target);
+  }
+
+  // optional bool unfreeze = 4;
+  if (has_unfreeze()) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(4, this->unfreeze(), target);
   }
 
   if (!unknown_fields().empty()) {
@@ -494,6 +528,11 @@ int Message::ByteSize() const {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::Int64Size(
           this->heartbeat());
+      break;
+    }
+    // optional bool unfreeze = 4;
+    case kUnfreeze: {
+      total_size += 1 + 1;
       break;
     }
     case MESSAGETYPE_NOT_SET: {
@@ -536,6 +575,10 @@ void Message::MergeFrom(const Message& from) {
     }
     case kHeartBeat: {
       set_heartbeat(from.heartbeat());
+      break;
+    }
+    case kUnfreeze: {
+      set_unfreeze(from.unfreeze());
       break;
     }
     case MESSAGETYPE_NOT_SET: {

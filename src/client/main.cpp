@@ -52,6 +52,7 @@ int main(int argc, char *argv[])
 			obj, SLOT(contestSetup(QVariant,QVariant,QVariant)));
 	QObject::connect(&client, SIGNAL(configure(QVariant)),
 			obj, SLOT(configure(QVariant)));
+	QObject::connect(&client, SIGNAL(focus(QVariant)), obj, SLOT(doFocus(QVariant)));
 	
 	client.run();
 

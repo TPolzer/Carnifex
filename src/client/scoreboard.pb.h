@@ -90,6 +90,7 @@ class Message : public ::google::protobuf::Message {
     kEvent = 1,
     kSetup = 2,
     kHeartBeat = 3,
+    kUnfreeze = 4,
     MESSAGETYPE_NOT_SET = 0,
   };
 
@@ -148,12 +149,20 @@ class Message : public ::google::protobuf::Message {
   inline ::google::protobuf::int64 heartbeat() const;
   inline void set_heartbeat(::google::protobuf::int64 value);
 
+  // optional bool unfreeze = 4;
+  inline bool has_unfreeze() const;
+  inline void clear_unfreeze();
+  static const int kUnfreezeFieldNumber = 4;
+  inline bool unfreeze() const;
+  inline void set_unfreeze(bool value);
+
   inline MessageTypeCase MessageType_case() const;
   // @@protoc_insertion_point(class_scope:wire.Message)
  private:
   inline void set_has_event();
   inline void set_has_setup();
   inline void set_has_heartbeat();
+  inline void set_has_unfreeze();
 
   inline bool has_MessageType();
   void clear_MessageType();
@@ -167,6 +176,7 @@ class Message : public ::google::protobuf::Message {
     ::wire::Event* event_;
     ::wire::ContestSetup* setup_;
     ::google::protobuf::int64 heartbeat_;
+    bool unfreeze_;
   } MessageType_;
   ::google::protobuf::uint32 _oneof_case_[1];
 
@@ -774,6 +784,33 @@ inline void Message::set_heartbeat(::google::protobuf::int64 value) {
     set_has_heartbeat();
   }
   MessageType_.heartbeat_ = value;
+}
+
+// optional bool unfreeze = 4;
+inline bool Message::has_unfreeze() const {
+  return MessageType_case() == kUnfreeze;
+}
+inline void Message::set_has_unfreeze() {
+  _oneof_case_[0] = kUnfreeze;
+}
+inline void Message::clear_unfreeze() {
+  if (has_unfreeze()) {
+    MessageType_.unfreeze_ = false;
+    clear_has_MessageType();
+  }
+}
+inline bool Message::unfreeze() const {
+  if (has_unfreeze()) {
+    return MessageType_.unfreeze_;
+  }
+  return false;
+}
+inline void Message::set_unfreeze(bool value) {
+  if (!has_unfreeze()) {
+    clear_MessageType();
+    set_has_unfreeze();
+  }
+  MessageType_.unfreeze_ = value;
 }
 
 inline bool Message::has_MessageType() {
