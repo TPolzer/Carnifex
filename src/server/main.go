@@ -47,8 +47,8 @@ type cursesWriter struct {
 }
 func (c cursesWriter) Write(p []byte) (n int, err error) {
 	c.window.Print(string(p[:len(p)]))
-	c.window.Refresh()
-	//log.Println(p)
+	c.window.NoutRefresh()
+	curses.Update()
 	return len(p), nil
 }
 
@@ -61,9 +61,31 @@ func main() {
 
 	curses.Echo(false)
 	curses.CBreak(true)
+	curses.Cursor(0)
 	stdscr.Keypad(true)
 
-	log.SetOutput(cursesWriter{stdscr})
+	stdscr.Erase()
+
+	rows, cols := stdscr.MaxYX()
+	var logwin, statuswin *curses.Window
+	logwin, err = curses.NewWindow(rows - 4, cols, 4, 0)
+	if err != nil {
+		log.Fatal(err)
+	}
+	logwin.ScrollOk(true)
+	log.SetOutput(cursesWriter{logwin})
+	statuswin, err = curses.NewWindow(4, 0, 0, 0)
+	if err != nil {
+		log.Fatal(err)
+	}
+	statuswin.Box(curses.ACS_VLINE, curses.ACS_HLINE)
+	headline := "Scory McScoreface(tm)"
+	statuswin.MovePrint(1, cols/2 - len(headline)/2, headline)
+	statuswin.MovePrint(2, 1, "Connected clients: 0")
+	statuswin.NoutRefresh()
+	logwin.NoutRefresh()
+	curses.Update()
+	logwin.Keypad(true)
 
 	bytes, err := ioutil.ReadFile("credentials.json")
 	if(err != nil) {
@@ -92,7 +114,6 @@ func main() {
 	if(err != nil) {
 		log.Fatal("invalid baseURL")
 	}
-
 
 	judge := score.NewJudgeClient(judgeUrl, credentials["user"], credentials["password"])
 
@@ -131,7 +152,7 @@ func main() {
 	go ListenTCP(config.ServerPort, *config.SharedSecret, subscribe, unsubscribe)
 	go func() {
 		for {
-			switch stdscr.GetChar() {
+			switch logwin.GetChar() {
 			case 'q':
 				curses.End()
 				os.Exit(0)
@@ -143,7 +164,7 @@ func main() {
 				ContestState.Unfreeze <- true
 			}
 		}
-	}();
+	}()
 
 	log.Print("succesfully connected to judge and listening for clients")
 
