@@ -55,6 +55,7 @@ Window {
 	property string name: ""
 	property point focused: "-1,-1"
 	function doFocus(p) {
+		if(config.jury) return;
 		focused = p;
 	}
 	property var start: new Date().valueOf()
@@ -189,6 +190,7 @@ Window {
 							anchors.left: parent ? parent.left : undefined
 							anchors.right: parent ? parent.right : undefined
 							Behavior on y { SmoothedAnimation { duration: 1500; velocity: -1 } }
+							Component.onCompleted: modelData.config = config
 						}
 					}
 					Timer {
