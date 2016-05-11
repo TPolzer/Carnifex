@@ -60,6 +60,7 @@ func ListenTCP(port int, password string, subscribe, unsubscribe chan (chan *wir
 			if(err != nil) {
 				log.Printf("Generating random nonce for client %v failed: %v\n", conn, err)
 				conn.Close()
+				return
 			}
 			ctr := uint64(0)
 			write := func (m *wire.Message) (err error) {
