@@ -29,9 +29,12 @@ import (
 	"score/wire"
 	"time"
 	"os"
+	"sync"
 
 	curses "github.com/rthornton128/goncurses"
 )
+
+var cursesLock *sync.Mutex
 
 type Config struct {
 	BaseUrl string
@@ -47,13 +50,16 @@ type cursesWriter struct {
 	window *curses.Window
 }
 func (c cursesWriter) Write(p []byte) (n int, err error) {
+	cursesLock.Lock()
 	c.window.Print(string(p[:len(p)]))
 	c.window.NoutRefresh()
 	curses.Update()
+	cursesLock.Unlock()
 	return len(p), nil
 }
 
 func main() {
+	cursesLock = &sync.Mutex{}
 	stdscr, err := curses.Init()
 	if err != nil {
 		log.Fatal("Unable to initialize curses interface: " + err.Error())
@@ -168,8 +174,10 @@ func main() {
 	go func() {
 		connections := 0
 		for {
+			cursesLock.Lock()
 			statuswin.MovePrint(2, 1, fmt.Sprintf("Connected clients: %d", connections))
 			statuswin.Refresh()
+			cursesLock.Unlock()
 			b := <-counter
 			if b {
 				connections++
