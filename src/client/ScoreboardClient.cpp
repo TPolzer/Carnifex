@@ -213,9 +213,9 @@ void ScoreboardClient::setup(const wire::ContestSetup& setup) {
 	contest["start"] = start;
 	emit contestSetup(contest, QVariant(problemList), teamList);
 
-	//TODO is this correct / sufficient / necessary?
-	QQmlEngine::setObjectOwnership(qvariant_cast<QObject *>(teamList), QQmlEngine::JavaScriptOwnership);
-	QQmlEngine::setObjectOwnership(qvariant_cast<QObject *>(problemList), QQmlEngine::JavaScriptOwnership);
+	for(QObject *team : ranking) {
+		QQmlEngine::setObjectOwnership(team, QQmlEngine::JavaScriptOwnership);
+	}
 	std::cerr << "Received setup for Contest \"" << setup.name() << "\"" <<std::endl;
 }
 
