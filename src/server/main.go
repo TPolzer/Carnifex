@@ -21,6 +21,7 @@ package main
 import (
 	"encoding/json"
 	"io/ioutil"
+	"fmt"
 	"log"
     "net/url"
 	"reflect"
@@ -81,7 +82,6 @@ func main() {
 	statuswin.Box(curses.ACS_VLINE, curses.ACS_HLINE)
 	headline := "Scory McScoreface(tm)"
 	statuswin.MovePrint(1, cols/2 - len(headline)/2, headline)
-	statuswin.MovePrint(2, 1, "Connected clients: 0")
 	statuswin.NoutRefresh()
 	logwin.NoutRefresh()
 	curses.Update()
@@ -149,7 +149,23 @@ func main() {
 	if(config.ServerPort == 0) {
 		config.ServerPort = 8080
 	}
-	go ListenTCP(config.ServerPort, *config.SharedSecret, subscribe, unsubscribe)
+
+	counter := make(chan bool)
+	go func() {
+		connections := 0
+		for {
+			statuswin.MovePrint(2, 1, fmt.Sprintf("Connected clients: %d", connections))
+			statuswin.Refresh()
+			b := <-counter
+			if b {
+				connections++
+			} else {
+				connections--
+			}
+		}
+	}()
+
+	go ListenTCP(config.ServerPort, *config.SharedSecret, subscribe, unsubscribe, counter)
 	go func() {
 		for {
 			switch logwin.GetChar() {
