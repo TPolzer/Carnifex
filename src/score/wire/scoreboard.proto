@@ -23,6 +23,9 @@ message ContestSetup {
 	repeated Team Teams = 2;
 	repeated Problem Problems = 3;
 	required int64 Start = 4;
+	required int64 End = 5;
+	optional int64 SimulatedStart = 6;
+	optional double SimulationSpeed = 7;
 }
 
 message Problem {

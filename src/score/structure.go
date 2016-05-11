@@ -53,6 +53,8 @@ type Contest struct {
     Name string
     Freeze int64
     Start int64
+	SimulatedStart *int64
+	SimulationSpeed *float64
     End int64
     Unfreeze int64
     Penalty int64

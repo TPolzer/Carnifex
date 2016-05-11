@@ -178,6 +178,7 @@ void ScoreboardClient::setup(const wire::ContestSetup& setup) {
 	this->pendingFreeze.clear();
 	auto name = QString::fromStdString(setup.name());
 	double start = setup.start() * 1000.0;
+	double end = setup.end() * 1000.0;
 	auto teams = setup.teams();
 	sort(teams.begin(), teams.end(), [](const wire::Team& a, const wire::Team& b){
 			return a.name() < b.name();
@@ -211,6 +212,9 @@ void ScoreboardClient::setup(const wire::ContestSetup& setup) {
 	QVariantMap contest;
 	contest["name"] = name;
 	contest["start"] = start;
+	contest["end"] = end;
+	contest["sstart"] = setup.simulatedstart() * 1000.0;
+	contest["sspeed"] = setup.simulationspeed();
 	emit contestSetup(contest, QVariant(problemList), teamList);
 
 	for(QObject *team : ranking) {

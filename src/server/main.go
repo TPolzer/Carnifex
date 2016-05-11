@@ -90,6 +90,20 @@ func main() {
 	go judge.ChannelJson(Teams, score.TEAMS, sanitySleep, false, false)
 	go judge.ChannelJson(Contest, score.CONTEST, sanitySleep, false, false)
 
+	if(config.Simulate) {
+		realContest := Contest
+		Contest = make(chan *score.Contest)
+		start := time.Now().Unix()
+		go func(){
+			for {
+				c := <-realContest
+				c.SimulationSpeed = &config.SimulationSpeed
+				c.SimulatedStart = &start
+				Contest <- c
+			}
+		}();
+	}
+
 	subscribe := make(chan (chan *wire.Message))
 	unsubscribe := make(chan (chan *wire.Message))
 	ContestState := score.NewContestState(<-Contest, <-Teams, nil)

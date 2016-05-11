@@ -416,12 +416,39 @@ class ContestSetup : public ::google::protobuf::Message {
   inline ::google::protobuf::int64 start() const;
   inline void set_start(::google::protobuf::int64 value);
 
+  // required int64 End = 5;
+  inline bool has_end() const;
+  inline void clear_end();
+  static const int kEndFieldNumber = 5;
+  inline ::google::protobuf::int64 end() const;
+  inline void set_end(::google::protobuf::int64 value);
+
+  // optional int64 SimulatedStart = 6;
+  inline bool has_simulatedstart() const;
+  inline void clear_simulatedstart();
+  static const int kSimulatedStartFieldNumber = 6;
+  inline ::google::protobuf::int64 simulatedstart() const;
+  inline void set_simulatedstart(::google::protobuf::int64 value);
+
+  // optional double SimulationSpeed = 7;
+  inline bool has_simulationspeed() const;
+  inline void clear_simulationspeed();
+  static const int kSimulationSpeedFieldNumber = 7;
+  inline double simulationspeed() const;
+  inline void set_simulationspeed(double value);
+
   // @@protoc_insertion_point(class_scope:wire.ContestSetup)
  private:
   inline void set_has_name();
   inline void clear_has_name();
   inline void set_has_start();
   inline void clear_has_start();
+  inline void set_has_end();
+  inline void clear_has_end();
+  inline void set_has_simulatedstart();
+  inline void clear_has_simulatedstart();
+  inline void set_has_simulationspeed();
+  inline void clear_has_simulationspeed();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
@@ -431,6 +458,9 @@ class ContestSetup : public ::google::protobuf::Message {
   ::google::protobuf::RepeatedPtrField< ::wire::Team > teams_;
   ::google::protobuf::RepeatedPtrField< ::wire::Problem > problems_;
   ::google::protobuf::int64 start_;
+  ::google::protobuf::int64 end_;
+  ::google::protobuf::int64 simulatedstart_;
+  double simulationspeed_;
   friend void  protobuf_AddDesc_scoreboard_2eproto();
   friend void protobuf_AssignDesc_scoreboard_2eproto();
   friend void protobuf_ShutdownFile_scoreboard_2eproto();
@@ -1137,6 +1167,78 @@ inline void ContestSetup::set_start(::google::protobuf::int64 value) {
   set_has_start();
   start_ = value;
   // @@protoc_insertion_point(field_set:wire.ContestSetup.Start)
+}
+
+// required int64 End = 5;
+inline bool ContestSetup::has_end() const {
+  return (_has_bits_[0] & 0x00000010u) != 0;
+}
+inline void ContestSetup::set_has_end() {
+  _has_bits_[0] |= 0x00000010u;
+}
+inline void ContestSetup::clear_has_end() {
+  _has_bits_[0] &= ~0x00000010u;
+}
+inline void ContestSetup::clear_end() {
+  end_ = GOOGLE_LONGLONG(0);
+  clear_has_end();
+}
+inline ::google::protobuf::int64 ContestSetup::end() const {
+  // @@protoc_insertion_point(field_get:wire.ContestSetup.End)
+  return end_;
+}
+inline void ContestSetup::set_end(::google::protobuf::int64 value) {
+  set_has_end();
+  end_ = value;
+  // @@protoc_insertion_point(field_set:wire.ContestSetup.End)
+}
+
+// optional int64 SimulatedStart = 6;
+inline bool ContestSetup::has_simulatedstart() const {
+  return (_has_bits_[0] & 0x00000020u) != 0;
+}
+inline void ContestSetup::set_has_simulatedstart() {
+  _has_bits_[0] |= 0x00000020u;
+}
+inline void ContestSetup::clear_has_simulatedstart() {
+  _has_bits_[0] &= ~0x00000020u;
+}
+inline void ContestSetup::clear_simulatedstart() {
+  simulatedstart_ = GOOGLE_LONGLONG(0);
+  clear_has_simulatedstart();
+}
+inline ::google::protobuf::int64 ContestSetup::simulatedstart() const {
+  // @@protoc_insertion_point(field_get:wire.ContestSetup.SimulatedStart)
+  return simulatedstart_;
+}
+inline void ContestSetup::set_simulatedstart(::google::protobuf::int64 value) {
+  set_has_simulatedstart();
+  simulatedstart_ = value;
+  // @@protoc_insertion_point(field_set:wire.ContestSetup.SimulatedStart)
+}
+
+// optional double SimulationSpeed = 7;
+inline bool ContestSetup::has_simulationspeed() const {
+  return (_has_bits_[0] & 0x00000040u) != 0;
+}
+inline void ContestSetup::set_has_simulationspeed() {
+  _has_bits_[0] |= 0x00000040u;
+}
+inline void ContestSetup::clear_has_simulationspeed() {
+  _has_bits_[0] &= ~0x00000040u;
+}
+inline void ContestSetup::clear_simulationspeed() {
+  simulationspeed_ = 0;
+  clear_has_simulationspeed();
+}
+inline double ContestSetup::simulationspeed() const {
+  // @@protoc_insertion_point(field_get:wire.ContestSetup.SimulationSpeed)
+  return simulationspeed_;
+}
+inline void ContestSetup::set_simulationspeed(double value) {
+  set_has_simulationspeed();
+  simulationspeed_ = value;
+  // @@protoc_insertion_point(field_set:wire.ContestSetup.SimulationSpeed)
 }
 
 // -------------------------------------------------------------------

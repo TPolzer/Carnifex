@@ -55,6 +55,9 @@ Window {
 	property string name: ""
 	property point focused: "-1,-1"
 	property var start: new Date().valueOf()
+	property var end: 1/0.0
+	property var sstart: 0
+	property var sspeed: 0
 	property var coats: C.coats()
 
 	Team {
@@ -76,6 +79,9 @@ Window {
         contest.teams = teams
 		contest.name = contestDesc.name
 		contest.start = contestDesc.start
+		contest.end = contestDesc.end
+		contest.sstart = contestDesc.sstart
+		contest.sspeed = contestDesc.sspeed
 		onHeightChanged(height); // trigger row/column count (title height could have changed)
     }
 
@@ -89,9 +95,9 @@ Window {
 	ScoreText {
         id: clockDisplay
 		text: sign + clock.formatUTCTime(new Date(Math.abs(sinceStart)), "hh':'mm':'ss'.'zzz").substr(0,10)
-        property var sinceStart: clock.time - reference
+        property var sinceStart: Math.min((sspeed ? sspeed : 1)*(clock.time - reference), contest.end - contest.start)
         property var sign: (sinceStart < 0) ? '-' : ''
-        property var reference: contest.start
+        property var reference: sspeed ? sstart : start
 		anchors.right: parent.right
 		anchors.margins: em
         Clock {

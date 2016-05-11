@@ -197,6 +197,7 @@ func (state *ContestState) ContestSetup() (*wire.Message) {
     setup.Name = &state.Contest.Name
     setup.Problems = state.Problems
     setup.Start = &state.Contest.Start
+    setup.End = &state.Contest.End
     var Teams []*wire.Team
     for i, _ := range state.Teams {
         t := &state.Teams[i] // force reference semantic
@@ -209,6 +210,10 @@ func (state *ContestState) ContestSetup() (*wire.Message) {
         Teams = append(Teams, team)
     }
     setup.Teams = Teams
+	if(state.Contest.SimulationSpeed != nil) {
+		setup.SimulatedStart = state.Contest.SimulatedStart
+		setup.SimulationSpeed = state.Contest.SimulationSpeed
+	}
     return &wire.Message{
         MessageType: &wire.Message_Setup{
             Setup: setup,

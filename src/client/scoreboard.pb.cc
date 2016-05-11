@@ -93,11 +93,14 @@ void protobuf_AssignDesc_scoreboard_2eproto() {
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(Event));
   ContestSetup_descriptor_ = file->message_type(2);
-  static const int ContestSetup_offsets_[4] = {
+  static const int ContestSetup_offsets_[7] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ContestSetup, name_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ContestSetup, teams_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ContestSetup, problems_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ContestSetup, start_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ContestSetup, end_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ContestSetup, simulatedstart_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ContestSetup, simulationspeed_),
   };
   ContestSetup_reflection_ =
     new ::google::protobuf::internal::GeneratedMessageReflection(
@@ -199,14 +202,15 @@ void protobuf_AddDesc_scoreboard_2eproto() {
     "(\003\022\017\n\007Problem\030\001 \002(\003\022\023\n\013SubmitCount\030\002 \002(\003"
     "\022\017\n\007Penalty\030\003 \002(\003\022\023\n\013ContestTime\030\007 \001(\003\022\033"
     "\n\005State\030\004 \002(\0162\014.wire.SState\022\035\n\010Unfrozen\030"
-    "\005 \001(\0132\013.wire.Event\"g\n\014ContestSetup\022\014\n\004Na"
-    "me\030\001 \002(\t\022\031\n\005Teams\030\002 \003(\0132\n.wire.Team\022\037\n\010P"
-    "roblems\030\003 \003(\0132\r.wire.Problem\022\r\n\005Start\030\004 "
-    "\002(\003\"3\n\007Problem\022\n\n\002Id\030\001 \002(\003\022\r\n\005Label\030\002 \002("
-    "\t\022\r\n\005Color\030\003 \001(\t\"5\n\004Team\022\n\n\002Id\030\001 \002(\003\022\014\n\004"
-    "Name\030\002 \002(\t\022\023\n\013Affiliation\030\003 \001(\t*8\n\006SStat"
-    "e\022\013\n\007CORRECT\020\001\022\t\n\005WRONG\020\002\022\013\n\007PENDING\020\003\022\t"
-    "\n\005FIRST\020\004", 569);
+    "\005 \001(\0132\013.wire.Event\"\245\001\n\014ContestSetup\022\014\n\004N"
+    "ame\030\001 \002(\t\022\031\n\005Teams\030\002 \003(\0132\n.wire.Team\022\037\n\010"
+    "Problems\030\003 \003(\0132\r.wire.Problem\022\r\n\005Start\030\004"
+    " \002(\003\022\013\n\003End\030\005 \002(\003\022\026\n\016SimulatedStart\030\006 \001("
+    "\003\022\027\n\017SimulationSpeed\030\007 \001(\001\"3\n\007Problem\022\n\n"
+    "\002Id\030\001 \002(\003\022\r\n\005Label\030\002 \002(\t\022\r\n\005Color\030\003 \001(\t\""
+    "5\n\004Team\022\n\n\002Id\030\001 \002(\003\022\014\n\004Name\030\002 \002(\t\022\023\n\013Aff"
+    "iliation\030\003 \001(\t*8\n\006SState\022\013\n\007CORRECT\020\001\022\t\n"
+    "\005WRONG\020\002\022\013\n\007PENDING\020\003\022\t\n\005FIRST\020\004", 632);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "scoreboard.proto", &protobuf_RegisterTypes);
   Message::default_instance_ = new Message();
@@ -1077,6 +1081,9 @@ const int ContestSetup::kNameFieldNumber;
 const int ContestSetup::kTeamsFieldNumber;
 const int ContestSetup::kProblemsFieldNumber;
 const int ContestSetup::kStartFieldNumber;
+const int ContestSetup::kEndFieldNumber;
+const int ContestSetup::kSimulatedStartFieldNumber;
+const int ContestSetup::kSimulationSpeedFieldNumber;
 #endif  // !_MSC_VER
 
 ContestSetup::ContestSetup()
@@ -1100,6 +1107,9 @@ void ContestSetup::SharedCtor() {
   _cached_size_ = 0;
   name_ = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   start_ = GOOGLE_LONGLONG(0);
+  end_ = GOOGLE_LONGLONG(0);
+  simulatedstart_ = GOOGLE_LONGLONG(0);
+  simulationspeed_ = 0;
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 
@@ -1138,14 +1148,28 @@ ContestSetup* ContestSetup::New() const {
 }
 
 void ContestSetup::Clear() {
-  if (_has_bits_[0 / 32] & 9) {
+#define OFFSET_OF_FIELD_(f) (reinterpret_cast<char*>(      \
+  &reinterpret_cast<ContestSetup*>(16)->f) - \
+   reinterpret_cast<char*>(16))
+
+#define ZR_(first, last) do {                              \
+    size_t f = OFFSET_OF_FIELD_(first);                    \
+    size_t n = OFFSET_OF_FIELD_(last) - f + sizeof(last);  \
+    ::memset(&first, 0, n);                                \
+  } while (0)
+
+  if (_has_bits_[0 / 32] & 121) {
+    ZR_(start_, simulationspeed_);
     if (has_name()) {
       if (name_ != &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
         name_->clear();
       }
     }
-    start_ = GOOGLE_LONGLONG(0);
   }
+
+#undef OFFSET_OF_FIELD_
+#undef ZR_
+
   teams_.Clear();
   problems_.Clear();
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
@@ -1217,6 +1241,51 @@ bool ContestSetup::MergePartialFromCodedStream(
         } else {
           goto handle_unusual;
         }
+        if (input->ExpectTag(40)) goto parse_End;
+        break;
+      }
+
+      // required int64 End = 5;
+      case 5: {
+        if (tag == 40) {
+         parse_End:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::int64, ::google::protobuf::internal::WireFormatLite::TYPE_INT64>(
+                 input, &end_)));
+          set_has_end();
+        } else {
+          goto handle_unusual;
+        }
+        if (input->ExpectTag(48)) goto parse_SimulatedStart;
+        break;
+      }
+
+      // optional int64 SimulatedStart = 6;
+      case 6: {
+        if (tag == 48) {
+         parse_SimulatedStart:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::int64, ::google::protobuf::internal::WireFormatLite::TYPE_INT64>(
+                 input, &simulatedstart_)));
+          set_has_simulatedstart();
+        } else {
+          goto handle_unusual;
+        }
+        if (input->ExpectTag(57)) goto parse_SimulationSpeed;
+        break;
+      }
+
+      // optional double SimulationSpeed = 7;
+      case 7: {
+        if (tag == 57) {
+         parse_SimulationSpeed:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   double, ::google::protobuf::internal::WireFormatLite::TYPE_DOUBLE>(
+                 input, &simulationspeed_)));
+          set_has_simulationspeed();
+        } else {
+          goto handle_unusual;
+        }
         if (input->ExpectAtEnd()) goto success;
         break;
       }
@@ -1273,6 +1342,21 @@ void ContestSetup::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteInt64(4, this->start(), output);
   }
 
+  // required int64 End = 5;
+  if (has_end()) {
+    ::google::protobuf::internal::WireFormatLite::WriteInt64(5, this->end(), output);
+  }
+
+  // optional int64 SimulatedStart = 6;
+  if (has_simulatedstart()) {
+    ::google::protobuf::internal::WireFormatLite::WriteInt64(6, this->simulatedstart(), output);
+  }
+
+  // optional double SimulationSpeed = 7;
+  if (has_simulationspeed()) {
+    ::google::protobuf::internal::WireFormatLite::WriteDouble(7, this->simulationspeed(), output);
+  }
+
   if (!unknown_fields().empty()) {
     ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
         unknown_fields(), output);
@@ -1313,6 +1397,21 @@ void ContestSetup::SerializeWithCachedSizes(
     target = ::google::protobuf::internal::WireFormatLite::WriteInt64ToArray(4, this->start(), target);
   }
 
+  // required int64 End = 5;
+  if (has_end()) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteInt64ToArray(5, this->end(), target);
+  }
+
+  // optional int64 SimulatedStart = 6;
+  if (has_simulatedstart()) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteInt64ToArray(6, this->simulatedstart(), target);
+  }
+
+  // optional double SimulationSpeed = 7;
+  if (has_simulationspeed()) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteDoubleToArray(7, this->simulationspeed(), target);
+  }
+
   if (!unknown_fields().empty()) {
     target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
         unknown_fields(), target);
@@ -1337,6 +1436,25 @@ int ContestSetup::ByteSize() const {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::Int64Size(
           this->start());
+    }
+
+    // required int64 End = 5;
+    if (has_end()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::Int64Size(
+          this->end());
+    }
+
+    // optional int64 SimulatedStart = 6;
+    if (has_simulatedstart()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::Int64Size(
+          this->simulatedstart());
+    }
+
+    // optional double SimulationSpeed = 7;
+    if (has_simulationspeed()) {
+      total_size += 1 + 8;
     }
 
   }
@@ -1390,6 +1508,15 @@ void ContestSetup::MergeFrom(const ContestSetup& from) {
     if (from.has_start()) {
       set_start(from.start());
     }
+    if (from.has_end()) {
+      set_end(from.end());
+    }
+    if (from.has_simulatedstart()) {
+      set_simulatedstart(from.simulatedstart());
+    }
+    if (from.has_simulationspeed()) {
+      set_simulationspeed(from.simulationspeed());
+    }
   }
   mutable_unknown_fields()->MergeFrom(from.unknown_fields());
 }
@@ -1407,7 +1534,7 @@ void ContestSetup::CopyFrom(const ContestSetup& from) {
 }
 
 bool ContestSetup::IsInitialized() const {
-  if ((_has_bits_[0] & 0x00000009) != 0x00000009) return false;
+  if ((_has_bits_[0] & 0x00000019) != 0x00000019) return false;
 
   if (!::google::protobuf::internal::AllAreInitialized(this->teams())) return false;
   if (!::google::protobuf::internal::AllAreInitialized(this->problems())) return false;
@@ -1420,6 +1547,9 @@ void ContestSetup::Swap(ContestSetup* other) {
     teams_.Swap(&other->teams_);
     problems_.Swap(&other->problems_);
     std::swap(start_, other->start_);
+    std::swap(end_, other->end_);
+    std::swap(simulatedstart_, other->simulatedstart_);
+    std::swap(simulationspeed_, other->simulationspeed_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
     _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
