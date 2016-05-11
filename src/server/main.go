@@ -80,7 +80,7 @@ func main() {
 		log.Fatal(err)
 	}
 	statuswin.Box(curses.ACS_VLINE, curses.ACS_HLINE)
-	headline := "Scory McScoreface(tm)"
+	headline := "Carnifex"
 	statuswin.MovePrint(1, cols/2 - len(headline)/2, headline)
 	statuswin.NoutRefresh()
 	logwin.NoutRefresh()
