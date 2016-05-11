@@ -110,12 +110,18 @@ func (state *ContestState) EventLoop(submissions chan Submission, judgings chan 
 }
 
 func (state *ContestState) Broadcast(message *wire.Message) {
+	if(message == nil) {
+		return
+	}
     for _, o := range state.observers {
         o <- message
     }
 }
 
 func ToMessage(event *wire.Event) *wire.Message {
+	if(event == nil) {
+		return nil
+	}
     return &wire.Message{
         MessageType: &wire.Message_Event{
             Event: event,
