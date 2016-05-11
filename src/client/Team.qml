@@ -23,13 +23,15 @@ Item {
     property var name: ""
 	property var rank: "1"
 	property var affiliation: ''
-    property int pos: 0
+	property int pos: 0
     property var submits: []
     property var pending: []
 	property var correct: []
 	property var correctTimes: []
     property var penalties: []
-    property var first: []
+	property var first: []
+	property var resolved: []
+	property var config
     property var solved: correct.reduce(H.add, 0)
 	property int penalty: penalties.reduce(H.add, 0)
 	property int lastSolved: Math.max.apply(null, correctTimes)
@@ -42,7 +44,26 @@ Item {
 		if(ld != 0) return ld < 0;
 		return false;
 	}
+	function toggleFreeze(problem) {
+		if(resolved[problem] === undefined) return
+		var event = {
+			SubmitCount: submits[problem],
+			Penalty: penalties[problem],
+			State: first[problem] ? 'FIRST' : correct[problem] ? 'CORRECT' : pending[problem] ? 'PENDING' : 'WRONG',
+			ContestTime: correctTimes[problem],
+		};
+		applyEvent(resolved[problem], problem)
+		resolved[problem] = event
+	}
 	function applyEvent(event, problem) {
+		if(event.Unfrozen !== undefined) {
+			if(config.jury) {
+				applyEvent(event.Unfrozen, problem);
+				return;
+			} else {
+				resolved[problem] = event.Unfrozen
+			}
+		}
 		submits[problem] = event.SubmitCount;
 		pending[problem] = event.State == 'PENDING';
 		correct[problem] = event.State == 'CORRECT' || event.State == 'FIRST'

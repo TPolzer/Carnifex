@@ -31,3 +31,6 @@ minrows, mincols: [client], double, required
 
 pageInterval: [client], double, default 10
 	The amount of time in seconds to wait between scrolling pages.
+
+jury: [client], bool, default false
+	Display a jury scoreboard (no freeze).

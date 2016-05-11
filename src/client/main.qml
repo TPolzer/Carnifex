@@ -54,6 +54,10 @@ Window {
     property var teams: []
 	property string name: ""
 	property point focused: "-1,-1"
+	function doFocus(p) {
+		if(config.jury) return;
+		focused = p;
+	}
 	property var start: new Date().valueOf()
 	property var end: 1/0.0
 	property var sstart: 0
@@ -157,7 +161,7 @@ Window {
 					id: tableContents
 					property int perPage: Math.max(config.minrows, Math.floor(table.height/rs)); // avoid precision problems with exactly minrows
 					property int pages: Math.ceil(teams.length/perPage)
-					property int page: (contest.focused.y == -1) ? autopage : teams[contest.focused.y].pos/perPage
+					property int page: (contest.focused.y < 0 || contest.focused.y >= teams.length) ? autopage : contest.focused.y/perPage
 					property int autopage: 0
 					y: rs ? -page*rs*perPage : 0
 					Behavior on y { SmoothedAnimation {duration: 800; velocity: -1} }
@@ -186,12 +190,13 @@ Window {
 						model: teams
 						Row_t {
 							team: modelData
-							focused: (contest.focused.y == index) ? contest.focused.x : 0
+							focused: (contest.focused.y == modelData.pos) ? contest.focused.x : -2
 							y: modelData.pos*rs
 							height: rs
 							anchors.left: parent ? parent.left : undefined
 							anchors.right: parent ? parent.right : undefined
 							Behavior on y { SmoothedAnimation { duration: 1500; velocity: -1 } }
+							Component.onCompleted: modelData.config = config
 						}
 					}
 					Timer {

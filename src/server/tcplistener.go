@@ -31,7 +31,7 @@ import (
 	"score/wire"
 )
 
-func ListenTCP(port int, password string, subscribe, unsubscribe chan (chan *wire.Message)) {
+func ListenTCP(port int, password string, subscribe, unsubscribe chan (chan *wire.Message), counter chan bool) {
 	var key [32]byte
 	salt := make([]byte, 32) // interoperability with libsodium depends on len == crypto_pwhash_SALTBYTES
 	_, err := rand.Read(salt)
@@ -44,7 +44,6 @@ func ListenTCP(port int, password string, subscribe, unsubscribe chan (chan *wir
 	}
 	copy(key[:], tmp)
 
-
 	listener, err := net.ListenTCP("tcp", &net.TCPAddr{Port:port})
     if(err != nil) {
         log.Fatal(err)
@@ -54,12 +53,17 @@ func ListenTCP(port int, password string, subscribe, unsubscribe chan (chan *wir
 		if(err != nil) {
 			log.Fatal(err)
 		}
+		counter <- true
 		go func() {
+			defer func() {
+				counter <- false
+			}()
 			var nonce [24]byte
 			_, err := rand.Read(nonce[8:])
 			if(err != nil) {
 				log.Printf("Generating random nonce for client %v failed: %v\n", conn, err)
 				conn.Close()
+				return
 			}
 			ctr := uint64(0)
 			write := func (m *wire.Message) (err error) {
@@ -77,6 +81,7 @@ func ListenTCP(port int, password string, subscribe, unsubscribe chan (chan *wir
 			_, err = conn.Write(append(nonce[8:], salt...))
 			if(err != nil) {
 				conn.Close()
+				return
 			}
 
 			messages := make(chan *wire.Message)
@@ -105,6 +110,9 @@ func ListenTCP(port int, password string, subscribe, unsubscribe chan (chan *wir
 						break MessageLoop
 					}
 				case m := <-messages:
+					if(m == nil) {
+						continue
+					}
 					err := write(m)
 					if(err != nil) {
 						break MessageLoop

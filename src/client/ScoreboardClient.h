@@ -24,6 +24,7 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QTimer>
+#include <QPoint>
 #include <memory>
 #include "scoreboard.pb.h"
 
@@ -43,15 +44,23 @@ private:
 	QQmlEngine& engine;
 	std::map<qint64, QObject*> teams;
 	std::vector<QObject*> ranking;
-	std::map<QObject*, std::map<qint64, wire::Event>> pendingFreeze; // team->problem->unfreeze
 	std::map<qint64, qint64> problems; // id -> idx
 	bool encrypted;
 	qint64 expectedBeat;
 	QTimer beatTimer;
+	QTimer reconnectIdle;
 	std::unique_ptr<unsigned char[]> key;
 	std::unique_ptr<unsigned char[]> nonce;
 	std::string sharedSecret;
 	quint64 nctr;
+	struct ResolveStatus {
+		int resolvedTeams, resolvedProblems, resolvingProblem;
+	} rs;
+	std::vector<std::pair<ResolveStatus, QObject*>> resolveStack;
+	void refocus();
+	void unfreeze();
+	void refreeze();
+	void rerank();
 	static bool compareScore(QObject*, QObject*);
 	void applyEvent(const wire::Event&);
 	void setup(const wire::ContestSetup&);
@@ -61,6 +70,7 @@ signals:
 	void configure(QVariant config);
 	void contestSetup(QVariant contest, QVariant problems, QVariant teams);
 	void event(QVariant event);
+	void focus(QVariant point);
 	void error();
 public slots:
     void connect();

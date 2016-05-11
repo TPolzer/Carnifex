@@ -22,13 +22,13 @@ import "helper.js" as H
 Item {
 	property var team
 	property var cols: [rank, teamname].concat(H.repArray(problems)).concat([solved, time])
-	property int focused: 0
+	property int focused: -2
 	Rectangle {
 		anchors.fill: parent
 		border.color: 'gold'
 		border.width: em/8
 		radius: em/4
-		visible: focused
+		visible: focused != -2
 		color: Qt.rgba(0,0,0,0)
 	}
 	ScoreText {
@@ -81,7 +81,7 @@ Item {
 					color: team.first[index] ? 'darkgreen' : team.correct[index] ? '#20E85C' : team.pending[index] ? 'blue' : team.submits[index] ? '#FF3860' : Qt.rgba(0,0,0,0)
 					radius: contest.em/4
 					border.color: 'gold'
-					border.width: (focused == index+1) ? em/8 : 0
+					border.width: (focused == index) ? em/8 : 0
 					height: contest.em
 					width: parent.width*0.9
 					ScoreText {

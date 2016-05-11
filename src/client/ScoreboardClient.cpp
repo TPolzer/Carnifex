@@ -66,6 +66,8 @@ void ScoreboardClient::run() {
 	QObject::connect(this, &ScoreboardClient::error, this, &ScoreboardClient::reset);
 	QObject::connect(&beatTimer, &QTimer::timeout, this, &ScoreboardClient::reset);
     QObject::connect(&socket, &QIODevice::readyRead, this, &ScoreboardClient::readyRead);
+	QObject::connect(&reconnectIdle, &QTimer::timeout, this, &ScoreboardClient::connect);
+	reconnectIdle.setSingleShot(true);
     connect();
 }
 
@@ -75,11 +77,13 @@ void ScoreboardClient::connect() {
 
 void ScoreboardClient::reconnect(QAbstractSocket::SocketError) {
 	std::cerr << "reconnecting\n";
-    QTimer::singleShot(2000, this, SLOT(connect()));
+	if(!reconnectIdle.isActive())
+		reconnectIdle.start(2000);
 }
 
 void ScoreboardClient::reset() {
 	socket.close();
+	beatTimer.stop();
 	emit reconnect(QAbstractSocket::UnknownSocketError);
 }
 
@@ -117,7 +121,7 @@ void ScoreboardClient::readyRead() {
 			encrypted = true;
 		}
 	} else if(pos == end(buffer)) {
-		if(socket.bytesAvailable() < sizeof(packetSize))
+		if(socket.bytesAvailable() < qint64(sizeof(packetSize)))
 			return;
 		buffer.assign(sizeof(packetSize), 0x3f);
 		socket.read(&buffer[0], sizeof(packetSize));
@@ -161,8 +165,11 @@ void ScoreboardClient::readyRead() {
 					expectedBeat++;
 					beatTimer.start(); // rearm
 				}
+			} else if(m.has_unfreeze()) {
+				if(m.unfreeze()) unfreeze();
+				else refreeze();
 			} else {
-				std::cerr << "Received inconsistent message (#2)" << std::endl;
+				std::cerr << "Received empty message (Should never happen!)" << std::endl;
 				emit error();
 			}
 		}
@@ -175,7 +182,6 @@ void ScoreboardClient::setup(const wire::ContestSetup& setup) {
 	this->teams.clear();
 	this->problems.clear();
 	this->ranking.clear();
-	this->pendingFreeze.clear();
 	auto name = QString::fromStdString(setup.name());
 	double start = setup.start() * 1000.0;
 	double end = setup.end() * 1000.0;
@@ -209,6 +215,11 @@ void ScoreboardClient::setup(const wire::ContestSetup& setup) {
 		this->problems[problem.id()] = problemList.size();
 		problemList.push_back(QString::fromStdString(problem.label()));
 	}
+	rs.resolvedProblems = problems.size()+1;
+	rs.resolvingProblem = -1;
+	rs.resolvedTeams = -1;
+	refocus();
+	resolveStack.clear();
 	QVariantMap contest;
 	contest["name"] = name;
 	contest["start"] = start;
@@ -232,11 +243,12 @@ bool ScoreboardClient::compareScore(QObject *a, QObject *b) {
 void ScoreboardClient::applyEvent(const wire::Event& event) {
 	auto team = teams[event.team()];
 	auto problem = problems[event.problem()];
-	if(event.has_unfrozen()) {
-		pendingFreeze[team][problem] = event.unfrozen();
-	}
 	QVariantMap jEvent = messageToObject(event);
 	QMetaObject::invokeMethod(team, "applyEvent", Q_ARG(QVariant, jEvent), Q_ARG(QVariant, problem));
+	rerank();
+}
+	
+void ScoreboardClient::rerank() {
 	std::stable_sort(std::begin(ranking),std::end(ranking),&compareScore);
     int rank = 0;
     for(quint64 pos = 0; pos < ranking.size(); ++pos) {
@@ -245,6 +257,59 @@ void ScoreboardClient::applyEvent(const wire::Event& event) {
             rank = pos+1;
         ranking[pos]->setProperty("rank", rank);
     }
+}
+
+void ScoreboardClient::unfreeze() {
+	resolveStack.emplace_back(rs, nullptr);
+	if(rs.resolvedTeams >= int(ranking.size())) {
+		++rs.resolvedTeams;
+		return;
+	}
+	auto teamIt = ranking.rbegin() + rs.resolvedTeams;
+	QObject *team = *teamIt;
+	if(rs.resolvingProblem > rs.resolvedProblems-1) { // toggle one problem
+		resolveStack.rbegin()->second = team;
+		QMetaObject::invokeMethod(team, "toggleFreeze", Q_ARG(QVariant, int(problems.size() - rs.resolvingProblem - 1)));
+		rs.resolvedProblems = rs.resolvingProblem+1;
+		rerank();
+		if(*teamIt != team) { // team has moved up, focus other team
+			rs.resolvedProblems = 0;
+			rs.resolvingProblem = -1;
+		}
+	} else if(rs.resolvedProblems < int(problems.size())) { // highlight next problem
+		++rs.resolvingProblem;
+		auto l = team->property("pending").toList();
+		while(rs.resolvingProblem < int(problems.size()) && l.value(problems.size()-rs.resolvingProblem-1, 0).toInt() == 0) {
+			++rs.resolvingProblem;
+		}
+		if(rs.resolvingProblem == int(problems.size())) {
+			rs.resolvedProblems = problems.size();
+		} else {
+		}
+	}
+	if(rs.resolvedProblems == int(problems.size())) { //highlight team
+		++rs.resolvedProblems;
+	} else if(rs.resolvedProblems == int(problems.size())+1) { // highlight next team
+		++rs.resolvedTeams;
+		rs.resolvedProblems = 0;
+		rs.resolvingProblem = -1;
+	}
+	refocus();
+}
+
+void ScoreboardClient::refreeze() {
+	rs = resolveStack.rbegin()->first;
+	auto team = resolveStack.rbegin()->second;
+	if(team) {
+		QMetaObject::invokeMethod(team, "toggleFreeze", Q_ARG(QVariant, int(problems.size() - rs.resolvingProblem - 1)));
+	}
+	resolveStack.pop_back();
+	rerank();
+	refocus();
+}
+
+void ScoreboardClient::refocus() {
+	focus(QPoint(problems.size()-rs.resolvingProblem-1, teams.size()-rs.resolvedTeams-1));
 }
 
 void ScoreboardClient::fatal(QAbstractSocket::SocketError error) {

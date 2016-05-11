@@ -5,6 +5,7 @@ message Message {
 		Event event = 1;
 		ContestSetup setup = 2;
 		int64 HeartBeat = 3;
+		bool unfreeze = 4;
 	}
 }
 

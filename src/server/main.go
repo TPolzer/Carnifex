@@ -21,12 +21,16 @@ package main
 import (
 	"encoding/json"
 	"io/ioutil"
+	"fmt"
 	"log"
     "net/url"
 	"reflect"
 	"score"
 	"score/wire"
 	"time"
+	"os"
+
+	curses "github.com/rthornton128/goncurses"
 )
 
 type Config struct {
@@ -39,13 +43,49 @@ type Config struct {
 	ServerPort int
 }
 
-func main() {
+type cursesWriter struct {
+	window *curses.Window
+}
+func (c cursesWriter) Write(p []byte) (n int, err error) {
+	c.window.Print(string(p[:len(p)]))
+	c.window.NoutRefresh()
+	curses.Update()
+	return len(p), nil
+}
 
-	secure := false
-	scheme := "http"
-	if(secure) {
-		scheme += "s"
+func main() {
+	stdscr, err := curses.Init()
+	if err != nil {
+		log.Fatal("Unable to initialize curses interface: " + err.Error())
 	}
+	defer curses.End()
+
+	curses.Echo(false)
+	curses.CBreak(true)
+	curses.Cursor(0)
+	stdscr.Keypad(true)
+
+	stdscr.Erase()
+
+	rows, cols := stdscr.MaxYX()
+	var logwin, statuswin *curses.Window
+	logwin, err = curses.NewWindow(rows - 4, cols, 4, 0)
+	if err != nil {
+		log.Fatal(err)
+	}
+	logwin.ScrollOk(true)
+	log.SetOutput(cursesWriter{logwin})
+	statuswin, err = curses.NewWindow(4, 0, 0, 0)
+	if err != nil {
+		log.Fatal(err)
+	}
+	statuswin.Box(curses.ACS_VLINE, curses.ACS_HLINE)
+	headline := "Scory McScoreface(tm)"
+	statuswin.MovePrint(1, cols/2 - len(headline)/2, headline)
+	statuswin.NoutRefresh()
+	logwin.NoutRefresh()
+	curses.Update()
+	logwin.Keypad(true)
 
 	bytes, err := ioutil.ReadFile("credentials.json")
 	if(err != nil) {
@@ -74,7 +114,6 @@ func main() {
 	if(err != nil) {
 		log.Fatal("invalid baseURL")
 	}
-
 
 	judge := score.NewJudgeClient(judgeUrl, credentials["user"], credentials["password"])
 
@@ -124,7 +163,38 @@ func main() {
 	if(config.ServerPort == 0) {
 		config.ServerPort = 8080
 	}
-	go ListenTCP(config.ServerPort, *config.SharedSecret, subscribe, unsubscribe)
+
+	counter := make(chan bool)
+	go func() {
+		connections := 0
+		for {
+			statuswin.MovePrint(2, 1, fmt.Sprintf("Connected clients: %d", connections))
+			statuswin.Refresh()
+			b := <-counter
+			if b {
+				connections++
+			} else {
+				connections--
+			}
+		}
+	}()
+
+	go ListenTCP(config.ServerPort, *config.SharedSecret, subscribe, unsubscribe, counter)
+	go func() {
+		for {
+			switch logwin.GetChar() {
+			case 'q':
+				curses.End()
+				os.Exit(0)
+			case curses.KEY_LEFT:
+				log.Println("Left key pressed")
+				ContestState.Unfreeze <- false
+			case curses.KEY_RIGHT:
+				log.Println("Right key pressed")
+				ContestState.Unfreeze <- true
+			}
+		}
+	}()
 
 	log.Print("succesfully connected to judge and listening for clients")
 
