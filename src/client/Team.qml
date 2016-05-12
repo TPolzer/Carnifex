@@ -34,7 +34,7 @@ Item {
 	property var config
     property var solved: correct.reduce(H.add, 0)
 	property int penalty: penalties.reduce(H.add, 0)
-	property int lastSolved: Math.max.apply(null, correctTimes)
+	property int lastSolved: H.maxArray(correctTimes)
 	function betterThan(other) {
 		var sd = solved - other.solved;
 		if(sd != 0) return sd > 0;

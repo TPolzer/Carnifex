@@ -28,6 +28,15 @@ function asArray(v) {
 	return arr;
 }
 
+function maxArray(a) {
+	var res = -Infinity;
+	for(var x in a) {
+		if(a[x] === null) continue;
+		res = Math.max(res,a[x]);
+	}
+	return res;
+}
+
 function repArray(rep) {
 	var arr = [];
 	for(var i=0; i<rep.count; i++) {
