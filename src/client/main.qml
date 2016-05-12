@@ -161,7 +161,7 @@ Window {
 					id: tableContents
 					property int perPage: Math.max(config.minrows, Math.floor(table.height/rs)); // avoid precision problems with exactly minrows
 					property int pages: Math.ceil(teams.length/perPage)
-					property int page: (contest.focused.y < 0 || contest.focused.y >= teams.length) ? autopage : contest.focused.y/perPage
+					property double page: (contest.focused.y < 0 || contest.focused.y >= teams.length) ? autopage : Math.max(0,contest.focused.y/perPage-0.61803398875)
 					property int autopage: 0
 					y: rs ? -page*rs*perPage : 0
 					Behavior on y { SmoothedAnimation {duration: 800; velocity: -1} }
@@ -169,7 +169,7 @@ Window {
 						model: columnPrototype.cols
                         Rectangle {
                             color: Qt.rgba(0,0,0,0.1)
-							height: parent ? parent.pages*table.height : 0
+							height: parent ? parent.pages*table.height*2 : 0
                             width: modelData.width
                             x: H.walkUpX(columnPrototype, modelData)
                             visible: (index+1)%2
