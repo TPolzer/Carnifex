@@ -98,8 +98,13 @@ func ListenTCP(port int, password string, subscribe, unsubscribe chan (chan *wir
 			beat := int64(0)
 			MessageLoop:
 			for {
+				// Blocking writes only occur when the write buffer is full.
+				// Linux has a default of 16KB, which should be enough for a whole
+				// contest after setup. Blocking writes stall all clients, so kill
+				// everybody who doesn't respond for bufferSize + 1s.
 				select {
 				case _ = <-ticker.C:
+					conn.SetWriteDeadline(time.Now().Add(1*time.Second)) //
 					err := write(&wire.Message{
 						MessageType: &wire.Message_HeartBeat{
 							HeartBeat: beat,
@@ -107,14 +112,17 @@ func ListenTCP(port int, password string, subscribe, unsubscribe chan (chan *wir
 					})
 					beat++
 					if(err != nil) {
+						log.Println(err)
 						break MessageLoop
 					}
 				case m := <-messages:
+					conn.SetWriteDeadline(time.Now().Add(1*time.Second)) //
 					if(m == nil) {
 						continue
 					}
 					err := write(m)
 					if(err != nil) {
+						log.Println(err)
 						break MessageLoop
 					}
 				case _ = <-cc:
