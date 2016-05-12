@@ -61,7 +61,7 @@ type Contest struct {
 }
 
 type ContestConfig struct {
-    Compile_penalty int64
+    Compile_penalty int
 }
 
 type Team struct {

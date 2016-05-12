@@ -28,6 +28,7 @@ import (
 
 type ContestState struct {
     Contest *Contest
+	Config ContestConfig
     Teams []Team
     Problems []*wire.Problem
 	Unfreeze chan bool
@@ -56,7 +57,7 @@ func NewContestState(Contest *Contest, Teams []Team, observers []chan *wire.Mess
     return &state
 }
 
-func (state *ContestState) EventLoop(submissions chan Submission, judgings chan Judging, Teams chan []Team, Contest chan *Contest, Problems chan []*wire.Problem, subscribe, unsubscribe chan (chan *wire.Message)) {
+func (state *ContestState) EventLoop(submissions chan Submission, judgings chan Judging, Teams chan []Team, Contest chan *Contest, ContestConfig chan ContestConfig, Problems chan []*wire.Problem, subscribe, unsubscribe chan (chan *wire.Message)) {
 	var storedSubmissions []Submission
     var storedJudgings []Judging
 	for {
@@ -80,6 +81,13 @@ func (state *ContestState) EventLoop(submissions chan Submission, judgings chan 
             }
             state = NewContestState(c, state.Teams, state.observers)
             state.BroadcastNewContest()
+		case c := <-ContestConfig:
+			if(reflect.DeepEqual(state.Config, c)) {
+				continue
+			}
+			state = NewContestState(state.Contest, state.Teams, state.observers)
+			state.Config = c
+			state.BroadcastNewContest()
         case p := <-Problems:
             if(reflect.DeepEqual(state.Problems, p)) {
                 continue
@@ -199,7 +207,9 @@ func (state *ContestState) summarize(submissions Submissions, respectFreeze bool
                 *event.Penalty += *event.ContestTime
                 return
             } else { //TODO special-case compile error penalty
-                penalty += state.Contest.Penalty / 60
+				if(!(state.Config.Compile_penalty == 0 && judging.Outcome == "compiler-error")) {
+	                penalty += state.Contest.Penalty / 60
+				}
                 *event.State = wire.SState_WRONG
             }
         }

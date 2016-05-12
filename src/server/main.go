@@ -127,6 +127,7 @@ func main() {
 	judgings := make(chan score.Judging)
 	Teams := make(chan []score.Team)
 	Contest := make(chan *score.Contest)
+	ContestConfig := make(chan score.ContestConfig)
 	Problems := make(chan []*wire.Problem)
 
 	sleep := time.Millisecond*config.Poll_ms
@@ -134,6 +135,7 @@ func main() {
 
 	go judge.ChannelJson(Teams, score.TEAMS, sanitySleep, false, false)
 	go judge.ChannelJson(Contest, score.CONTEST, sanitySleep, false, false)
+	go judge.ChannelJson(ContestConfig, score.CONFIG, sanitySleep, false, false)
 
 	if(config.Simulate) {
 		realContest := Contest
@@ -206,7 +208,7 @@ func main() {
 
 	log.Print("succesfully connected to judge and listening for clients")
 
-	ContestState.EventLoop(submissions, judgings, Teams, Contest, Problems, subscribe, unsubscribe)
+	ContestState.EventLoop(submissions, judgings, Teams, Contest, ContestConfig, Problems, subscribe, unsubscribe)
 }
 
 func simulate(src interface{}, start, multiplier float64) interface{} {
