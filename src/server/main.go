@@ -140,7 +140,7 @@ func main() {
 	if(config.Simulate) {
 		realContest := Contest
 		Contest = make(chan *score.Contest)
-		start := time.Now().Unix()
+		start := time.Now().Unix() + 10
 		go func(){
 			for {
 				c := <-realContest
@@ -164,8 +164,8 @@ func main() {
 	ContestState.Problems = <-Problems
 
 	if(config.Simulate) {
-		submissions = simulate(submissions, float64(ContestState.Contest.Start), config.SimulationSpeed).(chan score.Submission)
-		judgings = simulate(judgings, float64(ContestState.Contest.Start), config.SimulationSpeed).(chan score.Judging)
+		submissions = simulate(submissions, float64(ContestState.Contest.Start), config.SimulationSpeed, 10*time.Second).(chan score.Submission)
+		judgings = simulate(judgings, float64(ContestState.Contest.Start), config.SimulationSpeed, 10*time.Second).(chan score.Judging)
 	}
 
 	if(config.ServerPort == 0) {
@@ -211,7 +211,7 @@ func main() {
 	ContestState.EventLoop(submissions, judgings, Teams, Contest, ContestConfig, Problems, subscribe, unsubscribe)
 }
 
-func simulate(src interface{}, start, multiplier float64) interface{} {
+func simulate(src interface{}, start, multiplier float64, offset time.Duration) interface{} {
 	sink := reflect.MakeChan(reflect.TypeOf(src), 0)
 	go func() {
 		src := reflect.ValueOf(src)
@@ -227,7 +227,7 @@ func simulate(src interface{}, start, multiplier float64) interface{} {
 				continue
 			}
 //			fmt.Printf("Delaying event for %v\n", time.Duration(t) * time.Second)
-			time.AfterFunc(time.Duration(t*1000) * time.Millisecond, func () {
+			time.AfterFunc(offset + time.Duration(t*1000) * time.Millisecond, func () {
 				sink.Send(x)
 			})
 		}
