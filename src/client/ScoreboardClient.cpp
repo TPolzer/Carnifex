@@ -277,6 +277,12 @@ void ScoreboardClient::unfreeze() {
 		if(*teamIt != team) { // team has moved up, focus other team
 			rs.resolvedProblems = 0;
 			rs.resolvingProblem = -1;
+		} else if (teamIt+1 != ranking.rend() && !compareScore(*(teamIt+1), *teamIt)) {
+			//tie with team above, swap
+			std::swap(*teamIt, *(teamIt+1));
+			rerank();
+			rs.resolvedProblems = 0;
+			rs.resolvingProblem = -1;
 		}
 	} else if(rs.resolvedProblems < int(problems.size())) { // highlight next problem
 		++rs.resolvingProblem;
