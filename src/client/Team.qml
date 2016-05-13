@@ -24,15 +24,15 @@ Item {
 	property var rank: "1"
 	property var affiliation: ''
 	property int pos: 0
-    property var submits: []
-    property var pending: []
+	property var submits: []
+	property var pending: []
 	property var correct: []
 	property var correctTimes: []
-    property var penalties: []
+	property var penalties: []
 	property var first: []
 	property var resolved: []
 	property var config
-    property var solved: correct.reduce(H.add, 0)
+	property var solved: correct.reduce(H.add, 0)
 	property int penalty: penalties.reduce(H.add, 0)
 	property int lastSolved: H.maxArray(correctTimes)
 	function betterThan(other) {

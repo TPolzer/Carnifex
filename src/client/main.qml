@@ -23,13 +23,13 @@ import "helper.js" as H
 import "artwork/mapping.js" as C
 
 Window {
-    visible: true
-    id: contest
+	visible: true
+	id: contest
 	color: 'black'
 
 	property var config: new Object()
 	property double em: 10
-	property double rs: em*1.2
+	property double rs: em*1.6
 	property double layoutEm: 10
 	property double layoutRs: layoutEm*1.2
 	onHeightChanged: recalcEm()
@@ -49,9 +49,9 @@ Window {
 		}
 		em = layoutEm;
 	}
-    property var problems: []
+	property var problems: []
 	property int n: problems.length
-    property var teams: []
+	property var teams: []
 	property string name: ""
 	property point focused: "-1,-1"
 	function doFocus(p) {
@@ -78,40 +78,43 @@ Window {
 		onHeightChanged(height); // trigger row/column count
 	}
 
-    function contestSetup(contestDesc, problems, teams) {
-        contest.problems = problems
-        contest.teams = teams
+	function contestSetup(contestDesc, problems, teams) {
+		contest.problems = problems
+		contest.teams = teams
 		contest.name = contestDesc.name
 		contest.start = contestDesc.start
 		contest.end = contestDesc.end
 		contest.sstart = contestDesc.sstart
 		contest.sspeed = contestDesc.sspeed
 		onHeightChanged(height); // trigger row/column count (title height could have changed)
-    }
+	}
 
 	ScoreText {
 		id: title
 		text: name
 		anchors.left: parent.left
-		anchors.margins: layoutEm
+		anchors.margins: 2*layoutEm
 		font.pixelSize: layoutEm
+		col: 'white'
 	}
 	ScoreText {
-        id: clockDisplay
+		id: clockDisplay
 		text: sign + clock.formatUTCTime(new Date(Math.abs(sinceStart)), "hh':'mm':'ss'.'zzz").substr(0,10)
-        property var sinceStart: Math.min((sspeed ? sspeed : 1)*(clock.time - reference), contest.end - contest.start)
-        property var sign: (sinceStart < 0) ? '-' : ''
-        property var reference: sspeed ? sstart : start
+		property var sinceStart: Math.min((sspeed ? sspeed : 1)*(clock.time - reference), contest.end -
+		 contest.start)
+		property var sign: (sinceStart < 0) ? '-' : ''
+		property var reference: sspeed ? sstart : start
 		anchors.right: parent.right
-		anchors.margins: em
-        Clock {
-            id: clock
-            interval: 100
-            offset: clockDisplay.reference%interval
-        }
+		anchors.margins: 2*em
+		col: 'white'
+		Clock {
+			id: clock
+			interval: 100
+			offset: clockDisplay.reference%interval
+		}
 	}
 
-    Rectangle {
+	Rectangle {
 		id: scoreboard
 		anchors.fill: parent
 		anchors.margins: title.height
@@ -141,6 +144,7 @@ Window {
 				Repeater {
 					model: columnPrototype.cols
 					ScoreText {
+						font.bold: true
 						text: modelData.columnTitle ? modelData.columnTitle : ""
 						width: modelData.width
 						x: H.walkUpX(columnPrototype, modelData)
@@ -154,7 +158,7 @@ Window {
 				anchors.right: parent.right
 				anchors.bottom: parent.bottom
 				anchors.top: tableHead.bottom
-                clip: true
+				clip: true
 				Item {
 					width: parent.width
 					height: rs*teams.length
@@ -166,33 +170,13 @@ Window {
 					y: rs ? -page*rs*perPage : 0
 					Behavior on y { SmoothedAnimation {duration: 800; velocity: -1} }
 					Repeater {
-						model: columnPrototype.cols
-                        Rectangle {
-                            color: Qt.rgba(0,0,0,0.1)
-							height: parent ? parent.pages*table.height*2 : 0
-                            width: modelData.width
-                            x: H.walkUpX(columnPrototype, modelData)
-                            visible: (index+1)%2
-                        }
-                    }
-					Repeater {
-						model: teams
-                        Rectangle {
-                            color: Qt.rgba(0,0,0,0.1)
-							height: rs
-                            visible: index%2
-							anchors.left: parent ? parent.left : undefined
-							anchors.right: parent ? parent.right : undefined
-							y: index*rs
-                        }
-                    }
-					Repeater {
 						model: teams
 						Row_t {
 							team: modelData
 							focused: (contest.focused.y == modelData.pos) ? contest.focused.x : -2
 							y: modelData.pos*rs
-							height: rs
+							z: -modelData.pos
+							height: 0.9*rs
 							anchors.left: parent ? parent.left : undefined
 							anchors.right: parent ? parent.right : undefined
 							Behavior on y { SmoothedAnimation { duration: 1500; velocity: -1 } }
