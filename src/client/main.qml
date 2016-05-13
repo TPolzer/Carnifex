@@ -59,6 +59,7 @@ Window {
 		focused = p;
 	}
 	property var start: new Date().valueOf()
+	property var freeze: 1/0.0
 	property var end: 1/0.0
 	property var sstart: 0
 	property var sspeed: 0
@@ -83,6 +84,7 @@ Window {
 		contest.teams = teams
 		contest.name = contestDesc.name
 		contest.start = contestDesc.start
+		contest.freeze = contestDesc.freeze
 		contest.end = contestDesc.end
 		contest.sstart = contestDesc.sstart
 		contest.sspeed = contestDesc.sspeed
@@ -98,6 +100,16 @@ Window {
 		col: 'white'
 	}
 	ScoreText {
+		id: contestStatus
+		anchors.horizontalCenter: parent.horizontalCenter
+		anchors.verticalCenter: title.verticalCenter
+		anchors.margins: 2*em
+		col: 'white'
+		property var contestDuration: contest.end - contest.start
+		property var freezeTime: contest.freeze - contest.start
+		text: (clockDisplay.sinceStart < 0) ? 'NOT STARTED' : (clockDisplay.sinceStart >= contestDuration) ? 'FINISHED' : (clockDisplay.sinceStart >= freezeTime) ? 'FREEZE' : ''
+	}
+	ScoreText {
 		id: clockDisplay
 		text: sign + clock.formatUTCTime(new Date(Math.abs(sinceStart)), "hh':'mm':'ss'.'zzz").substr(0,10)
 		property var sinceStart: Math.min((sspeed ? sspeed : 1)*(clock.time - reference), contest.end -
@@ -105,6 +117,7 @@ Window {
 		property var sign: (sinceStart < 0) ? '-' : ''
 		property var reference: sspeed ? sstart : start
 		anchors.right: parent.right
+		anchors.verticalCenter: title.VerticalCenter
 		anchors.margins: 2*em
 		col: 'white'
 		Clock {

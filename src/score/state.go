@@ -226,6 +226,7 @@ func (state *ContestState) ContestSetup() (*wire.Message) {
     setup.Name = &state.Contest.Name
     setup.Problems = state.Problems
     setup.Start = &state.Contest.Start
+    setup.Freeze = &state.Contest.Freeze
     setup.End = &state.Contest.End
     var Teams []*wire.Team
     for i, _ := range state.Teams {

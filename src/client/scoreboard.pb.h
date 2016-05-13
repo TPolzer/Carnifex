@@ -426,6 +426,13 @@ class ContestSetup : public ::google::protobuf::Message {
   inline ::google::protobuf::int64 start() const;
   inline void set_start(::google::protobuf::int64 value);
 
+  // required int64 Freeze = 8;
+  inline bool has_freeze() const;
+  inline void clear_freeze();
+  static const int kFreezeFieldNumber = 8;
+  inline ::google::protobuf::int64 freeze() const;
+  inline void set_freeze(::google::protobuf::int64 value);
+
   // required int64 End = 5;
   inline bool has_end() const;
   inline void clear_end();
@@ -453,6 +460,8 @@ class ContestSetup : public ::google::protobuf::Message {
   inline void clear_has_name();
   inline void set_has_start();
   inline void clear_has_start();
+  inline void set_has_freeze();
+  inline void clear_has_freeze();
   inline void set_has_end();
   inline void clear_has_end();
   inline void set_has_simulatedstart();
@@ -468,6 +477,7 @@ class ContestSetup : public ::google::protobuf::Message {
   ::google::protobuf::RepeatedPtrField< ::wire::Team > teams_;
   ::google::protobuf::RepeatedPtrField< ::wire::Problem > problems_;
   ::google::protobuf::int64 start_;
+  ::google::protobuf::int64 freeze_;
   ::google::protobuf::int64 end_;
   ::google::protobuf::int64 simulatedstart_;
   double simulationspeed_;
@@ -1206,15 +1216,39 @@ inline void ContestSetup::set_start(::google::protobuf::int64 value) {
   // @@protoc_insertion_point(field_set:wire.ContestSetup.Start)
 }
 
-// required int64 End = 5;
-inline bool ContestSetup::has_end() const {
+// required int64 Freeze = 8;
+inline bool ContestSetup::has_freeze() const {
   return (_has_bits_[0] & 0x00000010u) != 0;
 }
-inline void ContestSetup::set_has_end() {
+inline void ContestSetup::set_has_freeze() {
   _has_bits_[0] |= 0x00000010u;
 }
-inline void ContestSetup::clear_has_end() {
+inline void ContestSetup::clear_has_freeze() {
   _has_bits_[0] &= ~0x00000010u;
+}
+inline void ContestSetup::clear_freeze() {
+  freeze_ = GOOGLE_LONGLONG(0);
+  clear_has_freeze();
+}
+inline ::google::protobuf::int64 ContestSetup::freeze() const {
+  // @@protoc_insertion_point(field_get:wire.ContestSetup.Freeze)
+  return freeze_;
+}
+inline void ContestSetup::set_freeze(::google::protobuf::int64 value) {
+  set_has_freeze();
+  freeze_ = value;
+  // @@protoc_insertion_point(field_set:wire.ContestSetup.Freeze)
+}
+
+// required int64 End = 5;
+inline bool ContestSetup::has_end() const {
+  return (_has_bits_[0] & 0x00000020u) != 0;
+}
+inline void ContestSetup::set_has_end() {
+  _has_bits_[0] |= 0x00000020u;
+}
+inline void ContestSetup::clear_has_end() {
+  _has_bits_[0] &= ~0x00000020u;
 }
 inline void ContestSetup::clear_end() {
   end_ = GOOGLE_LONGLONG(0);
@@ -1232,13 +1266,13 @@ inline void ContestSetup::set_end(::google::protobuf::int64 value) {
 
 // optional int64 SimulatedStart = 6;
 inline bool ContestSetup::has_simulatedstart() const {
-  return (_has_bits_[0] & 0x00000020u) != 0;
+  return (_has_bits_[0] & 0x00000040u) != 0;
 }
 inline void ContestSetup::set_has_simulatedstart() {
-  _has_bits_[0] |= 0x00000020u;
+  _has_bits_[0] |= 0x00000040u;
 }
 inline void ContestSetup::clear_has_simulatedstart() {
-  _has_bits_[0] &= ~0x00000020u;
+  _has_bits_[0] &= ~0x00000040u;
 }
 inline void ContestSetup::clear_simulatedstart() {
   simulatedstart_ = GOOGLE_LONGLONG(0);
@@ -1256,13 +1290,13 @@ inline void ContestSetup::set_simulatedstart(::google::protobuf::int64 value) {
 
 // optional double SimulationSpeed = 7;
 inline bool ContestSetup::has_simulationspeed() const {
-  return (_has_bits_[0] & 0x00000040u) != 0;
+  return (_has_bits_[0] & 0x00000080u) != 0;
 }
 inline void ContestSetup::set_has_simulationspeed() {
-  _has_bits_[0] |= 0x00000040u;
+  _has_bits_[0] |= 0x00000080u;
 }
 inline void ContestSetup::clear_has_simulationspeed() {
-  _has_bits_[0] &= ~0x00000040u;
+  _has_bits_[0] &= ~0x00000080u;
 }
 inline void ContestSetup::clear_simulationspeed() {
   simulationspeed_ = 0;
