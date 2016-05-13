@@ -1,5 +1,5 @@
 /*
- * This file is part of "The Scoreboard"
+ * This file is part of "Carnifex"
  * Copyright (C) 2016  Tobias Polzer, Dominik Paulus
 
  * This program is free software; you can redistribute it and/or
