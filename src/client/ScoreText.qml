@@ -21,6 +21,7 @@ import QtQuick 2.0
 Text {
 	property var scale: 1.0
 	font.pixelSize: scale*contest.em
+	font.family: 'DejaVu Sans, Symbola'
 	property color col: 'black'
 	color: col
 }

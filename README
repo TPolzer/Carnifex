@@ -7,6 +7,7 @@ You probably need:
 - Qt5 development files
 - libsodium development files
 - cmake
+- DejaVu Sans and Symbola for proper display
 
 The setup currently involves:
 - in the top level directory:
