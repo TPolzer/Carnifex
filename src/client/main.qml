@@ -94,7 +94,7 @@ Window {
 
 	ScoreText {
 		id: title
-		text: name
+		text: (config.jury ? 'JURY ' : '' ) + name
 		anchors.left: parent.left
 		anchors.margins: 2*layoutEm
 		font.pixelSize: layoutEm
