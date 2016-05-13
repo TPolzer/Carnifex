@@ -71,6 +71,8 @@ Item {
 		penalties[problem] = event.Penalty;
 		if(correct[problem]) {
 			correctTimes[problem] = event.ContestTime;
+		} else {
+			correctTimes[problem] = null;
 		}
 		submits = submits; pending = pending;
 		correct = correct; first = first;
