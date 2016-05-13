@@ -24,27 +24,31 @@ Item {
 	property var team
 	property var cols: [rank, teamname].concat(H.repArray(problems)).concat([solved, time])
 	property int focused: -2
-	Rectangle {
-		anchors.fill: parent
-		border.color: 'gold'
-		border.width: em/8
-		radius: em/4
-		visible: focused != -2
-		color: Qt.rgba(0,0,0,0)
+	Binding on z {
+		when: focused != -2
+		value: 9000
 	}
 	Rectangle {
 		anchors.fill: parent
 		color: 'white'
 		id: box
-	}
-	DropShadow {
-		anchors.fill: box
-			horizontalOffset: 5
-			verticalOffset: 3
+		layer.enabled: true
+		layer.effect: DropShadow {
+			cached: true
+			horizontalOffset: 0.13*em
+			verticalOffset: 0.1*em
 			radius: 8.0
 			samples: 17
 			color: "#50000000"
 			source: box
+		}
+	}
+	Rectangle {
+		anchors.fill: parent
+		border.color: 'gold'
+		border.width: em/7
+		visible: focused != -2
+		color: Qt.rgba(0,0,0,0)
 	}
 	ScoreText {
 		property var columnTitle: "Rank"
@@ -64,6 +68,7 @@ Item {
 		anchors.margins: 0.1*em
 		fillMode: Image.PreserveAspectFit
 		source: contest.coats[team.affiliation]
+		sourceSize.width: 200
 	}
 	ScoreText {
 		anchors.leftMargin: 0.1*em
