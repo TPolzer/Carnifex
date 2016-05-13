@@ -171,6 +171,7 @@ Window {
 				anchors.right: parent.right
 				anchors.bottom: parent.bottom
 				anchors.top: tableHead.bottom
+				anchors.topMargin: 0.1*em
 				clip: true
 				Item {
 					width: parent.width
