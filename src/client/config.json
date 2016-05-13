@@ -7,7 +7,7 @@
 
 	"servername": "localhost",
 	"minrows": 15,
-	"mincols": 30,
+	"mincols": 25,
 	"pageInterval": 10,
 	"jury": false,
 
