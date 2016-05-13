@@ -31,7 +31,7 @@ Window {
 	property double em: 10
 	property double rs: em*1.6
 	property double layoutEm: 10
-	property double layoutRs: layoutEm*1.2
+	property double layoutRs: layoutEm*1.6
 	onHeightChanged: recalcEm()
 	onWidthChanged: recalcEm()
 	function recalcEm() {
@@ -130,13 +130,13 @@ Window {
 			Rectangle {
 				id: tableHead
 				color: Qt.rgba(0,0,0,0)
-				height: layoutRs
+				height: layoutRs*0.75
 				anchors.left: parent.left
 				anchors.right: parent.right
 				Row_t {
 					visible: false
 					id: columnPrototype
-					height: layoutRs
+					height: layoutRs*0.75
 					anchors.left: parent.left
 					anchors.right: parent.right
 					team: dummyTeam

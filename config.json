@@ -6,7 +6,7 @@
 	"check_s": 10,
 
 	"servername": "localhost",
-	"minrows": 20,
+	"minrows": 15,
 	"mincols": 30,
 	"pageInterval": 10,
 	"jury": false,
