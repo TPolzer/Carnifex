@@ -296,6 +296,7 @@ void ScoreboardClient::unfreeze() {
 		}
 	}
 	if(rs.resolvedProblems == int(problems.size())) { //highlight team
+		rs.resolvingProblem = -1;
 		++rs.resolvedProblems;
 	} else if(rs.resolvedProblems == int(problems.size())+1) { // highlight next team
 		++rs.resolvedTeams;
