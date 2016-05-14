@@ -270,12 +270,12 @@ class Event : public ::google::protobuf::Message {
   inline ::google::protobuf::int64 penalty() const;
   inline void set_penalty(::google::protobuf::int64 value);
 
-  // optional int64 ContestTime = 7;
+  // optional double ContestTime = 7;
   inline bool has_contesttime() const;
   inline void clear_contesttime();
   static const int kContestTimeFieldNumber = 7;
-  inline ::google::protobuf::int64 contesttime() const;
-  inline void set_contesttime(::google::protobuf::int64 value);
+  inline double contesttime() const;
+  inline void set_contesttime(double value);
 
   // required .wire.SState State = 4;
   inline bool has_state() const;
@@ -318,7 +318,7 @@ class Event : public ::google::protobuf::Message {
   ::google::protobuf::int64 problem_;
   ::google::protobuf::int64 submitcount_;
   ::google::protobuf::int64 penalty_;
-  ::google::protobuf::int64 contesttime_;
+  double contesttime_;
   ::wire::Event* unfrozen_;
   int state_;
   friend void  protobuf_AddDesc_scoreboard_2eproto();
@@ -962,7 +962,7 @@ inline void Event::set_penalty(::google::protobuf::int64 value) {
   // @@protoc_insertion_point(field_set:wire.Event.Penalty)
 }
 
-// optional int64 ContestTime = 7;
+// optional double ContestTime = 7;
 inline bool Event::has_contesttime() const {
   return (_has_bits_[0] & 0x00000010u) != 0;
 }
@@ -973,14 +973,14 @@ inline void Event::clear_has_contesttime() {
   _has_bits_[0] &= ~0x00000010u;
 }
 inline void Event::clear_contesttime() {
-  contesttime_ = GOOGLE_LONGLONG(0);
+  contesttime_ = 0;
   clear_has_contesttime();
 }
-inline ::google::protobuf::int64 Event::contesttime() const {
+inline double Event::contesttime() const {
   // @@protoc_insertion_point(field_get:wire.Event.ContestTime)
   return contesttime_;
 }
-inline void Event::set_contesttime(::google::protobuf::int64 value) {
+inline void Event::set_contesttime(double value) {
   set_has_contesttime();
   contesttime_ = value;
   // @@protoc_insertion_point(field_set:wire.Event.ContestTime)
