@@ -76,18 +76,18 @@ func (client *JudgeClient) InjectCid(id int64) {
 	}
 }
 
-func (client *JudgeClient) ChannelJson(sink interface{}, method APIMethod, sleep time.Duration, unpack, count bool) {
-	min := int64(0)
+func (client *JudgeClient) ChannelJson(sink interface{}, method APIMethod, sleep time.Duration, unpack bool) {
 	sendType := reflect.TypeOf(sink).Elem()
 	recvType := sendType
 	if(unpack) {
 		recvType = reflect.SliceOf(sendType)
 	}
 	first := true
+	seen := make(map[int64]bool)
 	for {
 		sv := reflect.New(recvType)
 		s := sv.Interface()
-		err := client.GetJson(method, int64(min), s)
+		err := client.GetJson(method, s)
 		if(err != nil) {
 			if(first) {
 				log.Fatal(err)
@@ -100,10 +100,12 @@ func (client *JudgeClient) ChannelJson(sink interface{}, method APIMethod, sleep
 				slice := sv.Elem()
 				for i := 0; i<slice.Len(); i++ {
 					v := slice.Index(i)
-					if(count) {
-						min = v.FieldByName("Id").Int() + 1
+					id := v.FieldByName("Id").Int()
+					sent := seen[id]
+					if(!sent) {
+						seen[id] = true
+						reflect.ValueOf(sink).Send(v)
 					}
-					reflect.ValueOf(sink).Send(v)
 				}
 			}
 		}
@@ -112,15 +114,8 @@ func (client *JudgeClient) ChannelJson(sink interface{}, method APIMethod, sleep
 	}
 }
 
-func (client *JudgeClient) GetJson(method APIMethod, min int64, p interface{}) (err error){
+func (client *JudgeClient) GetJson(method APIMethod, p interface{}) (err error){
 	url := client.urls[method]
-	if(min != 0) {
-		tmp := *url
-		url = &tmp
-		q := url.Query()
-		q.Set("fromid", strconv.FormatInt(min,10))
-		url.RawQuery = q.Encode()
-	}
 	request, _ := http.NewRequest("", url.String(), nil)
 	request.SetBasicAuth(client.username, client.password)
 	resp, err := client.client.Do(request)

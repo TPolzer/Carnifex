@@ -133,9 +133,9 @@ func main() {
 	sleep := time.Millisecond*config.Poll_ms
 	sanitySleep := time.Second*config.Check_s
 
-	go judge.ChannelJson(Teams, score.TEAMS, sanitySleep, false, false)
-	go judge.ChannelJson(Contest, score.CONTEST, sanitySleep, false, false)
-	go judge.ChannelJson(ContestConfig, score.CONFIG, sanitySleep, false, false)
+	go judge.ChannelJson(Teams, score.TEAMS, sanitySleep, false)
+	go judge.ChannelJson(Contest, score.CONTEST, sanitySleep, false)
+	go judge.ChannelJson(ContestConfig, score.CONFIG, sanitySleep, false)
 
 	if(config.Simulate) {
 		realContest := Contest
@@ -157,9 +157,9 @@ func main() {
 
 	judge.InjectCid(ContestState.Contest.Id)
 
-	go judge.ChannelJson(Problems, score.PROBLEMS, sanitySleep, false, false)
-	go judge.ChannelJson(submissions, score.SUBMISSIONS, sleep, true, true)
-	go judge.ChannelJson(judgings, score.JUDGINGS, sleep, true, true)
+	go judge.ChannelJson(Problems, score.PROBLEMS, sanitySleep, false)
+	go judge.ChannelJson(submissions, score.SUBMISSIONS, sleep, true)
+	go judge.ChannelJson(judgings, score.JUDGINGS, sleep, true)
 
 	ContestState.Problems = <-Problems
 
