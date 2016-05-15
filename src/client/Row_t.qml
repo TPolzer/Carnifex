@@ -51,12 +51,15 @@ Item {
 		color: Qt.rgba(0,0,0,0)
 	}
 	ScoreText {
+		opacity: contest.started*1
+		width: contest.started*2.8*em
+		Behavior on opacity { NumberAnimation {} }
+		Behavior on width { NumberAnimation {} }
 		property var columnTitle: "Rank"
 		anchors.verticalCenter: parent.verticalCenter
 		anchors.left: parent.left
 		id: rank
 		text: team.rank
-		width: 2.8*em
 		horizontalAlignment: Text.AlignRight
 	}
 	Image {
@@ -91,9 +94,12 @@ Item {
 			id: problems
 			model: contest.problems
 			Item {
+				opacity: contest.started
+				width: contest.started*1.5*em
+				Behavior on opacity { NumberAnimation {} }
+				Behavior on width { NumberAnimation {} }
 				property var columnTitle: contest.problems[index]
 				property var horizontalAlignment: Text.AlignHCenter
-				width: 1.5*em
 				height: parent.height
 				Rectangle {
 					anchors.verticalCenter: parent.verticalCenter
@@ -115,22 +121,28 @@ Item {
 		}
 	}
 	ScoreText {
+		opacity: contest.started
+		width: contest.started*3.5*em
+		Behavior on opacity { NumberAnimation {} }
+		Behavior on width { NumberAnimation {} }
 		property var columnTitle: "🎈"
 		anchors.verticalCenter: parent.verticalCenter
 		anchors.right: time.left
 		id: solved
 		text: team.solved
-		width: 3.5*em
 		horizontalAlignment: Text.AlignRight
 	}
 	ScoreText {
+		opacity: contest.started
+		width: contest.started*3.5*em
+		Behavior on opacity { NumberAnimation {} }
+		Behavior on width { NumberAnimation {} }
 		property var columnTitle: "Time"
 		anchors.verticalCenter: parent.verticalCenter
 		anchors.right: parent.right
 		anchors.rightMargin: 0.5*em
 		id: time
 		text: team.penalty
-		width: 3.5*em
 		horizontalAlignment: Text.AlignRight
 	}
 }

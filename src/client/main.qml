@@ -27,7 +27,9 @@ Window {
 	id: contest
 	color: 'black'
 
+
 	property var config: new Object()
+	property bool started: clockDisplay.sinceStart >= 0
 	property double em: 10
 	property double rs: em*1.6
 	property double layoutEm: 10
@@ -36,11 +38,12 @@ Window {
 	onWidthChanged: recalcEm()
 	function recalcEm() {
 		var ub = 1000, lb = 0;
+		var sign1, sign2;
 		while(ub - lb > 1e-9) {
 			var mid = ub/2 + lb/2;
 			layoutEm = mid;
-			var sign1 = Math.max(0,table.height)/layoutRs - config.minrows;
-			var sign2 = Math.max(0,table.width)/layoutRs - config.mincols;
+			sign1 = Math.max(0,table.height)/layoutRs - config.minrows;
+			sign2 = Math.max(0,contest.width)/layoutRs - config.mincols;
 			if(sign1 < 0 || sign2 < 0) {
 				ub = mid;
 			} else {
@@ -94,6 +97,9 @@ Window {
 
 	ScoreText {
 		id: title
+		transitions: Transition {
+			NumberAnimation { properties: "opacity"; }
+		}
 		text: (config.jury ? 'JURY ' : '' ) + name
 		anchors.left: parent.left
 		anchors.margins: 2*layoutEm
@@ -108,11 +114,11 @@ Window {
 		col: 'white'
 		property var contestDuration: contest.end - contest.start
 		property var freezeTime: contest.freeze - contest.start
-		text: (clockDisplay.sinceStart < 0) ? 'NOT STARTED' : (clockDisplay.sinceStart >= contestDuration) ? 'FINISHED' : (clockDisplay.sinceStart >= freezeTime) ? 'FREEZE' : ''
+		text: (clockDisplay.sinceStart < 0) ? '' : (clockDisplay.sinceStart >= contestDuration) ? 'FINISHED' : (clockDisplay.sinceStart >= freezeTime) ? 'FREEZE' : ''
 	}
 	ScoreText {
 		id: clockDisplay
-		text: sign + clock.formatUTCTime(new Date(Math.abs(sinceStart)), "hh':'mm':'ss'.'zzz").substr(0,10)
+		text: sign + clock.formatUTCTime(new Date(Math.abs(sinceStart)), "hh':'mm':'ss")
 		property var sinceStart: Math.min((sspeed ? sspeed : 1)*(clock.time - reference), contest.end -
 		 contest.start)
 		property var sign: (sinceStart < 0) ? '-' : ''
@@ -123,15 +129,79 @@ Window {
 		col: 'white'
 		Clock {
 			id: clock
-			interval: 100
+			interval: 1000
 			offset: clockDisplay.reference%interval
+		}
+		states:	State {
+			name: "precontest"
+			when: !contest.started
+			AnchorChanges {
+				target: clockDisplay
+				anchors {
+					top: rightPanel.verticalCenter
+					horizontalCenter: rightPanel.horizontalCenter
+					right: undefined
+				}
+			}
+			PropertyChanges {
+				target: clockDisplay
+				scale: 3
+			}
+			PropertyChanges {
+				target: preTitle
+				opacity: 1
+			}
+			PropertyChanges {
+				target: title
+				opacity: 0
+			}
+		}
+		transitions: Transition {
+			AnchorAnimation {}
+			NumberAnimation { properties: "scale"; }
+		}
+	}
+
+	ScoreText {
+		id: preTitle
+		text: title.text
+		opacity: 0
+		wrapMode: Text.WordWrap
+		horizontalAlignment: Text.AlignHCenter
+		transitions: Transition {
+			NumberAnimation { properties: "opacity"; }
+		}
+		scale: 3
+		anchors {
+			bottom: rightPanel.verticalCenter
+			horizontalCenter: rightPanel.horizontalCenter
+			left: scoreboard.right
+			margins: 2*em
+		}
+		col: 'white'
+	}
+
+	Item {
+		id: rightPanel
+		anchors {
+			right: parent.right
+			left: scoreboard.right
+			bottom: parent.bottom
+			top: parent.top
+			topMargin: title.height
+			rightMargin: title.height
+			bottomMargin: title.height
 		}
 	}
 
 	Rectangle {
 		id: scoreboard
 		anchors.fill: parent
-		anchors.margins: title.height
+		anchors.leftMargin: title.height
+		anchors.topMargin: title.height
+		anchors.bottomMargin: title.height
+		anchors.rightMargin: started ? title.height : parent.width/2
+		Behavior on anchors.rightMargin { NumberAnimation {} }
 		radius: layoutEm/2
 		color: '#28B2FF'
 		Item {
@@ -148,7 +218,7 @@ Window {
 				anchors.left: parent.left
 				anchors.right: parent.right
 				Row_t {
-					visible: false
+					opacity: 0
 					id: columnPrototype
 					height: layoutRs*0.75
 					anchors.left: parent.left
@@ -163,6 +233,8 @@ Window {
 						width: modelData.width
 						x: H.walkUpX(columnPrototype, modelData)
 						horizontalAlignment: modelData.horizontalAlignment
+						opacity: modelData.opacity
+						Behavior on opacity { NumberAnimation {} }
 					}
 				}
 			}
@@ -172,7 +244,7 @@ Window {
 				anchors.right: parent.right
 				anchors.bottom: parent.bottom
 				anchors.top: tableHead.bottom
-				anchors.topMargin: 0.1*em
+				anchors.topMargin: 0.1*layoutEm
 				clip: true
 				Item {
 					width: parent.width
