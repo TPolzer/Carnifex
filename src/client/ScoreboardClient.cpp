@@ -244,9 +244,11 @@ bool ScoreboardClient::compareScore(QObject *a, QObject *b) {
 
 void ScoreboardClient::applyEvent(const wire::Event& event) {
 	auto team = teams[event.team()];
-	auto problem = problems[event.problem()];
+	auto problem = problems.find(event.problem());
+	if(problem == problems.end())
+		return;
 	QVariantMap jEvent = messageToObject(event);
-	QMetaObject::invokeMethod(team, "applyEvent", Q_ARG(QVariant, jEvent), Q_ARG(QVariant, problem));
+	QMetaObject::invokeMethod(team, "applyEvent", Q_ARG(QVariant, jEvent), Q_ARG(QVariant, problem->second));
 	rerank();
 }
 	
