@@ -56,12 +56,14 @@ private:
 	struct ResolveStatus {
 		int resolvedTeams, resolvedProblems, resolvingProblem;
 	} rs;
-	std::vector<std::pair<ResolveStatus, QObject*>> resolveStack;
+	// store ranking in history to avoid amiguities (ties for last place)
+	std::vector<std::tuple<ResolveStatus, QObject*, std::vector<QObject*>>> resolveStack;
 	void refocus();
 	void unfreeze();
 	void refreeze();
 	void rerank();
 	static bool compareScore(QObject*, QObject*);
+	static bool sortScore(QObject*, QObject*);
 	void applyEvent(const wire::Event&);
 	void setup(const wire::ContestSetup&);
 public:

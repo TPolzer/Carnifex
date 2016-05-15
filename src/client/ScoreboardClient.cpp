@@ -236,6 +236,12 @@ void ScoreboardClient::setup(const wire::ContestSetup& setup) {
 	std::cerr << "Received setup for Contest \"" << setup.name() << "\"" <<std::endl;
 }
 
+bool ScoreboardClient::sortScore(QObject *a, QObject *b) {
+    QVariant res;
+    QMetaObject::invokeMethod(a, "sortBefore", Q_RETURN_ARG(QVariant, res), Q_ARG(QVariant, QVariant::fromValue(b)));
+    return res.toBool();
+}
+
 bool ScoreboardClient::compareScore(QObject *a, QObject *b) {
     QVariant res;
     QMetaObject::invokeMethod(a, "betterThan", Q_RETURN_ARG(QVariant, res), Q_ARG(QVariant, QVariant::fromValue(b)));
@@ -253,7 +259,7 @@ void ScoreboardClient::applyEvent(const wire::Event& event) {
 }
 	
 void ScoreboardClient::rerank() {
-	std::stable_sort(std::begin(ranking),std::end(ranking),&compareScore);
+	std::stable_sort(std::begin(ranking),std::end(ranking),&sortScore);
     int rank = 0;
     for(quint64 pos = 0; pos < ranking.size(); ++pos) {
         ranking[pos]->setProperty("pos", pos);
@@ -264,7 +270,7 @@ void ScoreboardClient::rerank() {
 }
 
 void ScoreboardClient::unfreeze() {
-	resolveStack.emplace_back(rs, nullptr);
+	resolveStack.emplace_back(rs, nullptr, ranking);
 	if(rs.resolvedTeams >= int(ranking.size())) {
 		++rs.resolvedTeams;
 		return;
@@ -272,7 +278,7 @@ void ScoreboardClient::unfreeze() {
 	auto teamIt = ranking.rbegin() + rs.resolvedTeams;
 	QObject *team = *teamIt;
 	if(rs.resolvingProblem > rs.resolvedProblems-1) { // toggle one problem
-		resolveStack.rbegin()->second = team;
+		std::get<1>(*resolveStack.rbegin()) = team;
 		QMetaObject::invokeMethod(team, "toggleFreeze", Q_ARG(QVariant, int(problems.size() - rs.resolvingProblem - 1)));
 		rs.resolvedProblems = rs.resolvingProblem+1;
 		rerank();
@@ -303,14 +309,14 @@ void ScoreboardClient::unfreeze() {
 }
 
 void ScoreboardClient::refreeze() {
-	rs = resolveStack.rbegin()->first;
-	auto team = resolveStack.rbegin()->second;
+	QObject *team;
+	std::tie(rs, team, ranking) = *resolveStack.rbegin();
 	if(team) {
 		QMetaObject::invokeMethod(team, "toggleFreeze", Q_ARG(QVariant, int(problems.size() - rs.resolvingProblem - 1)));
 	}
 	resolveStack.pop_back();
-	rerank();
 	refocus();
+	rerank();
 }
 
 void ScoreboardClient::refocus() {

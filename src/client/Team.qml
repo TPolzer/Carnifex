@@ -20,6 +20,7 @@ import QtQuick 2.0
 import "helper.js" as H
 
 Item {
+	id: 'team'
     property var name: ""
 	property var rank: "1"
 	property var affiliation: ''
@@ -35,6 +36,10 @@ Item {
 	property var solved: correct.reduce(H.add, 0)
 	property int penalty: penalties.reduce(H.add, 0)
 	property int lastSolved: H.maxArray(correctTimes)
+	property int frozen: pending.map(function (e,i) {return isFrozen(i);}).reduce(H.add, 0)
+	function isFrozen(problem) {
+		return !!(resolved[problem] != null && pending[problem]);
+	}
 	function betterThan(other) {
 		var sd = solved - other.solved;
 		if(sd != 0) return sd > 0;
@@ -43,6 +48,11 @@ Item {
 		var ld = lastSolved - other.lastSolved;
 		if(ld != 0) return ld < 0;
 		return false;
+	}
+	function sortBefore(other) {
+		if(betterThan(other)) return true;
+		if(other.betterThan(team)) return false;
+		return !frozen && other.frozen
 	}
 	function toggleFreeze(problem) {
 		if(resolved[problem] === undefined) return
