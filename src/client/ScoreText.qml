@@ -24,4 +24,5 @@ Text {
 	font.family: 'DejaVu Sans, Symbola'
 	property color col: 'black'
 	color: col
+	textFormat: Text.PlainText
 }
