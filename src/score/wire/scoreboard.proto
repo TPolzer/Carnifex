@@ -14,7 +14,7 @@ message Event {
 	required int64 Problem = 1;
 	required int64 SubmitCount = 2;
 	required int64 Penalty = 3;
-	optional double ContestTime = 7;
+	optional int64 ContestTime = 7;
 	required SState State = 4;
 	optional Event Unfrozen = 5;
 }

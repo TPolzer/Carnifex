@@ -204,7 +204,7 @@ void protobuf_AddDesc_scoreboard_2eproto() {
     "(\003H\000\022\022\n\010unfreeze\030\004 \001(\010H\000B\r\n\013MessageType\""
     "\235\001\n\005Event\022\014\n\004Team\030\006 \002(\003\022\017\n\007Problem\030\001 \002(\003"
     "\022\023\n\013SubmitCount\030\002 \002(\003\022\017\n\007Penalty\030\003 \002(\003\022\023"
-    "\n\013ContestTime\030\007 \001(\001\022\033\n\005State\030\004 \002(\0162\014.wir"
+    "\n\013ContestTime\030\007 \001(\003\022\033\n\005State\030\004 \002(\0162\014.wir"
     "e.SState\022\035\n\010Unfrozen\030\005 \001(\0132\013.wire.Event\""
     "\265\001\n\014ContestSetup\022\014\n\004Name\030\001 \002(\t\022\031\n\005Teams\030"
     "\002 \003(\0132\n.wire.Team\022\037\n\010Problems\030\003 \003(\0132\r.wi"
@@ -671,7 +671,7 @@ void Event::SharedCtor() {
   problem_ = GOOGLE_LONGLONG(0);
   submitcount_ = GOOGLE_LONGLONG(0);
   penalty_ = GOOGLE_LONGLONG(0);
-  contesttime_ = 0;
+  contesttime_ = GOOGLE_LONGLONG(0);
   state_ = 1;
   unfrozen_ = NULL;
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
@@ -833,16 +833,16 @@ bool Event::MergePartialFromCodedStream(
         } else {
           goto handle_unusual;
         }
-        if (input->ExpectTag(57)) goto parse_ContestTime;
+        if (input->ExpectTag(56)) goto parse_ContestTime;
         break;
       }
 
-      // optional double ContestTime = 7;
+      // optional int64 ContestTime = 7;
       case 7: {
-        if (tag == 57) {
+        if (tag == 56) {
          parse_ContestTime:
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
-                   double, ::google::protobuf::internal::WireFormatLite::TYPE_DOUBLE>(
+                   ::google::protobuf::int64, ::google::protobuf::internal::WireFormatLite::TYPE_INT64>(
                  input, &contesttime_)));
           set_has_contesttime();
         } else {
@@ -909,9 +909,9 @@ void Event::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteInt64(6, this->team(), output);
   }
 
-  // optional double ContestTime = 7;
+  // optional int64 ContestTime = 7;
   if (has_contesttime()) {
-    ::google::protobuf::internal::WireFormatLite::WriteDouble(7, this->contesttime(), output);
+    ::google::protobuf::internal::WireFormatLite::WriteInt64(7, this->contesttime(), output);
   }
 
   if (!unknown_fields().empty()) {
@@ -957,9 +957,9 @@ void Event::SerializeWithCachedSizes(
     target = ::google::protobuf::internal::WireFormatLite::WriteInt64ToArray(6, this->team(), target);
   }
 
-  // optional double ContestTime = 7;
+  // optional int64 ContestTime = 7;
   if (has_contesttime()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteDoubleToArray(7, this->contesttime(), target);
+    target = ::google::protobuf::internal::WireFormatLite::WriteInt64ToArray(7, this->contesttime(), target);
   }
 
   if (!unknown_fields().empty()) {
@@ -1002,9 +1002,11 @@ int Event::ByteSize() const {
           this->penalty());
     }
 
-    // optional double ContestTime = 7;
+    // optional int64 ContestTime = 7;
     if (has_contesttime()) {
-      total_size += 1 + 8;
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::Int64Size(
+          this->contesttime());
     }
 
     // required .wire.SState State = 4;

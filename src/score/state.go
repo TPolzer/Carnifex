@@ -203,8 +203,8 @@ func (state *ContestState) summarize(submissions Submissions, respectFreeze bool
                         *event.State = wire.SState_FIRST
                     }
                 }
-                event.ContestTime = proto.Float64(s.Time - float64(state.Contest.Start))
-                *event.Penalty += int64(*event.ContestTime/60)
+                event.ContestTime = proto.Int64(int64((s.Time - float64(state.Contest.Start))/60))
+                *event.Penalty += *event.ContestTime
                 return
             } else { //TODO special-case compile error penalty
 				if(!(state.Config.Compile_penalty == 0 && judging.Outcome == "compiler-error")) {

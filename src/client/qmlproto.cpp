@@ -33,8 +33,6 @@ QVariantMap messageToObject(const Message& m) {
 			res[name] = qint64(refl->GetInt64(m, field));
 		} else if(field->type() == FieldDescriptor::TYPE_ENUM) {
 			res[name] = QString::fromStdString(refl->GetEnum(m, field)->name());
-		} else if(field->type() == FieldDescriptor::TYPE_DOUBLE) {
-			res[name] = refl->GetDouble(m, field);
 		} else if(field->type() == FieldDescriptor::TYPE_MESSAGE) {
             res[name] = messageToObject(refl->GetMessage(m, field));
         } else {
