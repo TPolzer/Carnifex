@@ -26,6 +26,8 @@ import (
 	"sync"
 )
 
+var DumpData bool
+
 type ContestState struct {
     Contest *Contest
 	Config ContestConfig

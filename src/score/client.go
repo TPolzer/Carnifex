@@ -21,9 +21,11 @@ package score
 import (
 	"fmt"
 	"encoding/json"
+	"io"
 	"log"
 	"net/http"
 	"net/url"
+	"os"
 	"reflect"
 	"strconv"
 	"time"
@@ -126,7 +128,19 @@ func (client *JudgeClient) GetJson(method APIMethod, p interface{}) (err error){
 	if(resp.StatusCode != 200) {
 		return fmt.Errorf("Got http response \"%s\" while fetching \"%s\"", resp.Status, url)
 	}
-	jsonDecoder := json.NewDecoder(resp.Body)
+	var reader io.Reader
+	reader = resp.Body
+	if(DumpData) {
+		path := url.Path[1:]
+		file, err := os.OpenFile(path, os.O_TRUNC | os.O_CREATE | os.O_WRONLY, 0666)
+		if(err != nil) {
+			log.Printf("could not dump data: %v", err)
+		} else {
+			reader = io.TeeReader(reader, file)
+			defer file.Close()
+		}
+	}
+	jsonDecoder := json.NewDecoder(reader)
 	err = jsonDecoder.Decode(p)
 	return
 }

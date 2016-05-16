@@ -44,6 +44,7 @@ type Config struct {
 	Poll_ms time.Duration
 	Check_s time.Duration
 	ServerPort int
+	DumpData bool
 }
 
 type cursesWriter struct {
@@ -114,6 +115,11 @@ func main() {
 	}
 	if(config.SharedSecret == nil) {
 		log.Fatal("no sharedsecret provided in config")
+	}
+
+	if(config.DumpData) {
+		os.Mkdir("api", 0777)
+		score.DumpData = true
 	}
 
 	judgeUrl, err := url.Parse(config.BaseUrl)

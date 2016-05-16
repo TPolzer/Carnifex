@@ -4,6 +4,7 @@
 	"simulationSpeed": 120,
 	"poll_ms": 1000,
 	"check_s": 10,
+	"dumpData": false,
 
 	"servername": "localhost",
 	"minrows": 15,

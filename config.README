@@ -18,6 +18,10 @@ poll_ms: [server], int, required
 check_s: [server], int, required
 	Poll the nearly stable bits (teams, problems, etc.) each `check_s` seconds.
 
+dumpData: [server], bool, default false
+	Put all data that is fetched into `pwd`/api/. Files are overwritten by
+	default and created with permissions 0666. Use for debugging only!
+
 servername: [client], string, default "localhost"
 	the server to connect to
 
