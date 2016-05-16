@@ -70,7 +70,7 @@ Item {
 		anchors.bottom: parent.bottom
 		anchors.margins: 0.1*em
 		fillMode: Image.PreserveAspectFit
-		source: contest.coats[team.affiliation]
+		source: contest.coats(team.affiliation)
 		sourceSize.width: 200
 	}
 	ScoreText {
@@ -100,7 +100,7 @@ Item {
 				Behavior on width { NumberAnimation {} }
 				property var columnTitle: contest.problems[index]
 				property var horizontalAlignment: Text.AlignHCenter
-				height: parent.height
+				height: parent ? parent.height : 0
 				Rectangle {
 					anchors.verticalCenter: parent.verticalCenter
 					anchors.horizontalCenter: parent.horizontalCenter

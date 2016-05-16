@@ -231,7 +231,7 @@ Window {
 						font.bold: true
 						text: modelData.columnTitle ? modelData.columnTitle : ""
 						width: modelData.width
-						x: H.walkUpX(columnPrototype, modelData)
+						x: parent ? H.walkUpX(columnPrototype, modelData) : 0
 						horizontalAlignment: modelData.horizontalAlignment
 						opacity: modelData.opacity
 						Behavior on opacity { NumberAnimation {} }

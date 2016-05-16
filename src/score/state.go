@@ -20,7 +20,6 @@ package score
 
 import (
 	"github.com/golang/protobuf/proto"
-	"log"
 	"reflect"
 	"score/wire"
 	"sort"
@@ -81,6 +80,9 @@ func (state *ContestState) ResetClone() (res *ContestState) {
 	res.SetTeams(state.teams)
 	res.Unfreeze = state.Unfreeze
 	res.EventLog = state.EventLog
+	res.Config = state.Config
+	res.unfrozen = state.unfrozen
+	res.Problems = state.Problems
 	res.EventLog.update(func (log *LogType) {
 		log.Version++
 		log.Msgs = nil
