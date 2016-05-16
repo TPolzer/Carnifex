@@ -151,9 +151,9 @@ func main() {
 		}();
 	}
 
-	subscribe := make(chan (chan *wire.Message))
-	unsubscribe := make(chan (chan *wire.Message))
-	ContestState := score.NewContestState(<-Contest, <-Teams, nil)
+	ContestState := score.NewContestState()
+	ContestState.Contest = <-Contest
+	ContestState.SetTeams(<-Teams)
 
 	judge.InjectCid(ContestState.Contest.Id)
 
@@ -189,7 +189,7 @@ func main() {
 		}
 	}()
 
-	go ListenTCP(config.ServerPort, *config.SharedSecret, subscribe, unsubscribe, counter)
+	go ListenTCP(config.ServerPort, *config.SharedSecret, ContestState.EventLog, counter)
 	go func() {
 		for {
 			switch logwin.GetChar() {
@@ -208,7 +208,7 @@ func main() {
 
 	log.Print("succesfully connected to judge and listening for clients")
 
-	ContestState.EventLoop(submissions, judgings, Teams, Contest, ContestConfig, Problems, subscribe, unsubscribe)
+	ContestState.EventLoop(submissions, judgings, Teams, Contest, ContestConfig, Problems)
 }
 
 func simulate(src interface{}, start, multiplier float64, offset time.Duration) interface{} {

@@ -24,42 +24,73 @@ import (
 	"reflect"
 	"score/wire"
 	"sort"
+	"sync"
 )
 
 type ContestState struct {
     Contest *Contest
 	Config ContestConfig
-    Teams []Team
+    teams []Team
     Problems []*wire.Problem
 	Unfreeze chan bool
 	unfrozen int
-    observers []chan *wire.Message
     scoreboard map[TeamId]map[ProblemId]Submissions
     firsts map[ProblemId][]Submission
     submissions map[SubmissionId]Submission
     judgings map[SubmissionId]Judging
+	EventLog *LogType
 }
 
-func NewContestState(Contest *Contest, Teams []Team, observers []chan *wire.Message) (*ContestState) {
+func (log *LogType) update(f func(*LogType)) {
+	log.Lock.Lock()
+	f(log)
+	log.Cond.Broadcast()
+	log.Lock.Unlock()
+}
+
+type LogType struct {
+	Lock sync.Mutex
+	Cond *sync.Cond
+	Msgs []*wire.Message
+	Version int64
+}
+
+func NewContestState() (*ContestState) {
     state := ContestState{
-        Contest: Contest,
-        Teams: Teams,
 		Unfreeze: make(chan bool),
-        observers: observers,
         scoreboard: make(map[TeamId]map[ProblemId]Submissions),
         submissions: make(map[SubmissionId]Submission),
         judgings: make(map[SubmissionId]Judging),
         firsts: make(map[ProblemId][]Submission),
+		EventLog: new(LogType),
     }
-    for _, t := range Teams {
-        state.scoreboard[t.Id] = make(map[ProblemId]Submissions)
-    }
+	state.EventLog.Cond = sync.NewCond(&state.EventLog.Lock)
     return &state
 }
 
-func (state *ContestState) EventLoop(submissions chan Submission, judgings chan Judging, Teams chan []Team, Contest chan *Contest, ContestConfig chan ContestConfig, Problems chan []*wire.Problem, subscribe, unsubscribe chan (chan *wire.Message)) {
+func (state *ContestState) SetTeams(teams []Team) {
+	state.teams = teams
+    for _, t := range teams {
+        state.scoreboard[t.Id] = make(map[ProblemId]Submissions)
+    }
+}
+
+func (state *ContestState) ResetClone() (res *ContestState) {
+	res = NewContestState()
+	res.Contest = state.Contest
+	res.SetTeams(state.teams)
+	res.Unfreeze = state.Unfreeze
+	res.EventLog.update(func (log *LogType) {
+		log.Version++
+		log.Msgs = nil
+	})
+	return
+}
+
+func (state *ContestState) EventLoop(submissions chan Submission, judgings chan Judging, Teams chan []Team, Contest chan *Contest, ContestConfig chan ContestConfig, Problems chan []*wire.Problem) {
 	var storedSubmissions []Submission
     var storedJudgings []Judging
+    state.BroadcastNewContest()
 	for {
         oldState := state
         select {
@@ -70,44 +101,33 @@ func (state *ContestState) EventLoop(submissions chan Submission, judgings chan 
             storedJudgings = append(storedJudgings, j)
             state.ApplyJudging(j)
         case t := <-Teams:
-            if(reflect.DeepEqual(state.Teams, t)) {
+            if(reflect.DeepEqual(state.teams, t)) {
                 continue
             }
-            state = NewContestState(state.Contest, t, state.observers)
+			state = state.ResetClone()
+			state.SetTeams(t)
             state.BroadcastNewContest()
         case c := <-Contest:
             if(reflect.DeepEqual(state.Contest, c)) {
                 continue
             }
-            state = NewContestState(c, state.Teams, state.observers)
+			state = state.ResetClone()
+			state.Contest = c
             state.BroadcastNewContest()
 		case c := <-ContestConfig:
 			if(reflect.DeepEqual(state.Config, c)) {
 				continue
 			}
-			state = NewContestState(state.Contest, state.Teams, state.observers)
+			state = state.ResetClone()
 			state.Config = c
 			state.BroadcastNewContest()
         case p := <-Problems:
             if(reflect.DeepEqual(state.Problems, p)) {
                 continue
             }
-            state = NewContestState(state.Contest, state.Teams, state.observers)
+            state = state.ResetClone()
             state.Problems = p
             state.BroadcastNewContest()
-        case s:= <-subscribe:
-            log.Printf("subscribing %v", s)
-            state.observers = append(state.observers, s)
-            state.Tell(s)
-        case u:= <-unsubscribe:
-            log.Printf("unsubscribing %v", u)
-            for i, o := range state.observers {
-                if(o == u) {
-                    state.observers = append(state.observers[:i], state.observers[i+1:]...)
-                    break
-                }
-            }
-            close(u)
 		case u:=<-state.Unfreeze:
 			if(u) {
 				state.unfrozen++
@@ -132,9 +152,9 @@ func (state *ContestState) Broadcast(message *wire.Message) {
 	if(message == nil) {
 		return
 	}
-    for _, o := range state.observers {
-        o <- message
-    }
+	state.EventLog.update(func (log *LogType) {
+		log.Msgs = append(log.Msgs, message)
+	})
 }
 
 func Unfreeze(unfreeze bool) *wire.Message {
@@ -229,8 +249,8 @@ func (state *ContestState) ContestSetup() (*wire.Message) {
     setup.Freeze = &state.Contest.Freeze
     setup.End = &state.Contest.End
     var Teams []*wire.Team
-    for i, _ := range state.Teams {
-        t := &state.Teams[i] // force reference semantic
+    for i, _ := range state.teams {
+        t := &state.teams[i] // force reference semantic
         id := int64(t.Id)
         team := &wire.Team{
             Name: &t.Name,
@@ -311,20 +331,4 @@ func (state *ContestState) checkFirsts(submission Submission) {
 		}
 	}
 	state.firsts[submission.Problem] = append(state.firsts[submission.Problem], submission)
-}
-
-func (state *ContestState) Tell(observer chan *wire.Message) {
-	observer <- state.ContestSetup()
-	for _, Problems := range state.scoreboard {
-		for _, submissions := range Problems {
-			event := state.Summarize(submissions)
-			if(event == nil) {
-				continue
-			}
-			observer <- ToMessage(event)
-		}
-	}
-	for i:=0; i<state.unfrozen; i++ {
-		observer <- Unfreeze(true)
-	}
 }
