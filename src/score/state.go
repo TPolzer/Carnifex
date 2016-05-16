@@ -80,6 +80,7 @@ func (state *ContestState) ResetClone() (res *ContestState) {
 	res.Contest = state.Contest
 	res.SetTeams(state.teams)
 	res.Unfreeze = state.Unfreeze
+	res.EventLog = state.EventLog
 	res.EventLog.update(func (log *LogType) {
 		log.Version++
 		log.Msgs = nil
