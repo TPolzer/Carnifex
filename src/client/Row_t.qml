@@ -53,8 +53,8 @@ Item {
 	ScoreText {
 		opacity: contest.started*1
 		width: contest.started*2.8*em
-		Behavior on opacity { NumberAnimation {} }
-		Behavior on width { NumberAnimation {} }
+		//Behavior on opacity { NumberAnimation {} }
+		//Behavior on width { NumberAnimation {} }
 		property var columnTitle: "Rank"
 		anchors.verticalCenter: parent.verticalCenter
 		anchors.left: parent.left
@@ -96,8 +96,8 @@ Item {
 			Item {
 				opacity: contest.started
 				width: contest.started*1.5*em
-				Behavior on opacity { NumberAnimation {} }
-				Behavior on width { NumberAnimation {} }
+				//Behavior on opacity { NumberAnimation {} }
+				//Behavior on width { NumberAnimation {} }
 				property var columnTitle: contest.problems[index]
 				property var horizontalAlignment: Text.AlignHCenter
 				height: parent ? parent.height : 0
@@ -123,8 +123,8 @@ Item {
 	ScoreText {
 		opacity: contest.started
 		width: contest.started*3.5*em
-		Behavior on opacity { NumberAnimation {} }
-		Behavior on width { NumberAnimation {} }
+		//Behavior on opacity { NumberAnimation {} }
+		//Behavior on width { NumberAnimation {} }
 		property var columnTitle: "🎈"
 		anchors.verticalCenter: parent.verticalCenter
 		anchors.right: time.left
@@ -135,8 +135,8 @@ Item {
 	ScoreText {
 		opacity: contest.started
 		width: contest.started*3.5*em
-		Behavior on opacity { NumberAnimation {} }
-		Behavior on width { NumberAnimation {} }
+		//Behavior on opacity { NumberAnimation {} }
+		//Behavior on width { NumberAnimation {} }
 		property var columnTitle: "Time"
 		anchors.verticalCenter: parent.verticalCenter
 		anchors.right: parent.right
