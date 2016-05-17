@@ -23,24 +23,55 @@ import QtGraphicalEffects 1.0
 Item {
 	property var team
 	property var cols: [rank, teamname].concat(H.repArray(problems)).concat([solved, time])
+	property var prototypical: false
 	property int focused: -2
 	Binding on z {
 		when: focused != -2
 		value: 9000
 	}
-	Rectangle {
+	property var loader: backgroundLoader
+	property double shaderMargin: 0.2*em
+	Loader {
 		anchors.fill: parent
-		color: 'white'
-		id: box
-		layer.enabled: true
-		layer.effect: DropShadow {
-			cached: true
-			horizontalOffset: 0.13*em
-			verticalOffset: 0.1*em
-			radius: 8.0
-			samples: 17
-			color: "#50000000"
-			source: box
+		id: backgroundLoader
+		sourceComponent: prototypical ? realBackground : shaderBackground
+	}
+	Component {
+		id: realBackground
+		Item {
+			anchors.fill: parent
+			anchors.bottomMargin: -shaderMargin
+			layer.enabled: true
+			Rectangle {
+				height: parent.parent.height
+				width: parent.parent.width
+				color: 'white'
+				id: box
+				layer.enabled: true
+				layer.effect: DropShadow {
+					cached: true
+					horizontalOffset: 0.13*em
+					verticalOffset: 0.1*em
+					radius: 8.0
+					samples: 17
+					color: "#50000000"
+					source: box
+				}
+			}
+		}
+	}
+	Component {
+		id: shaderBackground
+		ShaderEffect {
+			anchors.fill: parent
+			anchors.bottomMargin: -shaderMargin
+			property variant src: rowPrototype.loader.item
+			fragmentShader: "
+				varying highp vec2 qt_TexCoord0;
+				uniform sampler2D src;
+				void main() {
+					gl_FragColor = texture2D(src, qt_TexCoord0);
+				}"
 		}
 	}
 	Rectangle {

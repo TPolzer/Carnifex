@@ -220,7 +220,8 @@ Window {
 				Row_t {
 					opacity: 0
 					id: rowPrototype
-					height: layoutRs*0.75
+					prototypical: true
+					height: layoutRs*0.9
 					anchors.left: parent.left
 					anchors.right: parent.right
 					team: dummyTeam
