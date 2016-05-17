@@ -219,19 +219,19 @@ Window {
 				anchors.right: parent.right
 				Row_t {
 					opacity: 0
-					id: columnPrototype
+					id: rowPrototype
 					height: layoutRs*0.75
 					anchors.left: parent.left
 					anchors.right: parent.right
 					team: dummyTeam
 				}
 				Repeater {
-					model: columnPrototype.cols
+					model: rowPrototype.cols
 					ScoreText {
 						font.bold: true
 						text: modelData.columnTitle ? modelData.columnTitle : ""
 						width: modelData.width
-						x: parent ? H.walkUpX(columnPrototype, modelData) : 0
+						x: parent ? H.walkUpX(rowPrototype, modelData) : 0
 						horizontalAlignment: modelData.horizontalAlignment
 						opacity: modelData.opacity
 						Behavior on opacity { NumberAnimation {} }
