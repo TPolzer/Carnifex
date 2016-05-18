@@ -29,6 +29,7 @@ import (
 	"reflect"
 	"strconv"
 	"time"
+	"crypto/tls"
 )
 
 type JudgeClient struct {
@@ -49,9 +50,14 @@ const (
 	PROBLEMS
 )
 
-func NewJudgeClient(judge *url.URL, username string, password string) *JudgeClient {
+func NewJudgeClient(judge *url.URL, username string, password string, insecure bool) *JudgeClient {
+	tr := &http.Transport{}
+	if(insecure) {
+		tr.TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
+		log.Printf("YOU ARE NOT VERIFYING CERTIFICATES")
+	}
     var client = &JudgeClient{
-        client: http.Client{},
+		client: http.Client{Transport: tr},
         judge: judge,
         urls: make(map[APIMethod]*url.URL),
         username: username,

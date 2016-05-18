@@ -46,6 +46,7 @@ type Config struct {
 	ServerPort int
 	DumpData bool
 	Cid *string
+	Insecure bool
 }
 
 type cursesWriter struct {
@@ -128,7 +129,7 @@ func main() {
 		log.Fatal("invalid baseURL")
 	}
 
-	judge := score.NewJudgeClient(judgeUrl, credentials["user"], credentials["password"])
+	judge := score.NewJudgeClient(judgeUrl, credentials["user"], credentials["password"], config.Insecure)
 
 	submissions := make(chan score.Submission)
 	judgings := make(chan score.Judging)

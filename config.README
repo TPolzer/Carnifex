@@ -22,6 +22,10 @@ cid: [server], string, required if more than one contest active
 	If only one contest is active on the judge, its cid is chosen at the first
 	connection. If there is more than one, dont forget that cid is a _string_.
 
+insecure [server], bool, default false
+	If the judge connection is made over https, do not check certificates. THIS
+	IS A BAD IDEA. Make your own CA certificate and install it on all systems!
+
 dumpData: [server], bool, default false
 	Put all data that is fetched into `pwd`/api/. Files are overwritten by
 	default and created with permissions 0666. Use for debugging only!
