@@ -30,7 +30,7 @@ Item {
 		value: 9000
 	}
 	property var loader: backgroundLoader
-	property double shaderMargin: 0.2*em
+	property double shaderMargin: 0.3*em
 	Loader {
 		anchors.fill: parent
 		id: backgroundLoader
@@ -44,7 +44,7 @@ Item {
 			layer.enabled: true
 			Rectangle {
 				height: parent.parent.height
-				width: parent.parent.width
+				width: parent.parent.width+1
 				color: 'white'
 				id: box
 				layer.enabled: true
@@ -52,7 +52,8 @@ Item {
 					cached: true
 					horizontalOffset: 0.13*em
 					verticalOffset: 0.1*em
-					radius: 8.0
+					radius: em/4
+					transparentBorder: true
 					samples: 17
 					color: "#50000000"
 					source: box
