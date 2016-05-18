@@ -98,7 +98,7 @@ func (client *JudgeClient) ChannelJson(sink interface{}, method APIMethod, sleep
 		err := client.GetJson(method, s)
 		if(err != nil) {
 			if(first) {
-				log.Fatal(err)
+				log.Fatalf("error while fetching %v: %v", client.urls[method], err)
 			}
 			log.Print(err)
 		} else {
@@ -136,9 +136,10 @@ func (client *JudgeClient) GetJson(method APIMethod, p interface{}) (err error){
 	}
 	var reader io.Reader
 	reader = resp.Body
+	path := url.Path[1:]
+	tmpPath := path + ".tmp"
 	if(DumpData) {
-		path := url.Path[1:]
-		file, err := os.OpenFile(path, os.O_TRUNC | os.O_CREATE | os.O_WRONLY, 0666)
+		file, err := os.OpenFile(tmpPath, os.O_TRUNC | os.O_CREATE | os.O_WRONLY, 0666)
 		if(err != nil) {
 			log.Printf("could not dump data: %v", err)
 		} else {
@@ -148,5 +149,8 @@ func (client *JudgeClient) GetJson(method APIMethod, p interface{}) (err error){
 	}
 	jsonDecoder := json.NewDecoder(reader)
 	err = jsonDecoder.Decode(p)
+	if(DumpData) {
+		os.Rename(tmpPath, path)
+	}
 	return
 }
