@@ -61,7 +61,7 @@ private:
 	void refocus();
 	void unfreeze();
 	void refreeze();
-	void rerank();
+	void rerank(std::vector<QObject*>::iterator changed);
 	static bool compareScore(QObject*, QObject*);
 	static bool sortScore(QObject*, QObject*);
 	void applyEvent(const wire::Event&);

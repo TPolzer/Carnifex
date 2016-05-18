@@ -255,18 +255,19 @@ void ScoreboardClient::applyEvent(const wire::Event& event) {
 		return;
 	QVariantMap jEvent = messageToObject(event);
 	QMetaObject::invokeMethod(team, "applyEvent", Q_ARG(QVariant, jEvent), Q_ARG(QVariant, problem->second));
-	rerank();
+	rerank(std::find(ranking.begin(), ranking.end(), team));
 }
 	
-void ScoreboardClient::rerank() {
-	std::stable_sort(std::begin(ranking),std::end(ranking),&sortScore);
-    int rank = 0;
-    for(quint64 pos = 0; pos < ranking.size(); ++pos) {
-        ranking[pos]->setProperty("pos", pos);
-        if(pos == 0 || compareScore(ranking[pos-1], ranking[pos]))
-            rank = pos+1;
-        ranking[pos]->setProperty("rank", rank);
-    }
+void ScoreboardClient::rerank(std::vector<QObject*>::iterator changed) {
+	std::inplace_merge(std::begin(ranking), changed, changed+1, &sortScore);
+	std::inplace_merge(changed, changed+1, std::end(ranking), &sortScore);
+	int rank = 0;
+	for(quint64 pos = 0; pos < ranking.size(); ++pos) {
+		ranking[pos]->setProperty("pos", pos);
+		if(pos == 0 || compareScore(ranking[pos-1], ranking[pos]))
+			rank = pos+1;
+		ranking[pos]->setProperty("rank", rank);
+	}
 }
 
 void ScoreboardClient::unfreeze() {
@@ -281,7 +282,7 @@ void ScoreboardClient::unfreeze() {
 		std::get<1>(*resolveStack.rbegin()) = team;
 		QMetaObject::invokeMethod(team, "toggleFreeze", Q_ARG(QVariant, int(problems.size() - rs.resolvingProblem - 1)));
 		rs.resolvedProblems = rs.resolvingProblem+1;
-		rerank();
+		rerank(teamIt.base()-1);
 		if(*teamIt != team) { // team has moved up, focus other team
 			rs.resolvedProblems = 0;
 			rs.resolvingProblem = -1;
@@ -316,7 +317,7 @@ void ScoreboardClient::refreeze() {
 	}
 	resolveStack.pop_back();
 	refocus();
-	rerank();
+	rerank(ranking.begin());
 }
 
 void ScoreboardClient::refocus() {
