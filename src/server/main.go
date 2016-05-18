@@ -45,6 +45,7 @@ type Config struct {
 	Check_s time.Duration
 	ServerPort int
 	DumpData bool
+	Cid *string
 }
 
 type cursesWriter struct {
@@ -133,6 +134,7 @@ func main() {
 	judgings := make(chan score.Judging)
 	Teams := make(chan []score.Team)
 	Contest := make(chan *score.Contest)
+	Contests := make(chan map[string]*score.Contest)
 	ContestConfig := make(chan score.ContestConfig)
 	Problems := make(chan []*wire.Problem)
 
@@ -140,8 +142,28 @@ func main() {
 	sanitySleep := time.Second*config.Check_s
 
 	go judge.ChannelJson(Teams, score.TEAMS, sanitySleep, false)
-	go judge.ChannelJson(Contest, score.CONTEST, sanitySleep, false)
 	go judge.ChannelJson(ContestConfig, score.CONFIG, sanitySleep, false)
+	go judge.ChannelJson(Contests, score.CONTESTS, sanitySleep, false)
+
+	go func(Contest chan *score.Contest) {
+		for {
+			contests := <-Contests
+			if(config.Cid == nil && len(contests) == 1) {
+				for k := range contests {
+					config.Cid = &k
+				}
+			}
+			if(config.Cid == nil) {
+				log.Fatal("more than one contest active, but cid not set in config")
+			}
+			contest, ok := contests[*config.Cid]
+			if(!ok) {
+				log.Printf("Selected contest (cid %v) not available from judge!", *config.Cid)
+				continue
+			}
+			Contest <- contest
+		}
+	}(Contest)
 
 	if(config.Simulate) {
 		realContest := Contest

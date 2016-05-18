@@ -43,7 +43,7 @@ type APIMethod int8
 const (
 	JUDGINGS APIMethod = iota
 	SUBMISSIONS
-	CONTEST
+	CONTESTS
 	CONFIG
 	TEAMS
 	PROBLEMS
@@ -59,7 +59,7 @@ func NewJudgeClient(judge *url.URL, username string, password string) *JudgeClie
     }
     client.urls[JUDGINGS], _ = judge.Parse("./api/judgings")
     client.urls[SUBMISSIONS], _ = judge.Parse("./api/submissions")
-    client.urls[CONTEST], _ = judge.Parse("./api/contest")
+    client.urls[CONTESTS], _ = judge.Parse("./api/contests")
     client.urls[CONFIG], _ = judge.Parse("./api/config")
     client.urls[TEAMS], _ = judge.Parse("./api/teams?public=true")
     client.urls[PROBLEMS], _ = judge.Parse("./api/problems")

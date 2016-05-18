@@ -5,6 +5,7 @@
 	"poll_ms": 1000,
 	"check_s": 10,
 	"dumpData": false,
+	"cid": "3",
 
 	"servername": "localhost",
 	"minrows": 15,

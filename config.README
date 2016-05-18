@@ -18,6 +18,10 @@ poll_ms: [server], int, required
 check_s: [server], int, required
 	Poll the nearly stable bits (teams, problems, etc.) each `check_s` seconds.
 
+cid: [server], string, required if more than one contest active
+	If only one contest is active on the judge, its cid is chosen at the first
+	connection. If there is more than one, dont forget that cid is a _string_.
+
 dumpData: [server], bool, default false
 	Put all data that is fetched into `pwd`/api/. Files are overwritten by
 	default and created with permissions 0666. Use for debugging only!
