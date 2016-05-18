@@ -43,8 +43,11 @@ Item {
 			anchors.bottomMargin: -shaderMargin
 			layer.enabled: true
 			Rectangle {
-				height: parent.parent.height
-				width: parent.parent.width+1
+				//compensate for effect -> transparentBorder
+				x: -1
+				y: -1
+				height: parent.parent.height+2
+				width: parent.parent.width+2
 				color: 'white'
 				id: box
 				layer.enabled: true
