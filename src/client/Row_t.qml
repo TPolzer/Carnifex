@@ -106,7 +106,7 @@ Item {
 		anchors.margins: 0.1*em
 		fillMode: Image.PreserveAspectFit
 		source: contest.coats(team.affiliation)
-		sourceSize.width: 200
+		sourceSize.width: width
 	}
 	ScoreText {
 		anchors.leftMargin: 0.1*em
