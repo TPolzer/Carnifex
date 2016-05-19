@@ -139,7 +139,8 @@ Item {
 				Rectangle {
 					anchors.verticalCenter: parent.verticalCenter
 					anchors.horizontalCenter: parent.horizontalCenter
-					color: team.first[index] ? '#1daa1d' : team.correct[index] ? '#60e760' : team.pending[index] ? '#6666FF' : team.submits[index] ? '#e87272' : Qt.rgba(0,0,0,0)
+					color: team.first[index] ? '#1daa1d' : team.correct[index] ? '#60e760' : team.pending[index] ? '#6666FF' : team.submits[index] ? '#e87272' : '#000000FF'
+					Behavior on color { ColorAnimation {} }
 					border.color: 'DarkOrange'
 					border.width: (focused == index) ? em/8 : 0
 					height: contest.em
