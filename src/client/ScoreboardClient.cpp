@@ -183,6 +183,10 @@ void ScoreboardClient::setup(const wire::ContestSetup& setup) {
 	this->problems.clear();
 	this->ranking.clear();
 	auto name = QString::fromStdString(setup.name());
+	auto configName = this->config.find("name");
+	if(configName != this->config.end()) {
+		name = (*configName).toString();
+	}
 	double start = setup.start() * 1000.0;
 	double freeze = setup.freeze() * 1000.0;
 	double end = setup.end() * 1000.0;

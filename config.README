@@ -22,6 +22,12 @@ cid: [server], string, required if more than one contest active
 	If only one contest is active on the judge, its cid is chosen at the first
 	connection. If there is more than one, dont forget that cid is a _string_.
 
+name: [client], string, default actual contest name (from judge)
+	The name of the contest to show on the scoreboard. It should fit in the
+	upper left corner with some margin to the centered FROZEN/FINISHED display.
+	It will be displayed in large letters in the upper right quadrant before
+	the contest.
+
 insecure [server], bool, default false
 	If the judge connection is made over https, do not check certificates. THIS
 	IS A BAD IDEA. Make your own CA certificate and install it on all systems!
