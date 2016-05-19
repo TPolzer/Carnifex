@@ -1,3 +1,8 @@
+# Carnifex
+
+Carnifex is a software package to display a live scoreboard for ICPC style contests (with domjudge).
+It consists of two parts: The server regularly polls all relevant information from domjudge and puts them together in a subscribable network feed. The clients watch this feed and produce a nice anmiated scoreboard out of it.
+
 This software is unfinished, use at your own peril!
 
 You probably need:
@@ -11,11 +16,15 @@ You probably need:
 
 The setup currently involves:
 - in the top level directory:
+```
   $ export GOPATH="`pwd`"
   $ go build server
+```
 - in the src/client subdirectory
+```
   $ cmake .
   $ make -j4
+```
 
 To use it:
 - put your credentials into credentials.json
