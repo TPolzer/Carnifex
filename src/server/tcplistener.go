@@ -70,10 +70,11 @@ func ListenTCP(port int, password string, Log *score.LogType, counter chan bool)
 			ctr := uint64(0)
 			write := func (m *wire.Message) (err error) {
 				// Blocking writes only occur when the write buffer is full.
-				// Linux has a default of 16KB, which should be enough for a whole
-				// contest after setup. Blocking writes stall all clients, so kill
-				// everybody who doesn't respond for bufferSize + 1s.
-				conn.SetWriteDeadline(time.Now().Add(1*time.Second)) //
+				// Linux has a default of 16KB, which should be enough for a
+				// whole contest after setup. Kill everybody who doesn't
+				// respond for bufferSize + 10s (clients should reconnect
+				// automatically).
+				conn.SetWriteDeadline(time.Now().Add(10*time.Second)) //
 				message, _ := proto.Marshal(m)
 				err = binary.Write(conn, binary.BigEndian, int64(len(message)))
 				if(err != nil) {
