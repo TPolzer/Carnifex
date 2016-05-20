@@ -127,7 +127,7 @@ func ListenTCP(port int, password string, Log *score.LogType, counter chan bool)
 				}
 			}()
 
-			cc := make(chan error)
+			cc := make(chan error,1)
 			go func() {
 				//look for clients closing the connection
 				//a client should never send any data
