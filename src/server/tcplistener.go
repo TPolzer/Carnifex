@@ -96,6 +96,11 @@ func ListenTCP(port int, password string, Log *score.LogType, counter chan bool)
 			messages := make(chan *wire.Message)
 			closing := make(chan bool)
 			defer close(closing)
+			defer func() {
+				Log.Lock.Lock()
+				Log.Cond.Broadcast()
+				Log.Lock.Unlock()
+			}()
 
 			go func() {
 				Version := int64(-1)
@@ -104,6 +109,12 @@ func ListenTCP(port int, password string, Log *score.LogType, counter chan bool)
 				for {
 					Log.Lock.Lock()
 					for Log.Version == Version && len(Log.Msgs) == ctr {
+						select {
+							case _ = <-closing:
+								Log.Lock.Unlock()
+								break outer
+							default:
+						}
 						Log.Cond.Wait()
 					}
 					if(Log.Version != Version) {
@@ -112,11 +123,6 @@ func ListenTCP(port int, password string, Log *score.LogType, counter chan bool)
 					}
 					toSend := Log.Msgs
 					Log.Lock.Unlock()
-					select {
-						case _ = <-closing:
-							break outer
-						default:
-					}
 					for ctr != len(toSend) {
 						select {
 						case _ = <-closing:
