@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0.2)
+cmake_minimum_required(VERSION 3.0)
 
 project(client)
 
@@ -11,11 +11,13 @@ find_package(Qt5Widgets)
 
 find_package(Protobuf REQUIRED)
 
+PROTOBUF_GENERATE_CPP(PROTO_SRCS PROTO_HDRS ../score/wire/scoreboard.proto)
+
 find_package(PkgConfig REQUIRED)
 pkg_search_module(SODIUM REQUIRED libsodium)
 
 # Tell CMake to create the helloworld executable
-add_executable(client main.cpp ScoreboardClient.cpp qml.qrc scoreboard.pb.cc clock.cc qmlproto.cpp artwork/artwork.qrc)
+add_executable(client main.cpp ScoreboardClient.cpp qml.qrc scoreboard.pb.cc clock.cc qmlproto.cpp artwork/artwork.qrc ${PROTO_SRCS})
 
 target_link_libraries(client Qt5::Widgets Qt5::Quick)
 target_link_libraries(client ${PROTOBUF_LIBRARIES})
