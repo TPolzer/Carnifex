@@ -1,0 +1,14 @@
+language: cpp
+go: 1.2
+sudo: required
+dist: trusty
+before_install:
+    ### This should not be required on debian >= jessie, ubuntu >= wiley
+    - sudo add-apt-repository ppa:chris-lea/libsodium -y
+    - sudo add-apt-repository ppa:5-james-t/protobuf-ppa -y
+    ### travis is broken
+    - wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
+      
+    - sudo apt-get update
+    - sudo apt-get install cmake libsodium-dev pkg-config qtbase5-dev qtdeclarative5-dev protobuf-compiler -y --force-yes
+script: bash -c 'export GOPATH="`pwd`" && go get -v golang.org/x/crypto/nacl/secretbox golang.org/x/crypto/scrypt github.com/golang/protobuf/proto github.com/rthornton128/goncurses && go build server && mkdir build && cd build && cmake ../src/client && make -j4'
