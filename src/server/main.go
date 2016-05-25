@@ -1,5 +1,5 @@
 /*
- * This file is part of "Carnifex"
+ * This file is part of "Scory McScoreFace"
  * Copyright (C) 2016  Tobias Polzer, Dominik Paulus
 
  * This program is free software; you can redistribute it and/or
@@ -89,7 +89,7 @@ func main() {
 		log.Fatal(err)
 	}
 	statuswin.Box(curses.ACS_VLINE, curses.ACS_HLINE)
-	headline := "Carnifex"
+	headline := "Scory McScoreFace"
 	statuswin.MovePrint(1, cols/2 - len(headline)/2, headline)
 	statuswin.NoutRefresh()
 	logwin.NoutRefresh()
