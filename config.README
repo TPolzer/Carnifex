@@ -26,6 +26,10 @@ matchAffiliations: [server], regex string, optional
 	If given, only teams for which the long affiliation string matches the
 	pattern are tracked.
 
+matchCategories: [server], regex string, optional
+	If given, only teams for which the category id (numeric) matches the
+	pattern are tracked.
+
 name: [client], string, default actual contest name (from judge)
 	The name of the contest to show on the scoreboard. It should fit in the
 	upper left corner with some margin to the centered FROZEN/FINISHED display.

@@ -31,6 +31,7 @@ import (
 	"os"
 	"sync"
 	"regexp"
+	"strconv"
 
 	curses "github.com/rthornton128/goncurses"
 )
@@ -49,6 +50,7 @@ type Config struct {
 	Cid *string
 	Insecure bool
 	MatchAffiliations *string
+	MatchCategories *string
 }
 
 type cursesWriter struct {
@@ -146,22 +148,36 @@ func main() {
 	sanitySleep := time.Second*config.Check_s
 
 	go judge.ChannelJson(Teams, score.TEAMS, sanitySleep, false)
-	if(config.MatchAffiliations != nil) {
-		realTeams := Teams
-		Teams = make(chan []score.Team)
-		regex := regexp.MustCompile(*config.MatchAffiliations)
-		go func() {
-			for {
-				var filtered []score.Team
-				for _, t := range <-realTeams {
-					if(regex.MatchString(t.Affiliation)) {
-						filtered = append(filtered, t)
-					}
-				}
-				Teams <- filtered
-			}
-		}()
+	realTeams := Teams
+	Teams = make(chan []score.Team)
+	filter := func(team score.Team) bool{
+		return true
 	}
+	if(config.MatchAffiliations != nil) {
+		regex := regexp.MustCompile(*config.MatchAffiliations)
+		f := filter
+		filter = func(team score.Team) bool{
+			return f(team) && regex.MatchString(team.Affiliation)
+		}
+	}
+	if(config.MatchCategories != nil) {
+		regex := regexp.MustCompile(*config.MatchCategories)
+		f := filter
+		filter = func(team score.Team) bool{
+			return f(team) && regex.MatchString(strconv.FormatInt(team.Category,10))
+		}
+	}
+	go func() {
+		for {
+			var filtered []score.Team
+			for _, t := range <-realTeams {
+				if(filter(t)) {
+					filtered = append(filtered, t)
+				}
+			}
+			Teams <- filtered
+		}
+	}()
 	go judge.ChannelJson(ContestConfig, score.CONFIG, sanitySleep, false)
 	go judge.ChannelJson(Contests, score.CONTESTS, sanitySleep, false)
 
