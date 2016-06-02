@@ -66,6 +66,7 @@ type ContestConfig struct {
 
 type Team struct {
     Id TeamId
+	Category int64
     Name string
     Affiliation string
 }

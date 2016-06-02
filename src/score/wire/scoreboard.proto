@@ -23,6 +23,7 @@ message ContestSetup {
 	required string Name = 1;
 	repeated Team Teams = 2;
 	repeated Problem Problems = 3;
+	repeated Category Categories = 9;
 	required int64 Start = 4;
 	required int64 Freeze = 8;
 	required int64 End = 5;
@@ -36,8 +37,15 @@ message Problem {
 	optional string Color = 3;
 }
 
+message Category {
+	required int64 CategoryId = 1;
+	required int64 SortOrder = 2;
+	optional string Color = 3;
+}
+
 message Team {
 	required int64 Id = 1;
+	required int64 Category = 4;
 	required string Name = 2;
 	optional string Affiliation = 3;
 }

@@ -36,31 +36,27 @@ Item {
 		id: backgroundLoader
 		sourceComponent: prototypical ? realBackground : shaderBackground
 	}
+	Rectangle {
+		anchors.fill: parent
+		color: team.teamColor ? team.teamColor : 'white'
+		id: box
+	}
 	Component {
 		id: realBackground
 		Item {
 			anchors.fill: parent
 			anchors.bottomMargin: -shaderMargin
 			layer.enabled: true
-			Rectangle {
-				//compensate for effect -> transparentBorder
-				x: -1
-				y: -1
-				height: parent.parent.height+2
-				width: parent.parent.width+2
-				color: 'white'
-				id: box
-				layer.enabled: true
-				layer.effect: DropShadow {
-					cached: true
-					horizontalOffset: 0.13*em
-					verticalOffset: 0.1*em
-					radius: em/4
-					transparentBorder: true
-					samples: 17
-					color: "#50000000"
-					source: box
-				}
+			DropShadow {
+				anchors.fill: parent
+				cached: true
+				horizontalOffset: 0.13*em
+				verticalOffset: 0.1*em
+				radius: em/4
+				transparentBorder: true
+				samples: 17
+				color: "#50000000"
+				source: box
 			}
 		}
 	}

@@ -33,7 +33,9 @@ Item {
 	property var first: []
 	property var resolved: []
 	property var config
-	property var solved: correct.reduce(H.add, 0)
+	property int sortOrder: 0
+	property string teamColor
+	property int solved: correct.reduce(H.add, 0)
 	property int penalty: penalties.reduce(H.add, 0)
 	property int lastSolved: H.maxArray(correctTimes)
 	property int frozen: pending.map(function (e,i) {return isFrozen(i);}).reduce(H.add, 0)
@@ -41,6 +43,8 @@ Item {
 		return !!(resolved[problem] != null && pending[problem]);
 	}
 	function betterThan(other) {
+		var od = sortOrder - other.sortOrder;
+		if(od != 0) return od < 0;
 		var sd = solved - other.solved;
 		if(sd != 0) return sd > 0;
 		var pd = penalty - other.penalty;
@@ -48,6 +52,18 @@ Item {
 		var ld = lastSolved - other.lastSolved;
 		if(ld != 0) return ld < 0;
 		return false;
+	}
+	function rankAfter(other) {
+		pos = other.pos + 1;
+		if(other.sortOrder !== sortOrder) {
+			rank = 1;
+		} else {
+			if(other.betterThan(team)) {
+				rank = other.rank + 1;
+			} else {
+				rank = other.rank;
+			}
+		}
 	}
 	function sortBefore(other) {
 		if(betterThan(other)) return true;

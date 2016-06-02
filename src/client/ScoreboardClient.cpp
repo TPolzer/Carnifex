@@ -195,6 +195,7 @@ void ScoreboardClient::setup(const wire::ContestSetup& setup) {
 			return a.name() < b.name();
 			});
 	auto problems = setup.problems();
+	auto categories = setup.categories();
 	QQmlComponent teamComponent(&engine,
 			QUrl(QStringLiteral("qrc:/Team.qml")));
 	QVariantList teamList;
@@ -211,11 +212,23 @@ void ScoreboardClient::setup(const wire::ContestSetup& setup) {
 		qmlTeam->setProperty("name", name);
 		qmlTeam->setProperty("affiliation", affiliation);
 		qmlTeam->setProperty("pos", teamList.size());
+		auto category = std::find_if(categories.begin(), categories.end(), [&](const wire::Category &c) {
+				return c.categoryid() == team.category();
+		});
+		if(category == categories.end()) {
+			std::cerr << "team without category, ignoring: " << team.name() << std::endl;
+			delete qmlTeam;
+			continue;
+		} else {
+			qmlTeam->setProperty("teamColor", QString::fromStdString(category->color()));
+			qmlTeam->setProperty("sortOrder", (qint64)category->sortorder());
+		}
 		teamList.push_back(QVariant::fromValue(qmlTeam));
 	}
 	for(const auto& t : teams) {
 		ranking.push_back(this->teams[t.id()]);
 	}
+	rerank(ranking.end());
 	for(const auto& problem : problems) {
 		this->problems[problem.id()] = problemList.size();
 		problemList.push_back(QString::fromStdString(problem.label()));
@@ -263,14 +276,17 @@ void ScoreboardClient::applyEvent(const wire::Event& event) {
 }
 	
 void ScoreboardClient::rerank(std::vector<QObject*>::iterator changed) {
-	std::inplace_merge(std::begin(ranking), changed, changed+1, &sortScore);
-	std::inplace_merge(changed, changed+1, std::end(ranking), &sortScore);
-	int rank = 0;
-	for(quint64 pos = 0; pos < ranking.size(); ++pos) {
-		ranking[pos]->setProperty("pos", pos);
-		if(pos == 0 || compareScore(ranking[pos-1], ranking[pos]))
-			rank = pos+1;
-		ranking[pos]->setProperty("rank", rank);
+	if(changed == ranking.end()) {
+		std::stable_sort(std::begin(ranking), std::end(ranking), &sortScore);
+	} else {
+		std::inplace_merge(std::begin(ranking), changed, changed+1, &sortScore);
+		std::inplace_merge(changed, changed+1, std::end(ranking), &sortScore);
+	}
+	if(ranking.empty()) return;
+	ranking[0]->setProperty("pos", 0);
+	ranking[0]->setProperty("rank", 1);
+	for(quint64 pos = 1; pos < ranking.size(); ++pos) {
+		QMetaObject::invokeMethod(ranking[pos], "rankAfter", Q_ARG(QVariant, QVariant::fromValue(ranking[pos-1])));
 	}
 }
 

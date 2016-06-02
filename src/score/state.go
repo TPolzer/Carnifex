@@ -33,6 +33,7 @@ type ContestState struct {
 	Config ContestConfig
     teams []Team
     Problems []*wire.Problem
+	Categories []*wire.Category
 	Unfreeze chan bool
 	unfrozen int
     scoreboard map[TeamId]map[ProblemId]Submissions
@@ -76,6 +77,7 @@ func (state *ContestState) SetTeams(teams []Team) {
     }
 }
 
+// ResetClone returns a fresh ContestState that shares all state, but has no applied submissions / judgings. The EventLog is atomically emptied and its version incremented.
 func (state *ContestState) ResetClone() (res *ContestState) {
 	res = NewContestState()
 	res.Contest = state.Contest
@@ -92,7 +94,7 @@ func (state *ContestState) ResetClone() (res *ContestState) {
 	return
 }
 
-func (state *ContestState) EventLoop(submissions chan Submission, judgings chan Judging, Teams chan []Team, Contest chan *Contest, ContestConfig chan ContestConfig, Problems chan []*wire.Problem) {
+func (state *ContestState) EventLoop(submissions chan Submission, judgings chan Judging, Teams chan []Team, Contest chan *Contest, ContestConfig chan ContestConfig, Problems chan []*wire.Problem, Categories chan []*wire.Category) {
 	var storedSubmissions []Submission
     var storedJudgings []Judging
     state.BroadcastNewContest()
@@ -133,6 +135,13 @@ func (state *ContestState) EventLoop(submissions chan Submission, judgings chan 
             state = state.ResetClone()
             state.Problems = p
             state.BroadcastNewContest()
+		case cs := <-Categories:
+			if(reflect.DeepEqual(state.Categories, cs)) {
+				continue
+			}
+			state = state.ResetClone()
+			state.Categories = cs
+			state.BroadcastNewContest()
 		case u:=<-state.Unfreeze:
 			if(u) {
 				state.unfrozen++
@@ -253,6 +262,7 @@ func (state *ContestState) ContestSetup() (*wire.Message) {
     setup.Start = &state.Contest.Start
     setup.Freeze = &state.Contest.Freeze
     setup.End = &state.Contest.End
+	setup.Categories = state.Categories
     var Teams []*wire.Team
     for i, _ := range state.teams {
         t := &state.teams[i] // force reference semantic
@@ -261,6 +271,7 @@ func (state *ContestState) ContestSetup() (*wire.Message) {
             Name: &t.Name,
             Id: &id,
             Affiliation: &t.Affiliation,
+			Category: &t.Category,
         }
         Teams = append(Teams, team)
     }

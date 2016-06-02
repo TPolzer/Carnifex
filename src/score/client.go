@@ -48,6 +48,7 @@ const (
 	CONFIG
 	TEAMS
 	PROBLEMS
+	CATEGORIES
 )
 
 func NewJudgeClient(judge *url.URL, username string, password string, insecure bool) *JudgeClient {
@@ -69,9 +70,7 @@ func NewJudgeClient(judge *url.URL, username string, password string, insecure b
     client.urls[CONFIG], _ = judge.Parse("./api/config")
     client.urls[TEAMS], _ = judge.Parse("./api/teams?public=true")
     client.urls[PROBLEMS], _ = judge.Parse("./api/problems")
-    for k, val := range client.urls {
-        client.urls[k] = judge.ResolveReference(val)
-    }
+	client.urls[CATEGORIES], _ = judge.Parse("./api/categories?public=true")
     return client
 }
 

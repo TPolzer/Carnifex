@@ -138,6 +138,7 @@ func main() {
 	Contests := make(chan map[string]*score.Contest)
 	ContestConfig := make(chan score.ContestConfig)
 	Problems := make(chan []*wire.Problem)
+	Categories := make(chan []*wire.Category)
 
 	sleep := time.Millisecond*config.Poll_ms
 	sanitySleep := time.Second*config.Check_s
@@ -187,10 +188,12 @@ func main() {
 	judge.InjectCid(ContestState.Contest.Id)
 
 	go judge.ChannelJson(Problems, score.PROBLEMS, sanitySleep, false)
+	go judge.ChannelJson(Categories, score.CATEGORIES, sanitySleep, false)
 	go judge.ChannelJson(submissions, score.SUBMISSIONS, sleep, true)
 	go judge.ChannelJson(judgings, score.JUDGINGS, sleep, true)
 
 	ContestState.Problems = <-Problems
+	ContestState.Categories = <-Categories
 
 	if(config.Simulate) {
 		submissions = simulate(submissions, float64(ContestState.Contest.Start), config.SimulationSpeed, 10*time.Second).(chan score.Submission)
@@ -237,7 +240,7 @@ func main() {
 
 	log.Print("succesfully connected to judge and listening for clients")
 
-	ContestState.EventLoop(submissions, judgings, Teams, Contest, ContestConfig, Problems)
+	ContestState.EventLoop(submissions, judgings, Teams, Contest, ContestConfig, Problems, Categories)
 }
 
 func simulate(src interface{}, start, multiplier float64, offset time.Duration) interface{} {
