@@ -216,9 +216,7 @@ void ScoreboardClient::setup(const wire::ContestSetup& setup) {
 				return c.categoryid() == team.category();
 		});
 		if(category == categories.end()) {
-			std::cerr << "team without category, ignoring: " << team.name() << std::endl;
-			delete qmlTeam;
-			continue;
+			throw std::runtime_error("team without category, ignoring: " + team.name() + " category: " + std::to_string(team.category()));
 		} else {
 			qmlTeam->setProperty("teamColor", QString::fromStdString(category->color()));
 			qmlTeam->setProperty("sortOrder", (qint64)category->sortorder());

@@ -87,6 +87,7 @@ func (state *ContestState) ResetClone() (res *ContestState) {
 	res.Config = state.Config
 	res.unfrozen = state.unfrozen
 	res.Problems = state.Problems
+	res.Categories = state.Categories
 	res.EventLog.update(func (log *LogType) {
 		log.Version++
 		log.Msgs = nil
