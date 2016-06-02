@@ -46,6 +46,9 @@ int main(int argc, char *argv[])
     engine.load(QUrl(QStringLiteral("qrc:/main.qml")));
 
     QQuickWindow *obj = qobject_cast<QQuickWindow*>(engine.rootObjects().first());
+	obj->setWindowState(Qt::WindowFullScreen);
+	obj->setCursor(Qt::BlankCursor);
+
 	ScoreboardClient client(config, engine);
 	
 	QObject::connect(&client, SIGNAL(contestSetup(QVariant,QVariant,QVariant)),
