@@ -22,6 +22,10 @@ cid: [server], string, required if more than one contest active
 	If only one contest is active on the judge, its cid is chosen at the first
 	connection. If there is more than one, dont forget that cid is a _string_.
 
+matchAffiliations: [server], regex string, optional
+	If given, only teams for which the long affiliation string matches the
+	pattern are tracked.
+
 name: [client], string, default actual contest name (from judge)
 	The name of the contest to show on the scoreboard. It should fit in the
 	upper left corner with some margin to the centered FROZEN/FINISHED display.

@@ -6,6 +6,7 @@
 	"check_s": 10,
 	"dumpData": false,
 	"cid": "3",
+	"matchAffiliations": ".*",
 
 	"servername": "localhost",
 	"minrows": 15,
