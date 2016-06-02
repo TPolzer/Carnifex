@@ -24,6 +24,7 @@ The setup currently involves:
 - in the top level directory:
 ```
   $ export GOPATH="`pwd`"
+  $ go get github.com/golang/protobuf/proto github.com/rthornton128/goncurses golang.org/x/crypto/nacl/secretbox golang.org/x/crypto/scrypt
   $ go build server
 ```
 - in the src/client subdirectory
