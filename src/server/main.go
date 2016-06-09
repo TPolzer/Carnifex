@@ -29,6 +29,7 @@ import (
 	"score/wire"
 	"time"
 	"os"
+	"path/filepath"
 	"sync"
 	"regexp"
 	"strconv"
@@ -123,15 +124,20 @@ func main() {
 		log.Fatal("no sharedsecret provided in config")
 	}
 
-	if(config.DumpData) {
-		os.Mkdir("api", 0777)
-		score.DumpData = true
-	}
-
 	judgeUrl, err := url.Parse(config.BaseUrl)
 	if(err != nil) {
 		log.Fatal("invalid baseURL")
 	}
+
+	if(config.DumpData) {
+		dir := filepath.Join("./", judgeUrl.Path, "api")
+		err := os.MkdirAll(dir, 0777)
+		if(err != nil) {
+			log.Fatalf("could not create path %s", dir)
+		}
+		score.DumpData = true
+	}
+
 
 	judge := score.NewJudgeClient(judgeUrl, credentials["user"], credentials["password"], config.Insecure)
 
