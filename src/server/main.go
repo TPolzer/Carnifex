@@ -223,7 +223,6 @@ func main() {
 
 	ContestState := score.NewContestState()
 	ContestState.Contest = <-Contest
-	ContestState.SetTeams(<-Teams)
 
 	judge.InjectCid(ContestState.Contest.Id)
 
@@ -233,7 +232,8 @@ func main() {
 	go judge.ChannelJson(judgings, score.JUDGINGS, sleep, true)
 
 	ContestState.Problems = <-Problems
-	ContestState.Categories = <-Categories
+	ContestState.SetCategories(<-Categories)
+	ContestState.SetTeams(<-Teams)
 
 	if(config.Simulate) {
 		submissions = simulate(submissions, float64(ContestState.Contest.Start), config.SimulationSpeed, 10*time.Second).(chan score.Submission)

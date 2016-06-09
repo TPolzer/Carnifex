@@ -20,6 +20,7 @@ package score
 
 type JudgingId int64
 type SubmissionId int64
+type SortOrderId int64
 type TeamId int64
 type ProblemId int64
 
@@ -69,4 +70,17 @@ type Team struct {
 	Category int64
     Name string
     Affiliation string
+	SortOrder SortOrderId
+}
+
+// utility types for map keys follow
+
+type ScoreboardKey struct {
+	Team TeamId
+	Problem ProblemId
+}
+
+type FirstKey struct {
+	SortOrder SortOrderId
+	Problem ProblemId
 }

@@ -32,12 +32,13 @@ type ContestState struct {
     Contest *Contest
 	Config ContestConfig
     teams []Team
+	teamOrder map[TeamId]SortOrderId
     Problems []*wire.Problem
-	Categories []*wire.Category
+	categories []*wire.Category
 	Unfreeze chan bool
 	unfrozen int
-    scoreboard map[TeamId]map[ProblemId]Submissions
-    firsts map[ProblemId][]Submission
+    scoreboard map[ScoreboardKey]Submissions
+    firsts map[FirstKey]Submissions
     submissions map[SubmissionId]Submission
     judgings map[SubmissionId]Judging
 	EventLog *LogType
@@ -60,10 +61,11 @@ type LogType struct {
 func NewContestState() (*ContestState) {
     state := ContestState{
 		Unfreeze: make(chan bool),
-        scoreboard: make(map[TeamId]map[ProblemId]Submissions),
-        submissions: make(map[SubmissionId]Submission),
-        judgings: make(map[SubmissionId]Judging),
-        firsts: make(map[ProblemId][]Submission),
+		teamOrder: make(map[TeamId]SortOrderId),
+		scoreboard: make(map[ScoreboardKey]Submissions),
+		submissions: make(map[SubmissionId]Submission),
+		judgings: make(map[SubmissionId]Judging),
+		firsts: make(map[FirstKey]Submissions),
 		EventLog: new(LogType),
     }
 	state.EventLog.Cond = sync.NewCond(&state.EventLog.Lock)
@@ -72,22 +74,33 @@ func NewContestState() (*ContestState) {
 
 func (state *ContestState) SetTeams(teams []Team) {
 	state.teams = teams
-    for _, t := range teams {
-        state.scoreboard[t.Id] = make(map[ProblemId]Submissions)
-    }
+	state.teamOrder = make(map[TeamId]SortOrderId)
+	for _, t := range teams {
+		for _, c := range state.categories {
+			if(*c.CategoryId == t.Category) {
+				state.teamOrder[t.Id] = SortOrderId(*c.SortOrder)
+				break
+			}
+		}
+	}
+}
+
+func (state *ContestState) SetCategories(categories []*wire.Category) {
+	state.categories = categories
+	state.SetTeams(state.teams) // refresh sort order for teams
 }
 
 // ResetClone returns a fresh ContestState that shares all state, but has no applied submissions / judgings. The EventLog is atomically emptied and its version incremented.
 func (state *ContestState) ResetClone() (res *ContestState) {
 	res = NewContestState()
 	res.Contest = state.Contest
+	res.SetCategories(state.categories)
 	res.SetTeams(state.teams)
 	res.Unfreeze = state.Unfreeze
 	res.EventLog = state.EventLog
 	res.Config = state.Config
 	res.unfrozen = state.unfrozen
 	res.Problems = state.Problems
-	res.Categories = state.Categories
 	res.EventLog.update(func (log *LogType) {
 		log.Version++
 		log.Msgs = nil
@@ -137,11 +150,11 @@ func (state *ContestState) EventLoop(submissions chan Submission, judgings chan 
             state.Problems = p
             state.BroadcastNewContest()
 		case cs := <-Categories:
-			if(reflect.DeepEqual(state.Categories, cs)) {
+			if(reflect.DeepEqual(state.categories, cs)) {
 				continue
 			}
 			state = state.ResetClone()
-			state.Categories = cs
+			state.SetCategories(cs)
 			state.BroadcastNewContest()
 		case u:=<-state.Unfreeze:
 			if(u) {
@@ -205,8 +218,10 @@ func (state *ContestState) Summarize(submissions Submissions) (event *wire.Event
 
 func (state *ContestState) summarize(submissions Submissions, respectFreeze bool) (event *wire.Event) {
     sort.Sort(submissions)
+	var SortOrder SortOrderId
     if(len(submissions) > 0) {
         Team := int64(submissions[0].Team)
+		SortOrder = state.teamOrder[submissions[0].Team]
         Problem := int64(submissions[0].Problem)
         event = &wire.Event{
             Team: &Team,
@@ -233,7 +248,7 @@ func (state *ContestState) summarize(submissions Submissions, respectFreeze bool
             if(judging.Outcome == "correct") {
                 *event.State = wire.SState_CORRECT
                 *event.Penalty = penalty
-                for _, sf := range state.firsts[s.Problem] {
+                for _, sf := range state.firsts[FirstKey{SortOrder, s.Problem}] {
                     if(sf.Id == s.Id) {
                         *event.State = wire.SState_FIRST
                     }
@@ -263,7 +278,7 @@ func (state *ContestState) ContestSetup() (*wire.Message) {
     setup.Start = &state.Contest.Start
     setup.Freeze = &state.Contest.Freeze
     setup.End = &state.Contest.End
-	setup.Categories = state.Categories
+	setup.Categories = state.categories
     var Teams []*wire.Team
     for i, _ := range state.teams {
         t := &state.teams[i] // force reference semantic
@@ -294,16 +309,16 @@ func (state *ContestState) BroadcastNewContest() {
 
 func (state *ContestState) ApplySubmission(submission Submission) {
     state.submissions[submission.Id] = submission
-    team := submission.Team
     problem := submission.Problem
-    teamScore, ok := state.scoreboard[team]
+    _, ok := state.teamOrder[submission.Team]
     if(!ok) {
         // Team not public, mute
         return
     }
     state.checkFirsts(submission)
-    teamScore[problem] = append(teamScore[problem], submission)
-    event := state.Summarize(teamScore[problem])
+	key := ScoreboardKey{submission.Team, problem}
+    state.scoreboard[key] = append(state.scoreboard[key], submission)
+    event := state.Summarize(state.scoreboard[key])
     state.Broadcast(ToMessage(event))
 }
 
@@ -318,34 +333,36 @@ func (state *ContestState) ApplyJudging(judging Judging) {
 		return
 	}
 	problem := submission.Problem
-	team := submission.Team
-	teamScore, ok := state.scoreboard[team]
+    _, ok = state.teamOrder[submission.Team]
 	if(!ok) {
 		// Team not public, mute
 		return
 	}
 	state.checkFirsts(submission)
-	event := state.Summarize(teamScore[problem])
+	key := ScoreboardKey{submission.Team, problem}
+	event := state.Summarize(state.scoreboard[key])
 	state.Broadcast(ToMessage(event))
 }
 
 func (state *ContestState) checkFirsts(submission Submission) {
+	SortOrder := state.teamOrder[submission.Team]
 	judging, ok := state.judgings[submission.Id]
 	if(!ok || judging.Outcome != "correct") {
 		return
 	}
-	oldFirst, ok := state.firsts[submission.Problem]
+	key := FirstKey{SortOrder,submission.Problem}
+	oldFirst, ok := state.firsts[key]
 	if(ok) {
 		oldTime, newTime := oldFirst[0].Time, submission.Time
 		if(oldTime < newTime) {
 			return
 		} else if (oldTime > newTime) {
-			state.firsts[submission.Problem] = []Submission{}
+			state.firsts[key] = []Submission{}
 			for _, s := range oldFirst {
-				event := state.Summarize(state.scoreboard[s.Team][submission.Problem])
+				event := state.Summarize(state.scoreboard[ScoreboardKey{s.Team,submission.Problem}])
 				state.Broadcast(ToMessage(event))
 			}
 		}
 	}
-	state.firsts[submission.Problem] = append(state.firsts[submission.Problem], submission)
+	state.firsts[key] = append(state.firsts[key], submission)
 }
