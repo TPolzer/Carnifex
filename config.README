@@ -6,7 +6,7 @@ baseurl: [server], string, required
 
 simulate: [server], bool, default false
 	If true, the server will simulate the the contest events relative to server
-	startup time (else events will be relayed in real time).
+	startup time (Otherwise events will be relayed in real time).
 
 simulationSpeed: [server], double, default 0
 	If simulating, speed up contest by simulationSpeed.
