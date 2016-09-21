@@ -25,7 +25,7 @@ message ContestSetup {
 	repeated Problem Problems = 3;
 	repeated Category Categories = 9;
 	required int64 Start = 4;
-	required int64 Freeze = 8;
+	optional int64 Freeze = 8;
 	required int64 End = 5;
 	optional int64 SimulatedStart = 6;
 	optional double SimulationSpeed = 7;

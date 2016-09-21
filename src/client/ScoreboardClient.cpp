@@ -239,7 +239,9 @@ void ScoreboardClient::setup(const wire::ContestSetup& setup) {
 	QVariantMap contest;
 	contest["name"] = name;
 	contest["start"] = start;
-	contest["freeze"] = freeze;
+	if(setup.has_freeze()) {
+	    contest["freeze"] = freeze;
+	}
 	contest["end"] = end;
 	contest["sstart"] = setup.simulatedstart() * 1000.0;
 	contest["sspeed"] = setup.simulationspeed();

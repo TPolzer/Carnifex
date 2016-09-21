@@ -52,12 +52,12 @@ func (s Submissions) Swap(i, j int) {
 type Contest struct {
     Id int64
     Name string
-    Freeze int64
+    Freeze *int64
     Start int64
-	SimulatedStart *int64
-	SimulationSpeed *float64
+    SimulatedStart *int64
+    SimulationSpeed *float64
     End int64
-    Unfreeze int64
+    Unfreeze *int64
     Penalty int64
 }
 
