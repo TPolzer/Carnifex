@@ -29,6 +29,7 @@ import (
 	"score/wire"
 	"time"
 	"os"
+	"os/signal"
 	"path/filepath"
 	"sync"
 	"regexp"
@@ -73,6 +74,14 @@ func main() {
 		log.Fatal("Unable to initialize curses interface: " + err.Error())
 	}
 	defer curses.End()
+
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt)
+	go func(){
+		<-c
+	    curses.End()
+	    os.Exit(1)
+	}()
 
 	curses.Echo(false)
 	curses.CBreak(true)
