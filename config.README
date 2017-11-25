@@ -2,7 +2,10 @@ Both server and client expect a file 'config.json' in their working directory.
 Its entries are:
 
 baseurl: [server], string, required
-	The server looks at `baseurl`/api/*, has to end with a slash.
+apipath: [server], string optional default "api/v3/"
+	The server looks at `baseurl``apipath`, both have to end with a slash.
+	The split does not matter in principle, but makes this backwards compatible
+	with older Carnifex binaries.
 
 simulate: [server], bool, default false
 	If true, the server will simulate the the contest events relative to server

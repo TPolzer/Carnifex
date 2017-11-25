@@ -21,22 +21,18 @@ And at (client) runtime:
 - DejaVu Sans and Symbola for proper display
 
 The setup currently involves:
-- in the top level directory:
 ```
   $ export GOPATH="`pwd`"
   $ go get github.com/golang/protobuf/proto github.com/rthornton128/goncurses golang.org/x/crypto/nacl/secretbox golang.org/x/crypto/scrypt
   $ go build server
-```
-- in the src/client subdirectory
-```
-  $ cmake .
+  $ cmake src/client
   $ make -j4
 ```
 
 To use it:
 - put your credentials into credentials.json
 - adjust the server url in config.json
-- put a secret passphrase in config.json for both server and client (the whole file can be shared between both)
-- possibly adjust server name / port in config.json
-- start the server
-- start the client
+- put a secret passphrase in config.json
+- possibly adjust server name/api path/port in config.json
+- start ./server
+- start ./client (cannot be started before the server, but will try to reconnect if server is restarted/lost/etc.)

@@ -42,6 +42,7 @@ var cursesLock *sync.Mutex
 
 type Config struct {
 	BaseUrl string
+	ApiPath *string
 	Simulate bool
 	SimulationSpeed float64
 	SharedSecret *string
@@ -132,14 +133,22 @@ func main() {
 	if(config.SharedSecret == nil) {
 		log.Fatal("no sharedsecret provided in config")
 	}
+	if(config.ApiPath == nil) {
+	    ApiPath := "api/v3/"
+	    config.ApiPath = &ApiPath
+	}
 
 	judgeUrl, err := url.Parse(config.BaseUrl)
 	if(err != nil) {
 		log.Fatal("invalid baseURL")
 	}
+	judgeUrl, err = judgeUrl.Parse(*config.ApiPath)
+	if(err != nil) {
+	    log.Fatal("invalid ApiPath")
+	}
 
 	if(config.DumpData) {
-		dir := filepath.Join("./", judgeUrl.Path, "api")
+		dir := filepath.Join("./", judgeUrl.Path, *config.ApiPath)
 		err := os.MkdirAll(dir, 0777)
 		if(err != nil) {
 			log.Fatalf("could not create path %s", dir)

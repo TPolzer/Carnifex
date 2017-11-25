@@ -64,13 +64,13 @@ func NewJudgeClient(judge *url.URL, username string, password string, insecure b
         username: username,
         password: password,
     }
-    client.urls[JUDGINGS], _ = judge.Parse("./api/judgings")
-    client.urls[SUBMISSIONS], _ = judge.Parse("./api/submissions")
-    client.urls[CONTESTS], _ = judge.Parse("./api/contests")
-    client.urls[CONFIG], _ = judge.Parse("./api/config")
-    client.urls[TEAMS], _ = judge.Parse("./api/teams?public=true")
-    client.urls[PROBLEMS], _ = judge.Parse("./api/problems")
-	client.urls[CATEGORIES], _ = judge.Parse("./api/categories?public=true")
+    client.urls[JUDGINGS], _ = judge.Parse("./judgings")
+    client.urls[SUBMISSIONS], _ = judge.Parse("./submissions")
+    client.urls[CONTESTS], _ = judge.Parse("./contests")
+    client.urls[CONFIG], _ = judge.Parse("./config")
+    client.urls[TEAMS], _ = judge.Parse("./teams?public=true")
+    client.urls[PROBLEMS], _ = judge.Parse("./problems")
+	client.urls[CATEGORIES], _ = judge.Parse("./categories?public=true")
     return client
 }
 
