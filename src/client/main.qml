@@ -16,7 +16,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-import QtQuick 2.0
+import QtQuick 2.5
 import QtQuick.Window 2.0
 import de.bulsa.clock 0.1
 import "helper.js" as H
@@ -27,6 +27,24 @@ Window {
 	id: contest
 	color: 'black'
 
+	Shortcut {
+		sequence: "Space"
+		onActivated: pageTimer.running = !pageTimer.running
+	}
+	Shortcut {
+		sequence: "Up"
+		onActivated: {
+			pageTimer.running = false
+			tableContents.autopage--
+		}
+	}
+	Shortcut {
+		sequence: "Down"
+		onActivated: {
+			pageTimer.running = false
+			tableContents.autopage++
+		}
+	}
 
 	property var config: new Object()
 	property bool started: clockDisplay.sinceStart >= 0

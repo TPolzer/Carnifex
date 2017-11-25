@@ -29,10 +29,19 @@ The setup currently involves:
   $ make -j4
 ```
 
-To use it:
+To start it:
 - put your credentials into credentials.json
 - adjust the server url in config.json
 - put a secret passphrase in config.json
-- possibly adjust server name/api path/port in config.json
+- possibly adjust server name/api path/port in config.json (see config.README)
 - start ./server
-- start ./client (cannot be started before the server, but will try to reconnect if server is restarted/lost/etc.)
+- start ./client (cannot be started before the server, but will try to
+  reconnect if server is restarted/lost/etc.)
+
+To use it:
+- The resolving mechanism is very basic. It goes forward backward in resolving
+  by left/right arrow keys on the server side (might want to keep it around in
+  a screen/tmux).
+- If the scoreboard is not in resolving phase it normally cycles through all
+  pages periodically, you can pause this and manually move around with space,
+  up and down arrow keys.
