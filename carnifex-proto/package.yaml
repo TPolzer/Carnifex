@@ -1,0 +1,21 @@
+name:                carnifex-proto
+
+extra-source-files:
+- src/carnifex/*.proto
+
+custom-setup:
+  dependencies:
+    - base
+    - Cabal
+    - proto-lens-protoc
+
+dependencies:
+- base
+- proto-lens-protoc
+- proto-lens-protobuf-types
+
+library:
+  source-dirs: src
+  exposed-modules:
+    - Proto.Carnifex.Configuration
+    - Proto.Carnifex.Common

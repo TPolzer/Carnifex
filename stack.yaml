@@ -1,0 +1,11 @@
+resolver: lts-10.1
+
+packages:
+- .
+- carnifex-proto
+
+extra-deps:
+- git: https://github.com/reflex-frp/reflex
+  commit: f78a73ef7300846f4b81f34df0d17d75cb64476d
+- bifunctors-5.4.2
+- prim-uniq-0.1.0.1
