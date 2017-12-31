@@ -1,6 +1,0 @@
-syntax = "proto3";
-
-import "google/protobuf/wrappers.proto";
-
-package carnifex;
-
