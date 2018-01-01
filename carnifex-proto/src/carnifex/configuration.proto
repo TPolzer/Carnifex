@@ -9,7 +9,8 @@ message NullableRepeatedFileRef {
 }
 
 message FileRef {
-	string href = 1;
+	google.protobuf.StringValue href = 1;
+	google.protobuf.ByteValue data = 5;
 	string mime = 2;
 	google.protobuf.Int64Value width = 3;
 	google.protobuf.Int64Value height = 4;
@@ -18,18 +19,16 @@ message FileRef {
 message Contest {
 	string id = 1;
 	string name = 2;
-	string formal_name = 3;
 	google.protobuf.StringValue start_time = 4;
 	string duration = 5;
 	string scoreboard_freeze_duration = 6;
-	int64 penalty_time = 7;
+	int32 penalty_time = 7;
 	NullableRepeatedFileRef banner = 8;
 	NullableRepeatedFileRef logo = 9;
 }
 
 message JudgementType {
 	string id = 1;
-	string name = 2;
 	bool penalty = 3;
 	bool solved = 4;
 }
