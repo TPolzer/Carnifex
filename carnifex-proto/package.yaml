@@ -1,7 +1,7 @@
 name:                carnifex-proto
 
 extra-source-files:
-- src/carnifex/*.proto
+- src/Carnifex/*.proto
 
 custom-setup:
   dependencies:
@@ -11,11 +11,23 @@ custom-setup:
 
 dependencies:
 - base
+- proto-lens
 - proto-lens-protoc
 - proto-lens-protobuf-types
+- aeson
+- casing
+- containers
+- unordered-containers
+- text
+- template-haskell
+- time
+- iso8601-time
+- lens
 
 library:
   source-dirs: src
   exposed-modules:
     - Proto.Carnifex.Configuration
-    - Proto.Carnifex.Common
+    - Proto.Carnifex.Configuration'Fields
+    - Proto.Carnifex.JSON
+    - Proto.Carnifex.JSON.TH

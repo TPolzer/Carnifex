@@ -1,16 +1,12 @@
 syntax = "proto3";
 
 import "google/protobuf/wrappers.proto";
+import "google/protobuf/timestamp.proto";
 
 package carnifex;
 
-message NullableRepeatedFileRef {
-    repeated FileRef contents = 1;
-}
-
 message FileRef {
     google.protobuf.StringValue href = 1;
-    google.protobuf.ByteValue data = 5;
     string mime = 2;
     google.protobuf.Int64Value width = 3;
     google.protobuf.Int64Value height = 4;
@@ -19,12 +15,12 @@ message FileRef {
 message Contest {
     string id = 1;
     string name = 2;
-    google.protobuf.StringValue start_time = 4;
+    google.protobuf.Timestamp start_time = 4;
     string duration = 5;
     string scoreboard_freeze_duration = 6;
     int32 penalty_time = 7;
-    NullableRepeatedFileRef banner = 8;
-    NullableRepeatedFileRef logo = 9;
+    repeated FileRef banner = 8;
+    repeated FileRef logo = 9;
 }
 
 message JudgementType {
@@ -33,25 +29,16 @@ message JudgementType {
     bool solved = 4;
 }
 
-message Language {
-    string id = 1;
-    string name = 2;
-}
-
 message Problem {
     string id = 1;
     string label = 2;
     string name = 3;
     int64 ordinal = 4;
-    string rgb = 5;
-    string color = 6;
-    double time_limit = 7;
-    int64 test_data_count = 8;
+    google.protobuf.StringValue rgb = 5;
 }
 
 message Group {
     string id = 1;
-    google.protobuf.StringValue icpc_id = 2;
     string name = 3;
     google.protobuf.StringValue type = 4;
     google.protobuf.BoolValue hidden = 5;
@@ -60,25 +47,16 @@ message Group {
 
 message Organization {
     string id = 1;
-    google.protobuf.StringValue icpc_id = 2;
     string name = 3;
     google.protobuf.StringValue formal_name = 4;
     google.protobuf.StringValue country = 5;
-    google.protobuf.StringValue url = 6;
-    google.protobuf.StringValue twitter_hashtag = 7;
-    message Location {
-        double latitude = 1;
-        double longitude = 2;
-    }
-    Location location = 8;
-    NullableRepeatedFileRef logo = 9;
+    repeated FileRef logo = 9;
 }
 
 message Team {
     string id = 1;
-    google.protobuf.StringValue icpc_id = 2;
     string name = 3;
     google.protobuf.StringValue organization_id = 4;
-    repeated string groups_id = 5;
+    repeated string group_ids = 5;
 }
 
