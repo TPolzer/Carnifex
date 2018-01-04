@@ -7,6 +7,7 @@ import Data.Aeson
 import Data.Aeson.Types
 import Control.Monad (mzero)
 import Control.DeepSeq
+import Data.Either
 import Data.Text (pack, unpack)
 import Data.Time.ISO8601
 import Data.Time.Clock
@@ -16,7 +17,12 @@ import qualified Data.HashMap.Strict as HashMap
 import Proto.Google.Protobuf.Timestamp
 import Proto.Google.Protobuf.Duration
 import Proto.Google.Protobuf.Wrappers
+import Data.Attoparsec.Text (parseOnly, endOfInput)
+import Data.Text.Format
+import qualified Data.Text as T
+import qualified Data.Text.Lazy as LT
 
+import Carnifex.Reltime
 import Proto.Carnifex
 import Proto.Carnifex.Configuration
 import Proto.Carnifex.JSON.TH
@@ -56,12 +62,20 @@ parseTime = withText "expected a date" $
   maybe mzero return . parseISO8601 . unpack
 
 parseDuration :: Value -> Parser DiffTime
-parseDuration v = parseJSON v >>= parseIcpcDuration
+parseDuration = withText "expected a reltime" $ \t ->
+  either (const mzero) return $
+    parseOnly (durationParser <* endOfInput) t
 
-parseIcpcDuration :: Scientific -> Parser DiffTime
-parseIcpcDuration d = let exponent = base10Exponent $ normalize d in
-                          if abs exponent >= 20 then mzero else
-                          return $ fromRational $ toRational d
+formatDiffTime :: DiffTime -> T.Text
+formatDiffTime d = LT.toStrict $ format "{}{}:{}:{}.{}" (sign, h, fm, fs, fus) where
+  sign = if d < 0 then "-" else "" :: LT.Text
+  truncated = abs $ round $ d*1e3 :: Int
+  (hms, us) = abs truncated `quotRem` 1000
+  (hm, s) = hms `quotRem` 60
+  (h, m) = hm `quotRem` 60
+  fm = left 2 '0' m
+  fs = left 2 '0' s
+  fus = left 3 '0' us
 
 instance NFData Int64Value
 instance NFData StringValue
@@ -74,7 +88,7 @@ instance FromJSON Duration where
   parseJSON v = toDuration <$> parseDuration v
 
 instance ToJSON Duration where
-  toJSON = Number . fromRational . toRational . fromDuration
+  toJSON = String . formatDiffTime . fromDuration
 
 instance FromJSON Timestamp where
   parseJSON v = toTimestamp <$> parseTime v

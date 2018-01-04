@@ -25,6 +25,8 @@ dependencies:
 - lens
 - deepseq
 - scientific
+- attoparsec
+- text-format
 
 library:
   source-dirs: src
@@ -33,3 +35,4 @@ library:
     - Proto.Carnifex.Configuration'Fields
     - Proto.Carnifex.JSON
     - Proto.Carnifex.JSON.TH
+    - Carnifex.Reltime

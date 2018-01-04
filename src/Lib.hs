@@ -29,5 +29,5 @@ dummyJSONContest = [r|{
     "name": "contest",
     "start_time": "2018-01-03T19:56:27+00:00",
     "id": "a",
-    "duration": 2
+    "duration": "-1000:00:01.042"
 }|]

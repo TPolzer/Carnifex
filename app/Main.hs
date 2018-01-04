@@ -20,17 +20,18 @@ p = (`using` parBuffer 64 rdeepseq)
 
 main :: IO ()
 main = do
-  print dummyContest
   putStrLn "test:"
   let decoded = encode dummyContest
   B.putStrLn decoded
-  putStrLn "round tripping:"
-  let contest = fromJust $ decode $ encodePretty dummyContest :: Contest
-  B.putStrLn $ encodePretty contest
-  putStr "success: "
-  print $ decoded == encodePretty contest
-  let contest = fromJust $ decode dummyJSONContest :: Contest
-  print contest
-  B.putStrLn $ encodePretty contest
+  let encoded = decode dummyJSONContest :: Maybe Contest
+  print encoded
+  --putStrLn "round tripping:"
+  --let contest = fromJust $ decode $ encodePretty dummyContest :: Contest
+  --B.putStrLn $ encodePretty contest
+  --putStr "success: "
+  --print $ decoded == encodePretty contest
+  --let contest = fromJust $ decode dummyJSONContest :: Contest
+  --print contest
+  --B.putStrLn $ encodePretty contest
   B.interact (B.concat . intersperse "\n" . p . map encode . p . map de . B.lines)
   B.putStrLn ""
