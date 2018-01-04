@@ -9,8 +9,8 @@ package carnifex;
 message FileRef {
     google.protobuf.StringValue href = 1;
     google.protobuf.StringValue mime = 2;
-    google.protobuf.Int64Value width = 3;
-    google.protobuf.Int64Value height = 4;
+    google.protobuf.Int32Value width = 3;
+    google.protobuf.Int32Value height = 4;
 }
 
 message Contest {
@@ -60,4 +60,3 @@ message Team {
     google.protobuf.StringValue organization_id = 4;
     repeated string group_ids = 5;
 }
-

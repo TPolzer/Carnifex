@@ -9,7 +9,7 @@ import Control.Monad (mzero)
 import Control.DeepSeq
 import Data.Either
 import Data.Text (pack, unpack)
-import Data.Time.ISO8601
+import Data.Time.ISO8601 -- TODO rip this out if performance becomes a concern, SLOW AS HELL
 import Data.Time.Clock
 import Data.Scientific
 import qualified Data.Map as Map
@@ -18,13 +18,15 @@ import Proto.Google.Protobuf.Timestamp
 import Proto.Google.Protobuf.Duration
 import Proto.Google.Protobuf.Wrappers
 import Data.Attoparsec.Text (parseOnly, endOfInput)
-import Data.Text.Format
+import Data.Text.Format -- TODO transition to maintained 'formatting' instead of 'text-format'
 import qualified Data.Text as T
 import qualified Data.Text.Lazy as LT
 
 import Carnifex.Reltime
 import Proto.Carnifex
 import Proto.Carnifex.Configuration
+import Proto.Carnifex.Live
+import Proto.Carnifex.Scoreboard
 import Proto.Carnifex.JSON.TH
 import Data.ProtoLens.Message
 
@@ -77,12 +79,76 @@ formatDiffTime d = LT.toStrict $ format "{}{}:{}:{}.{}" (sign, h, fm, fs, fus) w
   fs = left 2 '0' s
   fus = left 3 '0' us
 
-instance NFData Int64Value
+instance NFData Int32Value
 instance NFData StringValue
+instance NFData BoolValue
 instance NFData FileRef
 instance NFData Timestamp
 instance NFData Duration
 instance NFData Contest
+instance NFData JudgementType
+instance NFData Problem
+instance NFData Group
+instance NFData Organization
+instance NFData Team
+instance NFData ContestState
+instance NFData ScoreboardRow
+instance NFData Score
+instance NFData ScoredProblem
+
+instance FromJSON ScoreboardRow where
+  parseJSON = addAttributes $(mkParseIcpcJSON ''ScoreboardRow)
+
+instance ToJSON ScoreboardRow where
+  toJSON = filterAttributes . $(mkToIcpcJSON ''ScoreboardRow)
+
+instance FromJSON Score where
+  parseJSON = addAttributes $(mkParseIcpcJSON ''Score)
+
+instance ToJSON Score where
+  toJSON = filterAttributes . $(mkToIcpcJSON ''Score)
+
+instance FromJSON ScoredProblem where
+  parseJSON = addAttributes $(mkParseIcpcJSON ''ScoredProblem)
+
+instance ToJSON ScoredProblem where
+  toJSON = filterAttributes . $(mkToIcpcJSON ''ScoredProblem)
+
+instance FromJSON ContestState where
+  parseJSON = addAttributes $(mkParseIcpcJSON ''ContestState)
+
+instance ToJSON ContestState where
+  toJSON = filterAttributes . $(mkToIcpcJSON ''ContestState)
+
+instance FromJSON JudgementType where
+  parseJSON = addAttributes $(mkParseIcpcJSON ''JudgementType)
+
+instance ToJSON JudgementType where
+  toJSON = filterAttributes . $(mkToIcpcJSON ''JudgementType)
+
+instance FromJSON Problem where
+  parseJSON = addAttributes $(mkParseIcpcJSON ''Problem)
+
+instance ToJSON Problem where
+  toJSON = filterAttributes . $(mkToIcpcJSON ''Problem)
+
+instance FromJSON Group where
+  parseJSON = addAttributes $(mkParseIcpcJSON ''Group)
+
+instance ToJSON Group where
+  toJSON = filterAttributes . $(mkToIcpcJSON ''Group)
+
+instance FromJSON Organization where
+  parseJSON = addAttributes $(mkParseIcpcJSON ''Organization)
+
+instance ToJSON Organization where
+  toJSON = filterAttributes . $(mkToIcpcJSON ''Organization)
+
+instance FromJSON Team where
+  parseJSON = addAttributes $(mkParseIcpcJSON ''Team)
+
+instance ToJSON Team where
+  toJSON = filterAttributes . $(mkToIcpcJSON ''Team)
 
 instance FromJSON Duration where
   parseJSON v = toDuration <$> parseDuration v
@@ -108,17 +174,23 @@ instance FromJSON FileRef where
 instance ToJSON FileRef where
   toJSON = filterAttributes . $(mkToIcpcJSON ''FileRef)
 
+instance FromJSON BoolValue where
+  parseJSON = addAttributes $(mkParseIcpcJSON ''BoolValue)
+
+instance ToJSON BoolValue where
+  toJSON = filterAttributes . $(mkToIcpcJSON ''BoolValue)
+
 instance FromJSON StringValue where
   parseJSON = addAttributes $(mkParseIcpcJSON ''StringValue)
 
 instance ToJSON StringValue where
   toJSON = filterAttributes . $(mkToIcpcJSON ''StringValue)
 
-instance FromJSON Int64Value where
-  parseJSON = addAttributes $(mkParseIcpcJSON ''Int64Value)
+instance FromJSON Int32Value where
+  parseJSON = addAttributes $(mkParseIcpcJSON ''Int32Value)
 
-instance ToJSON Int64Value where
-  toJSON = filterAttributes . $(mkToIcpcJSON ''Int64Value)
+instance ToJSON Int32Value where
+  toJSON = filterAttributes . $(mkToIcpcJSON ''Int32Value)
 
 instance FromJSON TaggedValue where
   parseJSON _ = mzero

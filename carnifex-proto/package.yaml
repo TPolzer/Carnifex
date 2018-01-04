@@ -33,6 +33,10 @@ library:
   exposed-modules:
     - Proto.Carnifex.Configuration
     - Proto.Carnifex.Configuration'Fields
+    - Proto.Carnifex.Live
+    - Proto.Carnifex.Live'Fields
+    - Proto.Carnifex.Scoreboard
+    - Proto.Carnifex.Scoreboard'Fields
     - Proto.Carnifex.JSON
     - Proto.Carnifex.JSON.TH
     - Carnifex.Reltime

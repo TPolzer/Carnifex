@@ -1,9 +1,33 @@
 syntax = "proto3";
 
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/duration.proto";
 import "google/protobuf/wrappers.proto";
 
 package carnifex;
 
 message ContestState {
+    google.protobuf.Timestamp started = 1;
+    google.protobuf.Timestamp ended = 2;
+    google.protobuf.Timestamp frozen = 3;
+    google.protobuf.Timestamp thawed = 4;
+    google.protobuf.Timestamp finalized = 5;
+}
 
+message Submission {
+    string id = 1;
+    string problem_id = 2;
+    string team_id = 3;
+    google.protobuf.Timestamp time = 4;
+    google.protobuf.Duration contest_time = 5;
+}
+
+message Judgement {
+    string id = 1;
+    string submission_id = 2;
+    google.protobuf.StringValue judgement_type_id = 3;
+//    google.protobuf.Timestamp start_time = 4;
+//    google.protobuf.Duration start_contest_time = 5;
+//    google.protobuf.Timestamp end_time = 6;
+//    google.protobuf.Duration end_contest_time = 6;
 }

@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+import "google/protobuf/wrappers.proto";
+
+package carnifex;
+
+message ScoreboardRow {
+    int32 rank = 1;
+    string team_id = 2;
+    Score score = 3;
+    repeated ScoredProblem problems = 4;
+}
+
+message Score {
+    int32 num_solved = 1;
+    int32 total_time = 2;
+}
+
+message ScoredProblem {
+    string problem_id = 1;
+    int32 num_judged = 2;
+    int32 num_pending = 3;
+    bool solved = 4;
+    google.protobuf.Int32Value time = 5; 
+}
