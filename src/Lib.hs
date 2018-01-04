@@ -24,10 +24,10 @@ dummyContest = build ((id .~ "a") . (name .~ "contest") . (penaltyTime .~ maxBou
 
 dummyJSONContest :: B.ByteString
 dummyJSONContest = [r|{
-    "scoreboard_freeze_duration": "",
+    "scoreboard_freeze_duration": 1,
     "penalty_time": 2147483647,
     "name": "contest",
     "start_time": "2018-01-03T19:56:27+00:00",
     "id": "a",
-    "duration": ""
+    "duration": 2
 }|]

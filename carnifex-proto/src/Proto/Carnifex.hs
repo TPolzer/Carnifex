@@ -1,6 +1,9 @@
+{-# LANGUAGE FlexibleContexts, AllowAmbiguousTypes #-}
 module Proto.Carnifex
   ( toTimestamp
   , fromTimestamp
+  , toDuration
+  , fromDuration
   )
   where
 
@@ -11,15 +14,23 @@ import Data.Time.Clock.POSIX
 
 import Proto.Google.Protobuf.Timestamp
 import Proto.Google.Protobuf.Timestamp'Fields
+import Proto.Google.Protobuf.Duration
+
+toDiffTime v = fromIntegral (v ^. seconds)
+             + fromIntegral (v ^. nanos) / 1e9
+
+fromDiffTime d = def & (seconds .~ s) . (nanos .~ ns)
+  where (s, rem) = properFraction d
+        ns = round $ rem * 1e9
 
 toTimestamp :: UTCTime -> Timestamp
-toTimestamp time = def & (seconds .~ s) . (nanos .~ ns)
-  where diff = utcTimeToPOSIXSeconds time
-        (s, rem) = properFraction diff
-        ns = round $ rem / 10^9
+toTimestamp = fromDiffTime . utcTimeToPOSIXSeconds
 
 fromTimestamp :: Timestamp -> UTCTime
-fromTimestamp timestamp = posixSecondsToUTCTime diff
-  where
-    diff = fromIntegral (timestamp ^. seconds)
-           + fromIntegral (timestamp ^.nanos) / 10^9
+fromTimestamp = posixSecondsToUTCTime . toDiffTime
+
+toDuration :: DiffTime -> Duration
+toDuration = fromDiffTime
+
+fromDuration :: Duration -> DiffTime
+fromDuration = toDiffTime

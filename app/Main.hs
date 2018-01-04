@@ -1,3 +1,4 @@
+{-# LANGUAGE OverloadedStrings #-}
 module Main where
 
 import Control.Monad
@@ -5,13 +6,17 @@ import qualified Data.ByteString.Lazy.Char8 as B
 import Data.Aeson.Encode.Pretty
 import Data.Aeson
 import Data.Maybe
+import Data.List
 import Data.ProtoLens.Message
+import Control.Parallel.Strategies
 
 import Proto.Carnifex.Configuration
 import Proto.Carnifex.JSON
 import Lib
 
-roundTrip = encode . fromJust . (decode :: B.ByteString -> Maybe Contest)
+de = fromJust . (decode :: B.ByteString -> Maybe Contest)
+p :: (NFData a) => [a] -> [a]
+p = (`using` parBuffer 64 rdeepseq)
 
 main :: IO ()
 main = do
@@ -27,4 +32,5 @@ main = do
   let contest = fromJust $ decode dummyJSONContest :: Contest
   print contest
   B.putStrLn $ encodePretty contest
-  B.interact (B.concat . map roundTrip . B.lines)
+  B.interact (B.concat . intersperse "\n" . p . map encode . p . map de . B.lines)
+  B.putStrLn ""

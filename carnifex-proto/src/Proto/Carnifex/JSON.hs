@@ -6,12 +6,15 @@ module Proto.Carnifex.JSON
 import Data.Aeson
 import Data.Aeson.Types
 import Control.Monad (mzero)
+import Control.DeepSeq
 import Data.Text (pack, unpack)
 import Data.Time.ISO8601
 import Data.Time.Clock
+import Data.Scientific
 import qualified Data.Map as Map
 import qualified Data.HashMap.Strict as HashMap
 import Proto.Google.Protobuf.Timestamp
+import Proto.Google.Protobuf.Duration
 import Proto.Google.Protobuf.Wrappers
 
 import Proto.Carnifex
@@ -35,12 +38,14 @@ filterAttributes v = v
 keepValue k v = k /= unknown && v /= empty
 
 addAttributes :: forall msg . (Message msg) => (Value -> Parser msg) -> Value -> Parser msg
-addAttributes convert (Object o) = convert $ Object $ o `HashMap.union` additionalFields where
+addAttributes convert (Object o) = convert $ Object $
+    filteredObject `HashMap.union` additionalFields where
   repeatedFields :: [FieldDescriptor msg]
   repeatedFields = filter isRepeatedField $ Map.elems fieldsByTag
   repeatedFieldNames = map (pack . fieldDescriptorName) repeatedFields
   additionalFields = HashMap.fromList
     [(k,Array mzero) | k <- unknown:repeatedFieldNames]
+  filteredObject = HashMap.filter (/=Null) o
 addAttributes convert v = convert $ 
   Object $ HashMap.fromList [(unknown, empty), (field, v)] where
     field = pack $ fieldDescriptorName $
@@ -49,6 +54,27 @@ addAttributes convert v = convert $
 parseTime :: Value -> Parser UTCTime
 parseTime = withText "expected a date" $
   maybe mzero return . parseISO8601 . unpack
+
+parseDuration :: Value -> Parser DiffTime
+parseDuration v = parseJSON v >>= parseIcpcDuration
+
+parseIcpcDuration :: Scientific -> Parser DiffTime
+parseIcpcDuration d = let exponent = base10Exponent $ normalize d in
+                          if abs exponent >= 20 then mzero else
+                          return $ fromRational $ toRational d
+
+instance NFData Int64Value
+instance NFData StringValue
+instance NFData FileRef
+instance NFData Timestamp
+instance NFData Duration
+instance NFData Contest
+
+instance FromJSON Duration where
+  parseJSON v = toDuration <$> parseDuration v
+
+instance ToJSON Duration where
+  toJSON = Number . fromRational . toRational . fromDuration
 
 instance FromJSON Timestamp where
   parseJSON v = toTimestamp <$> parseTime v

@@ -27,6 +27,7 @@ dependencies:
 - raw-strings-qq
 - casing
 - proto-lens-protobuf-types
+- parallel
 
 library:
   source-dirs: src

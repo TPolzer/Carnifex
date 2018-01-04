@@ -23,6 +23,8 @@ dependencies:
 - time
 - iso8601-time
 - lens
+- deepseq
+- scientific
 
 library:
   source-dirs: src

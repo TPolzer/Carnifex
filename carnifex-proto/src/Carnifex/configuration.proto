@@ -2,12 +2,13 @@ syntax = "proto3";
 
 import "google/protobuf/wrappers.proto";
 import "google/protobuf/timestamp.proto";
+import "google/protobuf/duration.proto";
 
 package carnifex;
 
 message FileRef {
     google.protobuf.StringValue href = 1;
-    string mime = 2;
+    google.protobuf.StringValue mime = 2;
     google.protobuf.Int64Value width = 3;
     google.protobuf.Int64Value height = 4;
 }
@@ -16,8 +17,8 @@ message Contest {
     string id = 1;
     string name = 2;
     google.protobuf.Timestamp start_time = 4;
-    string duration = 5;
-    string scoreboard_freeze_duration = 6;
+    google.protobuf.Duration duration = 5;
+    google.protobuf.Duration scoreboard_freeze_duration = 6;
     int32 penalty_time = 7;
     repeated FileRef banner = 8;
     repeated FileRef logo = 9;

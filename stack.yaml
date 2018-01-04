@@ -8,7 +8,7 @@ extra-deps:
 - git: https://github.com/reflex-frp/reflex
   commit: f78a73ef7300846f4b81f34df0d17d75cb64476d
 - git: git@bulsa.faui2k11.de:proto-lens
-  commit: 91f682e93f564cc59683ee63201f1c63233efce5
+  commit: b90379e
   subdirs: 
     - proto-lens-protobuf-types
     - proto-lens
