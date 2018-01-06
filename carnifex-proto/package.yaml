@@ -27,6 +27,7 @@ dependencies:
 - scientific
 - attoparsec
 - text-format
+- hashable
 
 library:
   source-dirs: src
@@ -37,6 +38,8 @@ library:
     - Proto.Carnifex.Live'Fields
     - Proto.Carnifex.Scoreboard
     - Proto.Carnifex.Scoreboard'Fields
+    - Proto.Carnifex.EventFeed
+    - Proto.Carnifex.EventFeed'Fields
     - Proto.Carnifex.JSON
     - Proto.Carnifex.JSON.TH
     - Carnifex.Reltime

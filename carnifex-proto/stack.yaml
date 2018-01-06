@@ -1,8 +1,0 @@
-extra-deps:
-- git: git@bulsa.faui2k11.de:proto-lens
-  commit: 91f682e93f564cc59683ee63201f1c63233efce5
-  subdirs:
-    - proto-lens-protobuf-types
-    - proto-lens
-    - lens-labels
-    - proto-lens-protoc

@@ -8,9 +8,11 @@ import Data.Aeson.Types
 import Control.Monad (mzero)
 import Control.DeepSeq
 import Data.Either
+import Data.Hashable
 import Data.Text (pack, unpack)
 import Data.Time.ISO8601 -- TODO rip this out if performance becomes a concern, SLOW AS HELL
 import Data.Time.Clock
+import Data.Tuple
 import Data.Scientific
 import qualified Data.Map as Map
 import qualified Data.HashMap.Strict as HashMap
@@ -27,6 +29,7 @@ import Proto.Carnifex
 import Proto.Carnifex.Configuration
 import Proto.Carnifex.Live
 import Proto.Carnifex.Scoreboard
+import Proto.Carnifex.EventFeed
 import Proto.Carnifex.JSON.TH
 import Data.ProtoLens.Message
 
@@ -79,6 +82,31 @@ formatDiffTime d = LT.toStrict $ format "{}{}:{}:{}.{}" (sign, h, fm, fs, fus) w
   fs = left 2 '0' s
   fus = left 3 '0' us
 
+eventOpToEnum :: HashMap.HashMap T.Text Event'Operation
+eventOpToEnum = HashMap.fromList
+  [ ("create", Event'CREATE)
+  , ("update", Event'UPDATE)
+  , ("delete", Event'DELETE)
+  ]
+
+instance Hashable Event'Operation'UnrecognizedValue
+instance Hashable Event'Operation
+eventEnumToOp :: HashMap.HashMap Event'Operation T.Text
+eventEnumToOp = HashMap.fromList $ map swap $ HashMap.toList eventOpToEnum
+
+eventDataParser :: HashMap.HashMap T.Text (Value -> Parser Event'Data)
+eventDataParser = HashMap.fromList
+  [ ("contests",        fmap Event'Contest . parseJSON) 
+  , ("judgement-types", fmap Event'JudgementType . parseJSON)
+  , ("problems",        fmap Event'Problem . parseJSON)
+  , ("groups",          fmap Event'Group . parseJSON)
+  , ("organizations",   fmap Event'Organization . parseJSON)
+  , ("teams",           fmap Event'Team . parseJSON)
+  , ("state",           fmap Event'ContestState . parseJSON)
+  , ("submissions",     fmap Event'Submission . parseJSON)
+  , ("judgements",      fmap Event'Judgement . parseJSON)
+  ]
+
 instance NFData Int32Value
 instance NFData StringValue
 instance NFData BoolValue
@@ -95,6 +123,20 @@ instance NFData ContestState
 instance NFData ScoreboardRow
 instance NFData Score
 instance NFData ScoredProblem
+instance NFData Submission
+instance NFData Judgement
+
+instance FromJSON Submission where
+  parseJSON = addAttributes $(mkParseIcpcJSON ''Submission)
+
+instance ToJSON Submission where
+  toJSON = filterAttributes . $(mkToIcpcJSON ''Submission)
+
+instance FromJSON Judgement where
+  parseJSON = addAttributes $(mkParseIcpcJSON ''Judgement)
+
+instance ToJSON Judgement where
+  toJSON = filterAttributes . $(mkToIcpcJSON ''Judgement)
 
 instance FromJSON ScoreboardRow where
   parseJSON = addAttributes $(mkParseIcpcJSON ''ScoreboardRow)

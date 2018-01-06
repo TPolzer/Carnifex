@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+import "Carnifex/configuration.proto";
+import "Carnifex/live.proto";
+
+package carnifex;
+
+message Event {
+    string id = 10;
+    enum Operation {
+        UPDATE = 0;
+        CREATE = 1;
+        DELETE = 2;
+    }
+    oneof data {
+        Contest contest = 1;
+        JudgementType judgement_type = 2;
+        Problem problem = 3;
+        Group group = 4;
+        Organization organization = 5;
+        Team team = 6;
+        ContestState contest_state = 7;
+        Submission submission = 8;
+        Judgement judgement = 9;
+    }
+}
