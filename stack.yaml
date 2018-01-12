@@ -5,8 +5,8 @@ packages:
 - carnifex-proto
 
 extra-deps:
-- git: git@bulsa.faui2k11.de:proto-lens
-  commit: 79e3bd2ad7e90ac617cbabd08bd04bc771f332d5
+- git: https://github.com/TPolzer/proto-lens
+  commit: dd2a6e257d63f8b73422b46aa241d6c60e3619da
   subdirs: 
     - proto-lens-protobuf-types
     - proto-lens

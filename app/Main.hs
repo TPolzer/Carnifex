@@ -8,23 +8,29 @@ import Data.Aeson
 import Data.Maybe
 import Data.List
 import Data.ProtoLens.Message
+import Data.ProtoLens.Encoding
+import Data.ProtoLens.TextFormat
 import Control.Parallel.Strategies
 
 import Proto.Carnifex.Configuration
+import Proto.Carnifex.EventFeed
 import Proto.Carnifex.JSON
 import Lib
 
-de = fromJust . (decode :: B.ByteString -> Maybe Contest)
+de = (decode :: B.ByteString -> Maybe Event)
 p :: (NFData a) => [a] -> [a]
 p = (`using` parBuffer 64 rdeepseq)
 
+en :: Event -> B.ByteString
+en = B.fromStrict . encodeMessage
+
 main :: IO ()
 main = do
-  putStrLn "test:"
-  let decoded = encode dummyContest
-  B.putStrLn decoded
-  let encoded = decode dummyJSONContest :: Maybe Contest
-  print encoded
+  --putStrLn "test:"
+  --let decoded = encode dummyContest
+  --B.putStrLn decoded
+  --let encoded = decode dummyJSONContest :: Maybe Contest
+  --print encoded
   --putStrLn "round tripping:"
   --let contest = fromJust $ decode $ encodePretty dummyContest :: Contest
   --B.putStrLn $ encodePretty contest
@@ -33,5 +39,5 @@ main = do
   --let contest = fromJust $ decode dummyJSONContest :: Contest
   --print contest
   --B.putStrLn $ encodePretty contest
-  B.interact (B.concat . intersperse "\n" . p . map encode . p . map de . B.lines)
+  B.interact (B.concat . p . map (maybe "Nothing" en) . p . map de . B.lines)
   B.putStrLn ""

@@ -12,6 +12,7 @@ message Event {
         CREATE = 1;
         DELETE = 2;
     }
+    Operation operation = 11;
     oneof data {
         Contest contest = 1;
         JudgementType judgement_type = 2;

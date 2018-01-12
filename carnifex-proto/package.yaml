@@ -28,6 +28,7 @@ dependencies:
 - attoparsec
 - text-format
 - hashable
+- lens-labels
 
 library:
   source-dirs: src

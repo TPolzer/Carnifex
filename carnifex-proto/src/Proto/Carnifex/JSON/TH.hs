@@ -20,4 +20,4 @@ icpcOptions = defaultOptions
   }
 
 dropProtoLensPrefixes =
-  fromJust . find (notElem '\'') . tails
+  fromJust . find (notElem '\'' . init) . tails

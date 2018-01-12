@@ -1,14 +1,18 @@
-{-# LANGUAGE ScopedTypeVariables, OverloadedStrings, TemplateHaskell #-}
+{-# LANGUAGE ScopedTypeVariables, OverloadedStrings, TemplateHaskell, ExistentialQuantification, FlexibleContexts, AllowAmbiguousTypes, DataKinds, StandaloneDeriving, DeriveGeneric #-}
 module Proto.Carnifex.JSON
-  ()
+  () -- only export JSON instances of all relevant types
   where
 
 import Data.Aeson
 import Data.Aeson.Types
-import Control.Monad (mzero)
 import Control.DeepSeq
+import Control.Lens hiding ((.=))
+import Control.Monad
 import Data.Either
 import Data.Hashable
+import Data.Int
+import Data.Maybe
+import Data.ProtoLens
 import Data.Text (pack, unpack)
 import Data.Time.ISO8601 -- TODO rip this out if performance becomes a concern, SLOW AS HELL
 import Data.Time.Clock
@@ -23,6 +27,9 @@ import Data.Attoparsec.Text (parseOnly, endOfInput)
 import Data.Text.Format -- TODO transition to maintained 'formatting' instead of 'text-format'
 import qualified Data.Text as T
 import qualified Data.Text.Lazy as LT
+import GHC.Generics (Generic)
+import Lens.Labels (HasLens')
+import Prelude hiding (id)
 
 import Carnifex.Reltime
 import Proto.Carnifex
@@ -30,6 +37,7 @@ import Proto.Carnifex.Configuration
 import Proto.Carnifex.Live
 import Proto.Carnifex.Scoreboard
 import Proto.Carnifex.EventFeed
+import Proto.Carnifex.EventFeed'Fields
 import Proto.Carnifex.JSON.TH
 import Data.ProtoLens.Message
 
@@ -63,11 +71,11 @@ addAttributes convert v = convert $
       (head $ Map.elems fieldsByTag :: FieldDescriptor msg)
 
 parseTime :: Value -> Parser UTCTime
-parseTime = withText "expected a date" $
+parseTime = withText "TIME" $
   maybe mzero return . parseISO8601 . unpack
 
 parseDuration :: Value -> Parser DiffTime
-parseDuration = withText "expected a reltime" $ \t ->
+parseDuration = withText "RELTIME" $ \t ->
   either (const mzero) return $
     parseOnly (durationParser <* endOfInput) t
 
@@ -94,19 +102,62 @@ instance Hashable Event'Operation
 eventEnumToOp :: HashMap.HashMap Event'Operation T.Text
 eventEnumToOp = HashMap.fromList $ map swap $ HashMap.toList eventOpToEnum
 
-eventDataParser :: HashMap.HashMap T.Text (Value -> Parser Event'Data)
+eventDataParser :: HashMap.HashMap T.Text (Bool -> Value -> Parser Event'Data)
 eventDataParser = HashMap.fromList
-  [ ("contests",        fmap Event'Contest . parseJSON) 
-  , ("judgement-types", fmap Event'JudgementType . parseJSON)
-  , ("problems",        fmap Event'Problem . parseJSON)
-  , ("groups",          fmap Event'Group . parseJSON)
-  , ("organizations",   fmap Event'Organization . parseJSON)
-  , ("teams",           fmap Event'Team . parseJSON)
-  , ("state",           fmap Event'ContestState . parseJSON)
-  , ("submissions",     fmap Event'Submission . parseJSON)
-  , ("judgements",      fmap Event'Judgement . parseJSON)
-  ]
+  [ ("contests",        (fmap Event'Contest.) . parse) 
+  , ("judgement-types", (fmap Event'JudgementType.) . parse)
+  , ("problems",        (fmap Event'Problem.) . parse)
+  , ("groups",          (fmap Event'Group.) . parse)
+  , ("organizations",   (fmap Event'Organization.) . parse)
+  , ("teams",           (fmap Event'Team.) . parse)
+  , ("state",           (fmap Event'ContestState.) . const parseJSON) -- does not have id...
+  , ("submissions",     (fmap Event'Submission.) . parse)
+  , ("judgements",      (fmap Event'Judgement.) . parse)
+  ] where parse delete = if delete then parseIdJSON else parseJSON
 
+parseIdJSON :: forall out . (Default out, Lens.Labels.HasLens' Identity out "id" T.Text) => Value -> Parser out
+parseIdJSON = fmap (\pId -> (def :: out) & (id .~ pId)) . (.: "id") <=< parseJSON
+
+data EventData = forall m . (Message m, ToJSON m) => EventData m
+instance ToJSON EventData where
+  toJSON (EventData m) = toJSON m
+
+formatEventData :: Event'Data -> [Pair]
+formatEventData d = ["type" .= type', "data" .= dat] where
+  tag (Event'Contest m) = ("contests" :: T.Text, EventData m)
+  tag (Event'JudgementType m) = ("judgement-types", EventData m)
+  tag (Event'Problem m) = ("problems", EventData m)
+  tag (Event'Group m) = ("groups", EventData m)
+  tag (Event'Organization m) = ("organizations", EventData m)
+  tag (Event'Team m) = ("teams", EventData m)
+  tag (Event'ContestState m) = ("state", EventData m)
+  tag (Event'Submission m) = ("submissions", EventData m)
+  tag (Event'Judgement m) = ("judgements", EventData m)
+  (type', dat) = tag d
+
+-- TODO Apply TH Magic to reduce boilerplate
+deriving instance Generic Int32Value
+deriving instance Generic StringValue
+deriving instance Generic BoolValue
+deriving instance Generic FileRef
+deriving instance Generic Timestamp
+deriving instance Generic Duration
+deriving instance Generic Contest
+deriving instance Generic JudgementType
+deriving instance Generic Problem
+deriving instance Generic Group
+deriving instance Generic Organization
+deriving instance Generic Team
+deriving instance Generic ContestState
+deriving instance Generic ScoreboardRow
+deriving instance Generic Score
+deriving instance Generic ScoredProblem
+deriving instance Generic Submission
+deriving instance Generic Judgement
+deriving instance Generic Event
+deriving instance Generic Event'Operation
+deriving instance Generic Event'Operation'UnrecognizedValue
+deriving instance Generic Event'Data
 instance NFData Int32Value
 instance NFData StringValue
 instance NFData BoolValue
@@ -125,6 +176,26 @@ instance NFData Score
 instance NFData ScoredProblem
 instance NFData Submission
 instance NFData Judgement
+instance NFData Event
+instance NFData Event'Operation
+instance NFData Event'Operation'UnrecognizedValue
+instance NFData Event'Data
+
+instance FromJSON Event where
+  parseJSON = withObject "Event" $ \v -> do
+    parsedId <- v .: "id"
+    rawType <- v .: "type"
+    rawOp <- v .: "op"
+    rawData <- v .: "data"
+    let (Just parsedOp) = HashMap.lookup rawOp eventOpToEnum
+    let (Just parser) = ($ parsedOp == Event'DELETE) <$> HashMap.lookup rawType eventDataParser
+    parsedData <- Just <$> parser rawData
+    return $! def & (id .~ parsedId) . (operation .~ parsedOp) . (maybe'data' .~ parsedData)
+
+instance ToJSON Event where
+  toJSON e = object $ "id" .= (e ^. id) : opData ++ eventData where
+    eventData = maybeToList $ ("op" .=) <$> HashMap.lookup (e ^. operation) eventEnumToOp
+    opData = concat $ formatEventData <$> (e ^. maybe'data')
 
 instance FromJSON Submission where
   parseJSON = addAttributes $(mkParseIcpcJSON ''Submission)
@@ -238,4 +309,4 @@ instance FromJSON TaggedValue where
   parseJSON _ = mzero
 
 instance ToJSON TaggedValue where
-  toJSON _ = Null
+  toJSON _ = Null -- TODO LOG If this is ever called
