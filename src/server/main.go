@@ -68,6 +68,13 @@ func (c cursesWriter) Write(p []byte) (n int, err error) {
 	return len(p), nil
 }
 
+func logAvailableContests(contests map[string]*score.Contest) {
+	log.Printf("Available contests are:")
+	for id, contest := range contests {
+		log.Printf("%s (%s - %s) (cid %v)", contest.Name, time.Unix(contest.Start, 0), time.Unix(contest.End, 0), id)
+	}
+}
+
 func main() {
 	cursesLock = &sync.Mutex{}
 	stdscr, err := curses.Init()
@@ -214,10 +221,12 @@ func main() {
 				}
 			}
 			if(config.Cid == nil) {
+				logAvailableContests(contests)
 				log.Fatal("more than one contest active, but cid not set in config")
 			}
 			contest, ok := contests[*config.Cid]
 			if(!ok) {
+				logAvailableContests(contests)
 				log.Printf("Selected contest (cid %v) not available from judge!", *config.Cid)
 				continue
 			}
